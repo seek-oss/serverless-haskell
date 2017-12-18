@@ -1,0 +1,34 @@
+name:                serverless-haskell
+version:             0.1.0.0
+github:              SEEK-oss/serverless-haskell
+license:             MIT
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - aeson
+  - aeson-casing
+  - amazonka-core
+  - amazonka-kinesis
+  - amazonka-s3
+  - bytestring
+  - lens
+  - text
+  - time
+  - unix
+  - unordered-containers
+
+library:
+  source-dirs: src
+  ghc-options: -Wall -Werror
+
+tests:
+  tests:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - serverless-haskell
+      - aeson-qq
+      - hspec
+      - hspec-discover

@@ -1,0 +1,15 @@
+{
+  "name": "serverless-haskell",
+  "version": "1.0.0",
+  "description": "Deploy Haskell binaries onto AWS Lambda",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^5.0.0",
+    "serverless": "^1.24.1"
+  }
+}
