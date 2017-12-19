@@ -1,28 +1,43 @@
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module AWSLambda.Events where
 
-import           Control.Applicative      ((<|>))
+import           Control.Applicative           ((<|>))
 import           Control.Lens.TH
-import           Data.Aeson               (FromJSON (..), Value)
+import           Data.Aeson                    (FromJSON (..), Value)
 
+import           AWSLambda.Events.KinesisEvent
 import           AWSLambda.Events.S3Event
+import           AWSLambda.Events.SNSEvent
 
 data DynamoDBEvent
-data KinesisStreamEvent
-data SNSEvent
+
 data SESEvent
+
 data CognitoEvent
+
 data CloudFormationEvent
+
 data CloudWatchLogsEvent
+
 data CloudWatchEventsEvent
+
 data CodeCommitEvent
+
 data ConfigEvent
+
 data AlexaEvent
+
 data LexEvent
+
 data APIGatewayEvent
+
 data IoTButtonEvent
+
 data CloudFrontEvent
+
 data FirehoseEvent
+
 data InvokeEvent
 
 data LambdaEvent
@@ -48,4 +63,5 @@ data LambdaEvent
 
 instance FromJSON LambdaEvent where
   parseJSON v = S3 <$> parseJSON v <|> pure (Custom v)
+
 $(makePrisms ''LambdaEvent)
