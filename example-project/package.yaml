@@ -1,7 +1,11 @@
 name:                serverless-haskell-example
+category:            AWS, Cloud, Network
+maintainer:          akotlyarov@seek.com.au
 version:             0.1.0.0
 github:              SEEK-oss/serverless-haskell
 license:             MIT
+synopsis:            Deploying Haskell code onto AWS Lambda using Serverless
+description:         Example package to demonstrate deployment of Haskell code onto AWS Lambda using Serverless
 
 dependencies:
 - base >= 4.7 && < 5
