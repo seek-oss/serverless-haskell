@@ -43,7 +43,7 @@ data InvokeEvent
 data LambdaEvent
   = S3 !S3Event
   | DynamoDB !DynamoDBEvent
-  | KinesisStream !KinesisStreamEvent
+  | KinesisStream !KinesisEvent
   | SNS !SNSEvent
   | SES !SESEvent
   | Cognito !CognitoEvent
