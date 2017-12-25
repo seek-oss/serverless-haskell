@@ -2,10 +2,13 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module AWSLambda.Events.S3Event where
+{-|
+Module: AWSLambda.Events.S3Event
+Description: Types for S3 Lambda events
 
--- | Types for S3 Lambda events.
--- Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.S3Events
+Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.S3Events
+-}
+module AWSLambda.Events.S3Event where
 
 import           Control.Lens.TH
 import           Control.Monad            (guard)

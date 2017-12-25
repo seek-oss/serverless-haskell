@@ -1,7 +1,11 @@
 name:                serverless-haskell
+category:            AWS, Cloud, Network
+maintainer:          akotlyarov@seek.com.au
 version:             0.1.0.0
 github:              SEEK-oss/serverless-haskell
 license:             MIT
+synopsis:            Deploying Haskell code onto AWS Lambda using Serverless
+description:         Utilities to help process the events from AWS Lambda when deployed with the serverless-haskell plugin.
 extra-source-files:
 - README.md
 
@@ -21,7 +25,7 @@ dependencies:
 
 library:
   source-dirs: src
-  ghc-options: -Wall -Werror
+  ghc-options: -Wall
 
 tests:
   tests:

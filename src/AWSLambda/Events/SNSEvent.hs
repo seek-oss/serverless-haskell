@@ -2,10 +2,13 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module AWSLambda.Events.SNSEvent where
+{-|
+Module: AWSLambda.Events.SNSEvent
+Description: Types for SNS Lambda events
 
--- | Types for SNS Lambda events.
--- Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.SNSEvents
+Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.SNSEvents
+-}
+module AWSLambda.Events.SNSEvent where
 
 import           Control.Lens.TH
 import           Data.Aeson.Casing        (aesonDrop, pascalCase)
