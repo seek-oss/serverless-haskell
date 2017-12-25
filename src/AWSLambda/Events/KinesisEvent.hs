@@ -2,10 +2,13 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module AWSLambda.Events.KinesisEvent where
+{-|
+Module: AWSLambda.Events.KinesisEvent
+Description: Types for Kinesis Lambda events
 
--- | Types for Kinesis Lambda events.
--- Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.KinesisEvents
+Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.KinesisEvents
+-}
+module AWSLambda.Events.KinesisEvent where
 
 import           Control.Lens.TH
 import           Data.Aeson                (FromJSON (..), withObject, (.:))
