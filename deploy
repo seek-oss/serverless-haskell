@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+# Script for deploying the package via Travis CI
+
+require 'fileutils'
+require 'json'
+
+# Release to Hackage via Stack
+
+FileUtils.mkdir_p(File.expand_path('~/.stack/upload'))
+
+File.open(File.expand_path('~/.stack/upload/credentials.json'), 'w') { |f|
+  config = {
+    :username => ENV['HACKAGE_USERNAME'],
+    :password => ENV['HACKAGE_PASSWORD'],
+  }
+  f.write(config.to_json)
+}
+
+hackage_uploaded = system('stack', 'upload', '.', '--no-signature')
+if not hackage_uploaded
+  print "Failed to upload to Hackage."
+  # FIXME: Stack still tries to sign the package and fails
+  # https://github.com/commercialhaskell/stack/issues/3739
+  # exit(1)
+end
+
+# Release to NPM
+
+File.open(File.expand_path('~/.npmrc'), 'w') { |f|
+  f.write("registry.npmjs.org/:_authtoken=#{ENV['NPM_TOKEN']}")
+}
+
+npm_uploaded = system('npm', 'publish', 'serverless-plugin')
+if not npm_uploaded
+  print "Failed to upload to NPM."
+  exit(1)
+end
