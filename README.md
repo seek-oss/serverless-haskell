@@ -51,5 +51,11 @@ See
 [AWSLambda](https://github.com/seek-oss/serverless-haskell/blob/master/src/AWSLambda.hs)
 for the documentation.
 
+## Releasing
+
+* Install [bumpversion](https://github.com/peritus/bumpversion): `pip install bumpversion`.
+* Run `bumpversion major|minor|patch`.
+* Run `git push --tags && git push`.
+
 [AWS Lambda]: https://aws.amazon.com/lambda/
 [Serverless]: https://serverless.com/framework/
