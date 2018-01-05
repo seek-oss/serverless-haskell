@@ -3,5 +3,5 @@
 NPM plugin for deploying Haskell code onto AWS Lambda using Serverless.
 
 See
-[AWSLambda](https://github.com/SEEK-oss/serverless-haskell/blob/master/src/AWSLambda.hs)
+[AWSLambda](https://github.com/seek-oss/serverless-haskell/blob/master/src/AWSLambda.hs)
 for the documentation.

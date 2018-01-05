@@ -48,7 +48,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   function` is not supported.
 
 See
-[AWSLambda](https://github.com/SEEK-oss/serverless-haskell/blob/master/src/AWSLambda.hs)
+[AWSLambda](https://github.com/seek-oss/serverless-haskell/blob/master/src/AWSLambda.hs)
 for the documentation.
 
 [AWS Lambda]: https://aws.amazon.com/lambda/
