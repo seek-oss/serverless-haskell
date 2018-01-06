@@ -134,3 +134,16 @@ script:
       ;;
   esac
   set +ex
+
+deploy:
+  provider: script
+  script: ./deploy
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
+    condition:
+      - '$BUILD = stack'
+      - '$ARGS = ""'
+      - '$(uname) = Linux'
+      - '$TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$'

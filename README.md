@@ -48,8 +48,14 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   function` is not supported.
 
 See
-[AWSLambda](https://github.com/SEEK-oss/serverless-haskell/blob/master/src/AWSLambda.hs)
+[AWSLambda](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda.html)
 for the documentation.
+
+## Releasing
+
+* Install [bumpversion](https://github.com/peritus/bumpversion): `pip install bumpversion`.
+* Run `bumpversion major|minor|patch`.
+* Run `git push --tags && git push`.
 
 [AWS Lambda]: https://aws.amazon.com/lambda/
 [Serverless]: https://serverless.com/framework/
