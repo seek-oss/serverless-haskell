@@ -21,7 +21,7 @@ end
 
 hackage_uploaded = system('stack', 'upload', '.', '--no-signature')
 if not hackage_uploaded
-  print "Failed to upload to Hackage."
+  print "Failed to upload to Hackage.\n"
   # FIXME: Stack still tries to sign the package and fails
   # https://github.com/commercialhaskell/stack/issues/3739
   # exit(1)
@@ -39,6 +39,6 @@ end
 
 npm_uploaded = system('npm', 'publish', 'serverless-plugin')
 if not npm_uploaded
-  print "Failed to upload to NPM."
+  print "Failed to upload to NPM.\n"
   exit(1)
 end
