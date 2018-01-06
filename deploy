@@ -32,7 +32,7 @@ end
 npmrc = File.expand_path('~/.npmrc')
 unless File.exists?(npmrc)
   File.open(npmrc, 'w') { |f|
-    f.write("//registry.npmjs.org/:_authtoken=#{ENV['NPM_TOKEN']}\n")
+    f.write("//registry.npmjs.org/:_authToken=#{ENV['NPM_TOKEN']}\n")
   }
   FileUtils.chmod 0600, npmrc
 end
