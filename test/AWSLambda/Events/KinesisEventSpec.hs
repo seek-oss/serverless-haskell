@@ -7,10 +7,12 @@ import           AWSLambda.Events.KinesisEvent
 import           AWSLambda.Events.Records
 
 import           Data.Aeson
-import           Data.Aeson.QQ
-import           Data.ByteString               (ByteString)
+import           Data.ByteString.Lazy          (ByteString)
+
 import qualified Network.AWS.Kinesis.Types     as Kinesis
 import           Network.AWS.Types             (Region (..))
+
+import           Text.RawString.QQ
 
 import           Test.Hspec
 
@@ -18,10 +20,10 @@ spec :: Spec
 spec =
   describe "KinesisEvent" $
     it "parses sample event" $
-      fromJSON sampleKinesisJSON `shouldBe` Success sampleKinesisEvent
+      decode sampleKinesisJSON `shouldBe` Just sampleKinesisEvent
 
-sampleKinesisJSON :: Value
-sampleKinesisJSON = [aesonQQ|
+sampleKinesisJSON :: ByteString
+sampleKinesisJSON = [r|
 {
     "Records": [
         {
