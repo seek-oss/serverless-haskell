@@ -7,12 +7,13 @@ import           AWSLambda.Events.Records
 import           AWSLambda.Events.S3Event
 
 import           Data.Aeson
-import           Data.Aeson.QQ
-import           Data.ByteString           (ByteString)
-import qualified Data.HashMap.Strict       as HashMap
+import           Data.ByteString.Lazy     (ByteString)
 import           Data.Time.Calendar
 import           Data.Time.Clock
+
 import           Network.AWS.S3
+
+import           Text.RawString.QQ
 
 import           Test.Hspec
 
@@ -20,12 +21,12 @@ spec :: Spec
 spec =
   describe "S3Event" $ do
     it "parses sample Put event" $
-      fromJSON sampleS3PutJSON `shouldBe` Success sampleS3PutEvent
+      decode sampleS3PutJSON `shouldBe` Just sampleS3PutEvent
     it "parses sample Delete event" $
-      fromJSON sampleS3DeleteJSON `shouldBe` Success sampleS3DeleteEvent
+      decode sampleS3DeleteJSON `shouldBe` Just sampleS3DeleteEvent
 
-sampleS3PutJSON :: Value
-sampleS3PutJSON = [aesonQQ|
+sampleS3PutJSON :: ByteString
+sampleS3PutJSON = [r|
 {
   "Records": [
     {
@@ -116,8 +117,8 @@ sampleS3PutEvent =
     ]
   }
 
-sampleS3DeleteJSON :: Value
-sampleS3DeleteJSON = [aesonQQ|
+sampleS3DeleteJSON :: ByteString
+sampleS3DeleteJSON = [r|
   {
   "Records": [
     {

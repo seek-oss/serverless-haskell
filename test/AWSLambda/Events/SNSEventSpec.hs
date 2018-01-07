@@ -7,12 +7,12 @@ import           AWSLambda.Events.Records
 import           AWSLambda.Events.SNSEvent
 
 import           Data.Aeson
-import           Data.Aeson.QQ
-import           Data.ByteString           (ByteString)
+import           Data.ByteString.Lazy      (ByteString)
 import qualified Data.HashMap.Strict       as HashMap
-import           Data.Time.Clock
 import           Data.Time.Calendar
-import           Network.AWS.Types         (Region (..))
+import           Data.Time.Clock
+
+import           Text.RawString.QQ
 
 import           Test.Hspec
 
@@ -20,10 +20,10 @@ spec :: Spec
 spec =
   describe "SNSEvent" $
     it "parses sample event" $
-      fromJSON sampleSNSJSON `shouldBe` Success sampleSNSEvent
+      decode sampleSNSJSON `shouldBe` Just sampleSNSEvent
 
-sampleSNSJSON :: Value
-sampleSNSJSON = [aesonQQ|
+sampleSNSJSON :: ByteString
+sampleSNSJSON = [r|
 {
   "Records": [
     {
