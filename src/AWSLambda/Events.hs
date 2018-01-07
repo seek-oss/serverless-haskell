@@ -40,11 +40,11 @@ data FirehoseEvent
 
 data InvokeEvent
 
-data LambdaEvent
+data LambdaEvent snsMessage
   = S3 !S3Event
   | DynamoDB !DynamoDBEvent
   | KinesisStream !KinesisEvent
-  | SNS !SNSEvent
+  | SNS !(SNSEvent snsMessage)
   | SES !SESEvent
   | Cognito !CognitoEvent
   | CloudFormation !CloudFormationEvent
@@ -61,7 +61,7 @@ data LambdaEvent
   | Invoke !InvokeEvent
   | Custom !Value
 
-instance FromJSON LambdaEvent where
+instance FromJSON snsMessage => FromJSON (LambdaEvent snsMessage) where
   parseJSON v = S3 <$> parseJSON v <|> pure (Custom v)
 
 $(makePrisms ''LambdaEvent)
