@@ -10,11 +10,10 @@ Tools for running Haskell on AWS Lambda.
 To deploy a Haskell function on AWS Lambda:
 
 * Initialise a Serverless project in the same directory as your Stack-enabled
-  package.
+  package and install the @serverless-haskell@ plugin:
 
-* Install @serverless-haskell@ plugin (/Warning/: not uploaded to NPM registry
-  yet, install manually by cloning this repository and specifying its
-  @serverless-plugin@ directory to @npm install@).
+  > npm init .
+  > npm install --save serverless serverless-haskell
 
 * Add the following to @serverless.yml@:
 
