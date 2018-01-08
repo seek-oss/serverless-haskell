@@ -27,8 +27,8 @@ data MessageAttribute = MessageAttribute
 $(deriveFromJSON (aesonDrop 3 pascalCase) ''MessageAttribute)
 $(makeLenses ''MessageAttribute)
 
-data SNSMessage = SNSMessage
-  { _smMessage           :: !Text
+data SNSMessage message = SNSMessage
+  { _smMessage           :: !message
   , _smMessageAttributes :: !(HashMap Text MessageAttribute)
   , _smMessageId         :: !Text
   , _smSignature         :: !Text
@@ -44,14 +44,20 @@ data SNSMessage = SNSMessage
 $(deriveFromJSON (aesonDrop 3 pascalCase) ''SNSMessage)
 $(makeLenses ''SNSMessage)
 
-data SNSRecord = SNSRecord
+data SNSRecord message = SNSRecord
   { _srEventVersion         :: !Text
   , _srEventSubscriptionArn :: !Text
   , _srEventSource          :: !Text
-  , _srSns                  :: !SNSMessage
+  , _srSns                  :: !(SNSMessage message)
   } deriving (Eq, Show)
 
 $(deriveFromJSON (aesonDrop 3 pascalCase) ''SNSRecord)
 $(makeLenses ''SNSRecord)
 
-type SNSEvent = RecordsEvent SNSRecord
+-- | SNSEvent.
+-- The 'message' type is parameterised. To treat it as a text value
+-- use @SNSEvent Text@.
+-- To extract an embedded event object use the 'Embedded' type.
+-- E.g. @SNSEvent (Embedded S3Event)@ will treat the message
+-- as an embedded S3Event.
+type SNSEvent message = RecordsEvent (SNSRecord message)
