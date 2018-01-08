@@ -4,7 +4,7 @@
 
 {-|
 Module: AWSLambda.Events.Embedded
-Description: Type for JSON object embedded within a JSON string value
+Description: Type for a JSON value embedded within a JSON string value
 -}
 module AWSLambda.Events.Embedded where
 
@@ -12,6 +12,7 @@ import           Control.Lens.TH
 import           Data.Aeson
 import Data.Text.Encoding        (encodeUtf8)
 
+-- | Type for a JSON value embedded within a JSON string value
 newtype Embedded a = Embedded { _unEmbed :: a } deriving (Eq, Show)
 
 instance FromJSON a =>
