@@ -71,6 +71,12 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   You can test the function and see the invocation results with `sls invoke
   myfunc`.
 
+### Notes
+
+* `sls deploy function` is not supported.
+* Only AWS Lambda is supported at the moment. Other cloud providers would
+  require different JavaScript wrappers to be implemented.
+
 See
 [AWSLambda](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda.html)
 for the documentation.
