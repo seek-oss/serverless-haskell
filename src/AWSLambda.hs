@@ -3,20 +3,19 @@ Module      : AWSLambda.Handler
 Stability   : experimental
 Portability : POSIX
 
-Tools for running Haskell on AWS Lambda.
+Tools for running Haskell on AWS Lambda using Serverless.
 
 = Usage
 
 To deploy a Haskell function on AWS Lambda:
 
 * Initialise a Serverless project in the same directory as your Stack-enabled
-  package.
+  package and install the @serverless-haskell@ plugin:
 
-* Install @serverless-haskell@ plugin (/Warning/: not uploaded to NPM registry
-  yet, install manually by cloning this repository and specifying its
-  @serverless-plugin@ directory to @npm install@).
+  > npm init .
+  > npm install --save serverless serverless-haskell
 
-* Add the following to @serverless.yml@:
+* Create @serverless.yml@ with the following contents:
 
   > provider:
   >   name: aws
@@ -35,6 +34,13 @@ To deploy a Haskell function on AWS Lambda:
 
 * Use @sls deploy@ to deploy the executable to AWS Lambda. __Note__: @sls deploy
   function@ is not supported.
+
+  The `serverless-haskell` plugin will build the package using Stack and upload
+  it to AWS together with a JavaScript wrapper to pass the input and output
+  from/to AWS Lambda.
+
+  You can test the function and see the invocation results with `sls invoke
+  myfunc`.
 
 = Additional features
 

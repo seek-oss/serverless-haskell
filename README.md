@@ -2,16 +2,33 @@
 
 Deploying Haskell code onto [AWS Lambda] using [Serverless].
 
+## Requirements
+
+* AWS account
+* [`stack`](Stack)
+* [NPM]
+* [Docker] unless running on a Linux host
+
 ## Usage
 
-* Initialise a Serverless project in the same directory as your Stack-enabled
-  package.
+* Create a [Stack] package for your code:
 
-* Install `serverless-haskell` plugin (_Warning_: not uploaded to NPM registry
-  yet, install manually by cloning this repository and specifying its
-  `serverless-plugin` directory to `npm install`).
+  ```shell
+  stack new mypackage
+  ```
 
-* Add the following to `serverless.yml`:
+  LTS 9 and 10 are supported, older versions are likely to work too but untested.
+
+* Initialise a Serverless project inside the Stack package directory and install
+  the `serverless-haskell` plugin:
+
+  ```shell
+  cd mypackage
+  npm init .
+  npm install --save serverless serverless-haskell
+  ```
+
+* Create `serverless.yml` with the following contents:
 
   ```yaml
   provider:
@@ -47,6 +64,19 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 * Use `sls deploy` to deploy the executable to AWS Lambda. **Note**: `sls deploy
   function` is not supported.
 
+  The `serverless-haskell` plugin will build the package using Stack and upload
+  it to AWS together with a JavaScript wrapper to pass the input and output
+  from/to AWS Lambda.
+
+  You can test the function and see the invocation results with `sls invoke
+  myfunc`.
+
+### Notes
+
+* `sls deploy function` is not supported.
+* Only AWS Lambda is supported at the moment. Other cloud providers would
+  require different JavaScript wrappers to be implemented.
+
 See
 [AWSLambda](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda.html)
 for the documentation.
@@ -58,4 +88,7 @@ for the documentation.
 * Run `git push --tags && git push`.
 
 [AWS Lambda]: https://aws.amazon.com/lambda/
+[Docker]: https://www.docker.com/
+[NPM]: https://www.npmjs.com/
 [Serverless]: https://serverless.com/framework/
+[Stack]: https://haskellstack.org
