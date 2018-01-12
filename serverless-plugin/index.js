@@ -29,6 +29,7 @@ class ServerlessPlugin {
 
         this.custom = Object.assign(
             {
+                extraLibraries: [],
                 stackBuildArgs: [],
             },
             this.serverless.service.custom &&
@@ -57,6 +58,12 @@ class ServerlessPlugin {
             ],
             captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
+    }
+
+    addFile(fileName, filePath) {
+        const targetPath = path.resolve(this.servicePath, fileName);
+        fs.copyFileSync(filePath, targetPath);
+        this.additionalFiles.push(targetPath);
     }
 
     beforeCreateDeploymentArtifacts() {
@@ -97,14 +104,31 @@ class ServerlessPlugin {
                     ],
                     true
                 ).stdout.toString('utf8').trim();
-                const haskellBinary = path.resolve(stackInstallRoot, 'bin', executableName);
-                const haskellBinaryPath = path.resolve(this.servicePath, executableName);
-                fs.copyFileSync(haskellBinary, haskellBinaryPath);
-                this.additionalFiles.push(haskellBinaryPath);
+                const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
+                this.addFile(executableName, executablePath);
 
                 // Remember the executable that needs to be handled by this package's shim
                 handledFunctions[packageName] = handledFunctions[packageName] || [];
                 handledFunctions[packageName].push(executableName);
+
+                // Copy specified extra libraries, if needed
+                if (this.custom.extraLibraries.length > 0) {
+                    const lddOutput = this.runStack(
+                        [
+                            'exec',
+                            'ldd',
+                            executablePath,
+                        ],
+                        true
+                    ).stdout.toString('utf8');
+                    const lddList = lddOutput.trim().split('\n');
+                    lddList.forEach(s => {
+                        const [name, _, path] = s.split(' ');
+                        if (this.custom.extraLibraries.includes(name)) {
+                            this.addFile(name, path);
+                        }
+                    });
+                }
             });
 
         // Create a shim to start the executable and copy it to all the
