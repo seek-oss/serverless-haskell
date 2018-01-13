@@ -140,9 +140,16 @@ class ServerlessPlugin {
                     ).stdout.toString('utf8');
                     const lddList = lddOutput.trim().split('\n');
                     lddList.forEach(s => {
-                        const [name, _, path] = s.trim().split(' ');
+                        const [name, _, libPath] = s.trim().split(' ');
                         if (libraries[name] === false) {
-                            this.addFile(name, path);
+                            const targetPath = path.resolve(this.servicePath, name);
+                            this.runStack([
+                                'exec',
+                                'cp',
+                                libPath,
+                                targetPath,
+                            ]);
+                            this.additionalFiles.push(targetPath);
                             libraries[name] = true;
                         }
                         foundLibraries[name] = true;
