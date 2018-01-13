@@ -43,23 +43,29 @@ class ServerlessPlugin {
                 {}
         );
 
-        this.stackArgs = [];
-        if (process.platform !== 'linux') {
-            // Use Stack's Docker build
-            this.serverless.cli.log("Using Stack's Docker image.");
-            this.runStack(['docker', 'pull']);
-            this.stackArgs.push('--docker');
-        }
+        this.docker = {
+            required: process.platform !== 'linux',
+            haveImage: false,
+        };
 
         this.additionalFiles = [];
     }
 
     runStack(args, captureOutput) {
+        const dockerArgs = [];
+        if (this.docker.required) {
+            if (!this.docker.haveImage) {
+                this.serverless.cli.log("Using Stack's Docker image.");
+                spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
+                this.docker.haveImage = true;
+            }
+            dockerArgs.push('--docker');
+        }
         return spawnSync(
             'stack',
             [
                 ...args,
-                ...this.stackArgs,
+                ...dockerArgs,
                 ...this.custom.stackBuildArgs,
             ],
             captureOutput ? {} : NO_OUTPUT_CAPTURE
