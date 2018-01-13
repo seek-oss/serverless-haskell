@@ -37,6 +37,7 @@ class ServerlessPlugin {
             {
                 extraLibraries: [],
                 stackBuildArgs: [],
+                arguments: {},
             },
             this.serverless.service.custom &&
                 this.serverless.service.custom.haskell ||
@@ -88,74 +89,78 @@ class ServerlessPlugin {
             ...ADDITIONAL_EXCLUDE,
         ];
 
-        const handledFunctions = {};
+        // Each package will have its own wrapper; remember its options to add
+        // to the handler template
+        const handlerOptions = {};
 
         // Keep track of which extra libraries were copied
         const libraries = {};
         this.custom.extraLibraries.forEach(lib => { libraries[lib] = false; });
         const foundLibraries = {};
 
-        service.getAllFunctions()
-            .map(funcName => service.getFunction(funcName))
-            .forEach((func) => {
-                // Extract the executable name, assuming the second component is
-                // 'main'
-                const [ packageName, executableName ] = func.handler.split('.');
+        service.getAllFunctions().forEach(funcName => {
+            const func = service.getFunction(funcName);
 
-                //Ensure the executable is built
-                this.serverless.cli.log("Building handler with Stack...");
-                const res = this.runStack([
-                    'build',
-                    `${packageName}:exe:${executableName}`,
-                ]);
-                if (res.error || res.status > 0) {
-                    this.serverless.cli.log("Stack build encountered an error.");
-                    throw new Error(res.error);
-                }
+            // Extract the package and executable name
+            const [ packageName, executableName ] = func.handler.split('.');
 
-                // Copy the executable to the destination directory
-                const stackInstallRoot = this.runStack(
+            //Ensure the executable is built
+            this.serverless.cli.log("Building handler with Stack...");
+            const res = this.runStack([
+                'build',
+                `${packageName}:exe:${executableName}`,
+            ]);
+            if (res.error || res.status > 0) {
+                this.serverless.cli.log("Stack build encountered an error.");
+                throw new Error(res.error);
+            }
+
+            // Copy the executable to the destination directory
+            const stackInstallRoot = this.runStack(
+                [
+                    'path',
+                    '--local-install-root',
+                ],
+                true
+            ).stdout.toString('utf8').trim();
+            const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
+            this.addFile(executableName, executablePath);
+
+            // Remember the executable that needs to be handled by this package's shim
+            handlerOptions[packageName] = handlerOptions[packageName] || [];
+            handlerOptions[packageName].push([executableName, {
+                executable: executableName,
+                arguments: this.custom.arguments[funcName] || [],
+            }]);
+
+            // Copy specified extra libraries, if needed
+            if (this.custom.extraLibraries.length > 0) {
+                const lddOutput = this.runStack(
                     [
-                        'path',
-                        '--local-install-root',
+                        'exec',
+                        'ldd',
+                        executablePath,
                     ],
                     true
-                ).stdout.toString('utf8').trim();
-                const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
-                this.addFile(executableName, executablePath);
-
-                // Remember the executable that needs to be handled by this package's shim
-                handledFunctions[packageName] = handledFunctions[packageName] || [];
-                handledFunctions[packageName].push(executableName);
-
-                // Copy specified extra libraries, if needed
-                if (this.custom.extraLibraries.length > 0) {
-                    const lddOutput = this.runStack(
-                        [
+                ).stdout.toString('utf8');
+                const lddList = lddOutput.trim().split('\n');
+                lddList.forEach(s => {
+                    const [name, _, libPath] = s.trim().split(' ');
+                    if (libraries[name] === false) {
+                        const targetPath = path.resolve(this.servicePath, name);
+                        this.runStack([
                             'exec',
-                            'ldd',
-                            executablePath,
-                        ],
-                        true
-                    ).stdout.toString('utf8');
-                    const lddList = lddOutput.trim().split('\n');
-                    lddList.forEach(s => {
-                        const [name, _, libPath] = s.trim().split(' ');
-                        if (libraries[name] === false) {
-                            const targetPath = path.resolve(this.servicePath, name);
-                            this.runStack([
-                                'exec',
-                                'cp',
-                                libPath,
-                                targetPath,
-                            ]);
-                            this.additionalFiles.push(targetPath);
-                            libraries[name] = true;
-                        }
-                        foundLibraries[name] = true;
-                    });
-                }
-            });
+                            'cp',
+                            libPath,
+                            targetPath,
+                        ]);
+                        this.additionalFiles.push(targetPath);
+                        libraries[name] = true;
+                    }
+                    foundLibraries[name] = true;
+                });
+            }
+        });
 
         // Error if a requested extra library could not be found
         Object.keys(libraries).forEach(name => {
@@ -177,9 +182,9 @@ class ServerlessPlugin {
         // destination directories
         const handlerTemplate = fs.readFileSync(TEMPLATE).toString('utf8');
 
-        Object.keys(handledFunctions).forEach(packageName => {
-            let handler = handlerTemplate + handledFunctions[packageName].map(
-                executableName => `exports['${executableName}'] = wrapper('${executableName}');`
+        Object.keys(handlerOptions).forEach(packageName => {
+            let handler = handlerTemplate + handlerOptions[packageName].map(
+                ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
             ).join("\n") + "\n";
 
             const handlerFileName = path.resolve(this.servicePath, `${packageName}.js`);
