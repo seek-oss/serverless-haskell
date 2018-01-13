@@ -9,6 +9,12 @@ const ADDITIONAL_EXCLUDE = [
     'node_modules/**',
 ];
 
+// Dependent libraries not to suggest adding
+const IGNORE_LIBRARIES = [
+    'linux-vdso.so.1',
+    '/lib64/ld-linux-x86-64.so.2',
+];
+
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
 const SERVERLESS_DIRECTORY = '.serverless';
@@ -76,7 +82,12 @@ class ServerlessPlugin {
             ...ADDITIONAL_EXCLUDE,
         ];
 
-        let handledFunctions = {};
+        const handledFunctions = {};
+
+        // Keep track of which extra libraries were copied
+        const libraries = {};
+        this.custom.extraLibraries.forEach(lib => { libraries[lib] = false; });
+        const foundLibraries = {};
 
         service.getAllFunctions()
             .map(funcName => service.getFunction(funcName))
@@ -123,13 +134,31 @@ class ServerlessPlugin {
                     ).stdout.toString('utf8');
                     const lddList = lddOutput.trim().split('\n');
                     lddList.forEach(s => {
-                        const [name, _, path] = s.split(' ');
-                        if (this.custom.extraLibraries.includes(name)) {
+                        const [name, _, path] = s.trim().split(' ');
+                        if (libraries[name] === false) {
                             this.addFile(name, path);
+                            libraries[name] = true;
                         }
+                        foundLibraries[name] = true;
                     });
                 }
             });
+
+        // Error if a requested extra library could not be found
+        Object.keys(libraries).forEach(name => {
+            if (!libraries[name]) {
+                const msg = `Extra library not found: ${name}.`;
+                this.serverless.cli.log(msg);
+                // Show the libraries found, in case the name was misspelled
+                const foundLibrariesStr = Object.keys(foundLibraries)
+                      .filter(l => !IGNORE_LIBRARIES.includes(l))
+                      .sort()
+                      .join(", ");
+                this.serverless.cli.log(
+                    `Dependent libraries found: ${foundLibrariesStr}`);
+                throw new Error(msg);
+            }
+        });
 
         // Create a shim to start the executable and copy it to all the
         // destination directories
