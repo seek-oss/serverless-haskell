@@ -44,13 +44,25 @@ To deploy a Haskell function on AWS Lambda:
 
 = Additional features
 
-To add flags to @stack build@, add the following key to @serverless.yml@:
+Configuration options are passed to the plugin under @haskell@ key in @custom@
+section of @serverless.yml@.
 
-> custom:
->   haskell:
->     stackBuildArgs:
->       - --pedantic
->       - --allow-different-user
+* To add flags to @stack build@, specify them as an array under
+  @stackBuildArgs@:
+
+  > custom:
+  >   haskell:
+  >     stackBuildArgs:
+  >       - --pedantic
+  >       - --allow-different-user
+
+* To include dependent libraries, list them under @extraLibraries@. The
+  libraries will be uploaded to AWS Lambda along with the executable.
+
+  > custom:
+  >   haskell:
+  >     extraLibraries:
+  >       - libpcre.so.3
 -}
 module AWSLambda
   ( Handler.lambdaMain

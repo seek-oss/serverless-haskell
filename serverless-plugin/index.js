@@ -9,6 +9,12 @@ const ADDITIONAL_EXCLUDE = [
     'node_modules/**',
 ];
 
+// Dependent libraries not to suggest adding
+const IGNORE_LIBRARIES = [
+    'linux-vdso.so.1',
+    '/lib64/ld-linux-x86-64.so.2',
+];
+
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
 const SERVERLESS_DIRECTORY = '.serverless';
@@ -29,6 +35,7 @@ class ServerlessPlugin {
 
         this.custom = Object.assign(
             {
+                extraLibraries: [],
                 stackBuildArgs: [],
             },
             this.serverless.service.custom &&
@@ -36,27 +43,39 @@ class ServerlessPlugin {
                 {}
         );
 
-        this.stackArgs = [];
-        if (process.platform !== 'linux') {
-            // Use Stack's Docker build
-            this.serverless.cli.log("Using Stack's Docker image.");
-            this.runStack(['docker', 'pull']);
-            this.stackArgs.push('--docker');
-        }
+        this.docker = {
+            required: process.platform !== 'linux',
+            haveImage: false,
+        };
 
         this.additionalFiles = [];
     }
 
     runStack(args, captureOutput) {
+        const dockerArgs = [];
+        if (this.docker.required) {
+            if (!this.docker.haveImage) {
+                this.serverless.cli.log("Using Stack's Docker image.");
+                spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
+                this.docker.haveImage = true;
+            }
+            dockerArgs.push('--docker');
+        }
         return spawnSync(
             'stack',
             [
                 ...args,
-                ...this.stackArgs,
+                ...dockerArgs,
                 ...this.custom.stackBuildArgs,
             ],
             captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
+    }
+
+    addFile(fileName, filePath) {
+        const targetPath = path.resolve(this.servicePath, fileName);
+        fs.copyFileSync(filePath, targetPath);
+        this.additionalFiles.push(targetPath);
     }
 
     beforeCreateDeploymentArtifacts() {
@@ -69,7 +88,12 @@ class ServerlessPlugin {
             ...ADDITIONAL_EXCLUDE,
         ];
 
-        let handledFunctions = {};
+        const handledFunctions = {};
+
+        // Keep track of which extra libraries were copied
+        const libraries = {};
+        this.custom.extraLibraries.forEach(lib => { libraries[lib] = false; });
+        const foundLibraries = {};
 
         service.getAllFunctions()
             .map(funcName => service.getFunction(funcName))
@@ -97,15 +121,57 @@ class ServerlessPlugin {
                     ],
                     true
                 ).stdout.toString('utf8').trim();
-                const haskellBinary = path.resolve(stackInstallRoot, 'bin', executableName);
-                const haskellBinaryPath = path.resolve(this.servicePath, executableName);
-                fs.copyFileSync(haskellBinary, haskellBinaryPath);
-                this.additionalFiles.push(haskellBinaryPath);
+                const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
+                this.addFile(executableName, executablePath);
 
                 // Remember the executable that needs to be handled by this package's shim
                 handledFunctions[packageName] = handledFunctions[packageName] || [];
                 handledFunctions[packageName].push(executableName);
+
+                // Copy specified extra libraries, if needed
+                if (this.custom.extraLibraries.length > 0) {
+                    const lddOutput = this.runStack(
+                        [
+                            'exec',
+                            'ldd',
+                            executablePath,
+                        ],
+                        true
+                    ).stdout.toString('utf8');
+                    const lddList = lddOutput.trim().split('\n');
+                    lddList.forEach(s => {
+                        const [name, _, libPath] = s.trim().split(' ');
+                        if (libraries[name] === false) {
+                            const targetPath = path.resolve(this.servicePath, name);
+                            this.runStack([
+                                'exec',
+                                'cp',
+                                libPath,
+                                targetPath,
+                            ]);
+                            this.additionalFiles.push(targetPath);
+                            libraries[name] = true;
+                        }
+                        foundLibraries[name] = true;
+                    });
+                }
             });
+
+        // Error if a requested extra library could not be found
+        Object.keys(libraries).forEach(name => {
+            if (!libraries[name]) {
+                const msg = `Extra library not found: ${name}.`;
+                this.serverless.cli.log(msg);
+                // Show the libraries found, in case the name was misspelled
+                const foundLibrariesStr = Object.keys(foundLibraries)
+                      .filter(l => !IGNORE_LIBRARIES.includes(l))
+                      .sort()
+                      .join(", ");
+                this.serverless.cli.log(
+                    `Dependent libraries found: ${foundLibrariesStr}`);
+                throw new Error(msg);
+            }
+        });
 
         // Create a shim to start the executable and copy it to all the
         // destination directories
