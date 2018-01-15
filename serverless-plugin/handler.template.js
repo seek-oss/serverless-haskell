@@ -1,11 +1,13 @@
 const { spawn } = require('child_process');
 
-function wrapper(executable) {
+function wrapper(options) {
+    const executable = options['executable'];
+    const arguments = options['arguments'];
     return function (event, context, callback) {
         process.env['PATH'] = process.env['PATH'] + ':' +
             process.env['LAMBDA_TASK_ROOT'];
 
-        const main = spawn('./' + executable, [], {
+        const main = spawn('./' + executable, arguments, {
             stdio: ['pipe', process.stdout, process.stderr, 'pipe'],
         });
         const stdin = main.stdin;
@@ -50,4 +52,7 @@ function wrapper(executable) {
 }
 
 // exports such as below will be added here by the plugin
-// exports['EXECUTABLENAME'] = wrapper('EXECUTABLENAME');
+// exports['EXECUTABLENAME'] = wrapper({
+//   executable: 'EXECUTABLENAME',
+//   arguments: ['--arg1', '--arg2'],
+// });

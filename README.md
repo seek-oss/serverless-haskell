@@ -79,7 +79,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 
 See
 [AWSLambda](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda.html)
-for the documentation.
+for documentation, including additional options to control the deployment.
 
 ## Releasing
 

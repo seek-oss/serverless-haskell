@@ -23,9 +23,9 @@ To deploy a Haskell function on AWS Lambda:
   >
   > functions:
   >   myfunc:
-  >     handler: mypackage.myfunc
-  >     # Here, mypackage is the Haskell package name and myfunc is the executable
-  >     # name as defined in the Cabal file
+  >     handler: mypackage.mypackage-exe
+  >     # Here, mypackage is the Haskell package name and mypackage-exe is the
+  >     # executable name as defined in the Cabal file
   >
   > plugins:
   >   - serverless-haskell
@@ -55,6 +55,17 @@ section of @serverless.yml@.
   >     stackBuildArgs:
   >       - --pedantic
   >       - --allow-different-user
+
+* To start the executable with extra arguments, add them to @arguments@ under
+  the function name:
+
+  > custom:
+  >   haskell:
+  >     arguments:
+  >       myfunc:
+  >         - --arg1
+  >         - --arg2
+  >         - arg3
 
 * To include dependent libraries, list them under @extraLibraries@. The
   libraries will be uploaded to AWS Lambda along with the executable.
