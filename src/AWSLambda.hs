@@ -35,12 +35,12 @@ To deploy a Haskell function on AWS Lambda:
 * Use @sls deploy@ to deploy the executable to AWS Lambda. __Note__: @sls deploy
   function@ is not supported.
 
-  The `serverless-haskell` plugin will build the package using Stack and upload
+  The @serverless-haskell@ plugin will build the package using Stack and upload
   it to AWS together with a JavaScript wrapper to pass the input and output
   from/to AWS Lambda.
 
-  You can test the function and see the invocation results with `sls invoke
-  myfunc`.
+  You can test the function and see the invocation results with @sls invoke
+  myfunc@.
 
 = Additional features
 
