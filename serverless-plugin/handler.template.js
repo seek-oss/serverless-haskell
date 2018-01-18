@@ -1,13 +1,15 @@
+'use strict';
+
 const { spawn } = require('child_process');
 
 function wrapper(options) {
     const executable = options['executable'];
-    const arguments = options['arguments'];
+    const execArguments = options['arguments'];
     return function (event, context, callback) {
         process.env['PATH'] = process.env['PATH'] + ':' +
             process.env['LAMBDA_TASK_ROOT'];
 
-        const main = spawn('./' + executable, arguments, {
+        const main = spawn('./' + executable, execArguments, {
             stdio: ['pipe', process.stdout, process.stderr, 'pipe'],
         });
         const stdin = main.stdin;
