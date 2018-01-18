@@ -50,6 +50,9 @@ matrix:
   #   compiler: ": #stack 8.2.2 osx"
   #   os: osx
 
+  - env: BUILD=npm
+    compiler: ": #npm"
+
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
 - unset CC
@@ -105,6 +108,13 @@ install:
 
       cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS $PACKAGES
       ;;
+    npm)
+      node --version
+      npm --version
+      cd serverless-plugin
+      npm install
+      cd -
+      ;;
   esac
   set +ex
 
@@ -135,6 +145,10 @@ script:
         cd $ORIGDIR
       done
       ;;
+    npm)
+      cd serverless-plugin
+      npm test
+      cd -
   esac
   set +ex
 
