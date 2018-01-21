@@ -10,7 +10,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 ## Requirements
 
 * AWS account
-* [Stack](Stack)
+* [Stack]
 * [NPM]
 * [Docker] unless running on a Linux host
 
@@ -96,7 +96,8 @@ for documentation, including additional options to control the deployment.
 Integration tests are not run automatically due to the need for an AWS account.
 To run them manually:
 
-* Get an AWS account and add the access credentials into your shell.
+* Ensure you have the required dependencies: `curl`, [jq], [NPM] and [Stack].
+* Get an AWS account and add the access credentials into your shell environment.
 * Run `./integration-test/run.sh`. The exit code indicates success.
 
 ## Releasing
@@ -108,6 +109,7 @@ To run them manually:
 
 [AWS Lambda]: https://aws.amazon.com/lambda/
 [Docker]: https://www.docker.com/
+[jq]: https://stedolan.github.io/jq/
 [NPM]: https://www.npmjs.com/
 [Serverless]: https://serverless.com/framework/
 [Stack]: https://haskellstack.org
