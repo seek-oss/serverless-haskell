@@ -3,6 +3,12 @@
 
 set -e
 
+for DEPENDENCY in curl jq npm stack
+do
+    which $DEPENDENCY >/dev/null || \
+        (echo "$DEPENDENCY is required for the test." >&2; exit 1)
+done
+
 # Root directory of the repository
 DIST=$(cd $(dirname $0)/..; echo $PWD)
 
@@ -10,7 +16,8 @@ DIST=$(cd $(dirname $0)/..; echo $PWD)
 TEST=$(cd $(dirname $0); echo $PWD)
 
 # Stackage resolver to use
-RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | jq -r .lts)
+RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
+               jq -r .lts)
 
 # Temporary directory to create a project in
 DIR=$(mktemp -d)
@@ -20,28 +27,28 @@ cd $DIR
 
 NAME=s-h-test-$(pwgen 10 -0 -A)
 
-mkdir $NAME
-cd $NAME
-
+# Copy the test files over, replacing the values
 SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g"
-$SED < $TEST/package.json > package.json
-$SED < $TEST/serverless.yml > serverless.yml
-$SED < $TEST/package.yaml > package.yaml
-$SED < $TEST/stack.yaml > stack.yaml
-$SED < $TEST/Main.hs > Main.hs
+for FILE in Main.hs package.json package.yaml serverless.yml stack.yaml
+do
+    $SED < $TEST/$FILE > $FILE
+done
 
 export PATH=$(npm bin):$PATH
 
+# Install Serverless and deploy the project
 npm install serverless
 npm install $DIST/serverless-plugin
 
-sls --no-color deploy
-sls --no-color invoke --function $NAME --data '[4, 5, 6]' > output.json
+sls deploy
 
-diff $TEST/output.json output.json && echo "Expected result verified."
+# Run the function and verify the results
+sls invoke --function $NAME --data '[4, 5, 6]' > output.json
 
+diff $TEST/expected/output.json output.json && echo "Expected result verified."
+
+# Wait for the logs to be propagated and verify them
 sleep 10
-sls --no-color logs --function $NAME | \
-    grep -v RequestId > logs.txt
+sls logs --function $NAME | grep -v RequestId > logs.txt
 
-diff $TEST/logs.txt logs.txt && echo "Expected output verified."
+diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
