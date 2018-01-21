@@ -10,7 +10,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 ## Requirements
 
 * AWS account
-* [`stack`](Stack)
+* [Stack]
 * [NPM]
 * [Docker] unless running on a Linux host
 
@@ -86,14 +86,30 @@ See
 [AWSLambda](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda.html)
 for documentation, including additional options to control the deployment.
 
+## Testing
+
+* Haskell code is tested with Stack: `stack test`.
+* JavaScript code is linted with `eslint`.
+
+### Integration tests
+
+Integration tests are not run automatically due to the need for an AWS account.
+To run them manually:
+
+* Ensure you have the required dependencies: `curl`, [jq], [NPM] and [Stack].
+* Get an AWS account and add the access credentials into your shell environment.
+* Run `./integration-test/run.sh`. The exit code indicates success.
+
 ## Releasing
 
+* Run the integration tests.
 * Install [bumpversion](https://github.com/peritus/bumpversion): `pip install bumpversion`.
 * Run `bumpversion major|minor|patch`.
 * Run `git push --tags && git push`.
 
 [AWS Lambda]: https://aws.amazon.com/lambda/
 [Docker]: https://www.docker.com/
+[jq]: https://stedolan.github.io/jq/
 [NPM]: https://www.npmjs.com/
 [Serverless]: https://serverless.com/framework/
 [Stack]: https://haskellstack.org

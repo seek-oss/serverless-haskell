@@ -1,0 +1,22 @@
+service: NAME
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+functions:
+  NAME:
+    handler: NAME.main
+
+plugins:
+- serverless-haskell
+
+custom:
+  haskell:
+    arguments:
+      NAME:
+      - one
+      - two
+      - --three
+    extraLibraries:
+    - libpcre.so.1
