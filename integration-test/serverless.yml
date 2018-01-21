@@ -10,3 +10,11 @@ functions:
 
 plugins:
 - serverless-haskell
+
+custom:
+  haskell:
+    arguments:
+      NAME:
+      - one
+      - two
+      - --three
