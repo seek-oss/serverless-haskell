@@ -49,6 +49,9 @@ class ServerlessPlugin {
             haveImage: false,
         };
 
+        // Do not try to look into Node dependencies
+        this.serverless.service.package.excludeDevDependencies = false;
+
         this.additionalFiles = [];
     }
 
