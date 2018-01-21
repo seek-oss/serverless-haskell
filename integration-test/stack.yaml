@@ -1,0 +1,6 @@
+resolver: RESOLVER
+
+packages:
+- .
+- location: DIST
+  extra-dep: true

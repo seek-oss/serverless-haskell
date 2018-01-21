@@ -1,0 +1,2 @@
+This should go to logs
+Array [Number 4.0,Number 5.0,Number 6.0]
