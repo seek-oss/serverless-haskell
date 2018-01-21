@@ -18,3 +18,5 @@ custom:
       - one
       - two
       - --three
+    extraLibraries:
+    - libpcre.so.1

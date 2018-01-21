@@ -1,3 +1,4 @@
 This should go to logs
 ["one","two","--three"]
+Just ["abc"]
 Array [Number 4.0,Number 5.0,Number 6.0]
