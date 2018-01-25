@@ -3,10 +3,10 @@
 
 module AWSLambda.Events.SNSEventSpec where
 
-import           AWSLambda.Events.Embedded
 import           AWSLambda.Events.Records
 import           AWSLambda.Events.S3Event
 import           AWSLambda.Events.SNSEvent
+import           Data.Aeson.Embedded
 
 import           Data.Aeson
 import           Data.ByteString.Lazy      (ByteString)
