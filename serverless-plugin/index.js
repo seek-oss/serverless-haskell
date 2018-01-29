@@ -38,6 +38,7 @@ class ServerlessPlugin {
                 extraLibraries: [],
                 stackBuildArgs: [],
                 arguments: {},
+                docker: false,
             },
             this.serverless.service.custom &&
                 this.serverless.service.custom.haskell ||
@@ -45,7 +46,7 @@ class ServerlessPlugin {
         );
 
         this.docker = {
-            required: process.platform !== 'linux',
+            required: this.custom.docker || process.platform !== 'linux',
             haveImage: false,
         };
 

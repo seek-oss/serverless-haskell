@@ -74,6 +74,12 @@ section of @serverless.yml@.
   >   haskell:
   >     extraLibraries:
   >       - libpcre.so.3
+
+* To force using Stack's Docker image, set @docker@ key to @true@.
+
+  > custom:
+  >   haskell:
+  >     docker: true
 -}
 module AWSLambda
   ( Handler.lambdaMain
