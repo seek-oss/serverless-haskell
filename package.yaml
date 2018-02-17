@@ -17,6 +17,7 @@ dependencies:
   - amazonka-kinesis
   - amazonka-s3
   - bytestring
+  - case-insensitive
   - lens
   - text
   - time
