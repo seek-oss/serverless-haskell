@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
@@ -11,16 +12,20 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 module AWSLambda.Events.SNSEvent where
 
 import           Control.Lens.TH
+import           Data.Aeson               (FromJSON (..), genericParseJSON)
 import           Data.Aeson.Casing        (aesonDrop, pascalCase)
+import           Data.Aeson.Embedded
 import           Data.Aeson.TH            (deriveFromJSON)
 import           Data.HashMap.Strict      (HashMap)
 import           Data.Text                (Text)
 import           Data.Time.Clock          (UTCTime)
+import           GHC.Generics             (Generic)
+import           Network.AWS.Data.Text    (FromText)
 
 import           AWSLambda.Events.Records
 
 data MessageAttribute = MessageAttribute
-  { _maType :: !Text
+  { _maType  :: !Text
   , _maValue :: !Text
   } deriving (Eq, Show)
 
@@ -28,7 +33,7 @@ $(deriveFromJSON (aesonDrop 3 pascalCase) ''MessageAttribute)
 $(makeLenses ''MessageAttribute)
 
 data SNSMessage message = SNSMessage
-  { _smMessage           :: !message
+  { _smMessage           :: !(TextValue message )
   , _smMessageAttributes :: !(HashMap Text MessageAttribute)
   , _smMessageId         :: !Text
   , _smSignature         :: !Text
@@ -39,9 +44,11 @@ data SNSMessage message = SNSMessage
   , _smTopicArn          :: !Text
   , _smType              :: !Text
   , _smUnsubscribeUrl    :: !Text
-  } deriving (Eq, Show)
+  } deriving (Eq, Show, Generic)
 
-$(deriveFromJSON (aesonDrop 3 pascalCase) ''SNSMessage)
+instance FromText message => FromJSON (SNSMessage message) where
+  parseJSON = genericParseJSON $ aesonDrop 3 pascalCase
+
 $(makeLenses ''SNSMessage)
 
 data SNSRecord message = SNSRecord
@@ -49,9 +56,11 @@ data SNSRecord message = SNSRecord
   , _srEventSubscriptionArn :: !Text
   , _srEventSource          :: !Text
   , _srSns                  :: !(SNSMessage message)
-  } deriving (Eq, Show)
+  } deriving (Eq, Show, Generic)
 
-$(deriveFromJSON (aesonDrop 3 pascalCase) ''SNSRecord)
+instance FromText message => FromJSON (SNSRecord message) where
+  parseJSON = genericParseJSON $ aesonDrop 3 pascalCase
+
 $(makeLenses ''SNSRecord)
 
 -- | SNSEvent.
