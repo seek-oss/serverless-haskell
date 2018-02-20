@@ -11,18 +11,22 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 -}
 module AWSLambda.Events.APIGateway where
 
-import           Control.Lens.TH
+import           Control.Lens
 import           Data.Aeson
-import           Data.Aeson.Casing     (aesonDrop, camelCase)
-import           Data.Aeson.TH         (deriveFromJSON)
+import           Data.Aeson.Casing       (aesonDrop, camelCase)
+import           Data.Aeson.TH           (deriveFromJSON)
 -- import           Data.CaseInsensitive (CI (..))
 import           Data.Aeson.Embedded
-import           Data.HashMap.Strict   (HashMap)
-import           Data.Text             (Text)
-import           GHC.Generics          (Generic)
+import           Data.Aeson.TextValue
+import           Data.ByteString         (ByteString)
+import           Data.HashMap.Strict     (HashMap)
+import qualified Data.HashMap.Strict     as HashMap
+import           Data.Text               (Text)
+import           GHC.Generics            (Generic)
+import           Network.AWS.Data.Base64
 import           Network.AWS.Data.Text
 
-import           AWSLambda.Handler     (lambdaMain)
+import           AWSLambda.Handler       (lambdaMain)
 
 type Method = Text
 -- type HeaderName = CI Text
@@ -53,7 +57,7 @@ $(deriveFromJSON (aesonDrop 3 camelCase) ''RequestIdentity)
 $(makeLenses ''RequestIdentity)
 
 data ProxyRequestContext = ProxyRequestContext
-  { _prcPath         :: !Text
+  { _prcPath         :: !(Maybe Text)
   , _prcAccountId    :: !Text
   , _prcResourceId   :: !Text
   , _prcStage        :: !Text
@@ -75,8 +79,7 @@ data APIGatewayProxyRequest body = APIGatewayProxyRequest
   , _agprqPathParameters        :: !(HashMap PathParamName PathParamValue)
   , _agprqStageVariables        :: !(HashMap StageVarName StageVarValue)
   , _agprqRequestContext        :: !ProxyRequestContext
-  , _agprqBody                  :: !(TextValue body)
-  , _agprqIsBase64Encoded       :: !Bool
+  , _agprqBody                  :: !(Maybe (TextValue body))
   } deriving (Eq, Show, Generic)
 
 instance FromText body => FromJSON (APIGatewayProxyRequest body) where
@@ -84,16 +87,45 @@ instance FromText body => FromJSON (APIGatewayProxyRequest body) where
 
 $(makeLenses ''APIGatewayProxyRequest)
 
+-- | A Traversal to get the request body, if ther is one.
+requestBody :: Traversal (APIGatewayProxyRequest body) (APIGatewayProxyRequest body') body body'
+requestBody = agprqBody . _Just . unTextValue
+
+requestBodyEmbedded :: Traversal (APIGatewayProxyRequest (Embedded v)) (APIGatewayProxyRequest (Embedded v')) v v'
+requestBodyEmbedded = requestBody . unEmbed
+
+requestBodyBinary :: Traversal' (APIGatewayProxyRequest Base64) ByteString
+requestBodyBinary = requestBody . _Base64
+
 data APIGatewayProxyResponse body = APIGatewayProxyResponse
   { _agprsStatusCode :: !Int
   , _agprsHeaders    :: !(HashMap HeaderName HeaderValue)
-  , _agprsBody       :: !(TextValue body)
+  , _agprsBody       :: !(Maybe (TextValue body))
   } deriving (Eq, Show, Generic)
 
 instance ToText body => ToJSON (APIGatewayProxyResponse body) where
   toJSON = genericToJSON $ aesonDrop 6 camelCase
 
+instance FromText body => FromJSON (APIGatewayProxyResponse body) where
+  parseJSON = genericParseJSON $ aesonDrop 6 camelCase
+
 $(makeLenses ''APIGatewayProxyResponse)
+
+responseOK :: body -> APIGatewayProxyResponse body
+responseOK body =
+  APIGatewayProxyResponse
+  { _agprsStatusCode = 200
+  , _agprsHeaders = HashMap.empty
+  , _agprsBody = Just (TextValue body)
+  }
+
+responseNotFound :: APIGatewayProxyResponse body
+responseNotFound =
+  APIGatewayProxyResponse
+  { _agprsStatusCode = 404
+  , _agprsHeaders = HashMap.empty
+  , _agprsBody = Nothing
+  }
 
 -- | Specialisation of lambdaMain for API Gateway
 apiGatewayMain

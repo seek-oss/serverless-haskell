@@ -9,13 +9,13 @@ import           AWSLambda.Events.SNSEvent
 
 import           Data.Aeson
 import           Data.Aeson.Embedded
+import           Data.Aeson.TextValue
 import           Data.ByteString.Lazy      (ByteString)
 import qualified Data.HashMap.Strict       as HashMap
 import           Data.Text                 (Text)
 import           Data.Time.Calendar
 import           Data.Time.Clock
 import           Network.AWS.S3            as S3
-import           Network.AWS.Types         as AWS
 
 import           Text.RawString.QQ
 
