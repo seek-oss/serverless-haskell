@@ -27,13 +27,13 @@ dependencies:
 
 library:
   source-dirs: src
-  ghc-options: -Wall -Werror
+  ghc-options: -Wall
 
 tests:
   tests:
     main: Spec.hs
     source-dirs: test
-    ghc-options: -Wall -Werror
+    ghc-options: -Wall
     dependencies:
       - serverless-haskell
       - hspec
