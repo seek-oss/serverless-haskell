@@ -2,3 +2,4 @@ resolver: lts-9.17
 packages:
 - .
 - example-project
+- example-apigateway

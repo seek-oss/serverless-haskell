@@ -1,0 +1,27 @@
+{
+  "name": "serverless-haskell-apigw-example",
+  "version": "1.0.0",
+  "description": "Example of serverless-haskell with APIGateway",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "serverless": "^1.26.0",
+    "serverless-haskell": "file:///Users/doverton/ws/serverless-haskell/serverless-plugin"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "doverton@seek.com.au",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seek-oss/serverless-haskell.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seek-oss/serverless-haskell/issues"
+  },
+  "homepage": "https://github.com/seek-oss/serverless-haskell#readme"
+}
