@@ -125,18 +125,18 @@ sampleGetRequest =
     , _prcRequestId = "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9"
     , _prcIdentity =
       RequestIdentity
-      { _riCognitoIdentityPoolId = ""
-      , _riAccountId = ""
-      , _riCognitoIdentityId = ""
-      , _riCaller = ""
-      , _riApiKey = ""
-      , _riSourceIp = "192.168.100.1"
-      , _riCognitoAuthenticationType = ""
-      , _riCognitoAuthenticationProvider = ""
-      , _riUserArn = ""
-      , _riUserAgent =
+      { _riCognitoIdentityPoolId = Just ""
+      , _riAccountId = Just ""
+      , _riCognitoIdentityId = Just ""
+      , _riCaller = Just ""
+      , _riApiKey = Just ""
+      , _riSourceIp = Just "192.168.100.1"
+      , _riCognitoAuthenticationType = Just ""
+      , _riCognitoAuthenticationProvider = Just ""
+      , _riUserArn = Just ""
+      , _riUserAgent = Just
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.82 Safari/537.36 OPR/39.0.2256.48"
-      , _riUser = ""
+      , _riUser = Just ""
       }
     , _prcResourcePath = "/{proxy+}"
     , _prcHttpMethod = "GET"
