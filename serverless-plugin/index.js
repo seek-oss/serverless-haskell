@@ -2,6 +2,7 @@
 
 const {spawnSync} = require('child_process');
 const fs = require('fs-extra');
+const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
 const ADDITIONAL_EXCLUDE = [
@@ -83,7 +84,7 @@ class ServerlessPlugin {
 
     addFile(fileName, filePath) {
         const targetPath = path.resolve(this.servicePath, fileName);
-        fs.copyFileSync(filePath, targetPath);
+        copyFileSync(filePath, targetPath);
         this.additionalFiles.push(targetPath);
     }
 
