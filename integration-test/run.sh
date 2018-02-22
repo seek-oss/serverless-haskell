@@ -3,7 +3,7 @@
 
 set -e
 
-for DEPENDENCY in curl jq npm stack
+for DEPENDENCY in curl jq npm pwgen stack
 do
     which $DEPENDENCY >/dev/null || \
         (echo "$DEPENDENCY is required for the test." >&2; exit 1)
