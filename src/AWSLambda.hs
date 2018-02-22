@@ -17,6 +17,8 @@ To deploy a Haskell function on AWS Lambda:
 
 * Create @serverless.yml@ with the following contents:
 
+  > service: myservice
+  >
   > provider:
   >   name: aws
   >   runtime: nodejs6.10
