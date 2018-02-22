@@ -6,20 +6,50 @@ const net = require('net');
 // The port used to communicate with the Haskell process
 const PORT = 4275;
 
+// Ensure the child processes can be started from and find libraries in the
+// right directory
+process.env['PATH'] = process.env['PATH'] + ':' +
+    process.env['LAMBDA_TASK_ROOT'];
+
 function wrapper(options) {
     const executable = options['executable'];
     const execArguments = options['arguments'];
 
-    // Start a persistent process to handle the events
-    process.env['PATH'] = process.env['PATH'] + ':' +
-        process.env['LAMBDA_TASK_ROOT'];
-    const main = spawn('./' + executable, execArguments, {
-        stdio: ['ignore', process.stdout, process.stderr],
-    });
+    // Keep track of whether the backend process is started
+    let running = false;
 
-    // TODO handle the exit of the persistent process
+    // Start the backend process and update its running state as needed
+    function startBackend() {
+        if (running) {
+            return;
+        }
+
+        const main = spawn('./' + executable, execArguments, {
+            stdio: ['ignore', process.stdout, process.stderr],
+        });
+        running = true;
+
+        main.on('exit', function (code) {
+            if (running) {
+                running = false;
+
+                console.error("Child process exited with code " + code);
+            }
+        });
+
+        main.on('error', function (err) {
+            if (running) {
+                running = false;
+
+                console.error("Child process error: " + err);
+            }
+        });
+    }
 
     return function (event, context, callback) {
+        // Ensure the backend is started
+        startBackend();
+
         // Keep track of the process output
         let output = '';
 
