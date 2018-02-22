@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "serverless": "^1.26.0",
-    "serverless-haskell": "file:///Users/doverton/ws/serverless-haskell/serverless-plugin"
+    "serverless-haskell": "file:../serverless-plugin"
   },
   "devDependencies": {},
   "scripts": {
