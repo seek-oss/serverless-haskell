@@ -96,7 +96,8 @@ for documentation, including additional options to control the deployment.
 Integration tests are not run automatically due to the need for an AWS account.
 To run them manually:
 
-* Ensure you have the required dependencies: `curl`, [jq], [NPM] and [Stack].
+* Ensure you have the required dependencies: `curl`, [jq], [NPM], `pwgen` and
+  [Stack].
 * Get an AWS account and add the access credentials into your shell environment.
 * Run `./integration-test/run.sh`. The exit code indicates success.
 
