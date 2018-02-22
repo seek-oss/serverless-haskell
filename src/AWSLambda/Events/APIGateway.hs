@@ -40,17 +40,17 @@ type StageVarName = Text
 type StageVarValue = Text
 
 data RequestIdentity = RequestIdentity
-  { _riCognitoIdentityPoolId         :: !Text
-  , _riAccountId                     :: !Text
-  , _riCognitoIdentityId             :: !Text
-  , _riCaller                        :: !Text
-  , _riApiKey                        :: !Text
-  , _riSourceIp                      :: !Text
-  , _riCognitoAuthenticationType     :: !Text
-  , _riCognitoAuthenticationProvider :: !Text
-  , _riUserArn                       :: !Text
-  , _riUserAgent                     :: !Text
-  , _riUser                          :: !Text
+  { _riCognitoIdentityPoolId         :: !(Maybe Text)
+  , _riAccountId                     :: !(Maybe Text)
+  , _riCognitoIdentityId             :: !(Maybe Text)
+  , _riCaller                        :: !(Maybe Text)
+  , _riApiKey                        :: !(Maybe Text)
+  , _riSourceIp                      :: !(Maybe Text)
+  , _riCognitoAuthenticationType     :: !(Maybe Text)
+  , _riCognitoAuthenticationProvider :: !(Maybe Text)
+  , _riUserArn                       :: !(Maybe Text)
+  , _riUserAgent                     :: !(Maybe Text)
+  , _riUser                          :: !(Maybe Text)
   } deriving (Eq, Show)
 
 $(deriveFromJSON (aesonDrop 3 camelCase) ''RequestIdentity)
@@ -83,7 +83,18 @@ data APIGatewayProxyRequest body = APIGatewayProxyRequest
   } deriving (Eq, Show, Generic)
 
 instance FromText body => FromJSON (APIGatewayProxyRequest body) where
-  parseJSON = genericParseJSON $ aesonDrop 6 camelCase
+  parseJSON = withObject "APIGatewayProxyRequest" $ \o ->
+    APIGatewayProxyRequest
+    <$> o .: "resource"
+    <*> o .: "path"
+    <*> o .: "httpMethod"
+    <*> o .:? "headers" .!= HashMap.empty
+    <*> o .:? "queryStringParameters" .!= HashMap.empty
+    <*> o .:? "pathParameters" .!= HashMap.empty
+    <*> o .:? "stageVariables" .!= HashMap.empty
+    <*> o .: "requestContext"
+    <*> o .:? "body"
+
 
 $(makeLenses ''APIGatewayProxyRequest)
 
