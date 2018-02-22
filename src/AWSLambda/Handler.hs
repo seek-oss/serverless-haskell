@@ -5,25 +5,31 @@ Portability : POSIX
 
 Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 -}
+{-# LANGUAGE LambdaCase #-}
+
 module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Exception (bracket)
+import Control.Concurrent (forkIO)
+import Control.Exception (finally)
+import Control.Monad (forever)
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Text as Aeson
 
 import qualified Data.ByteString as ByteString
 
+import Data.Maybe (isJust)
+
 import qualified Data.Text.Lazy.IO as Text
 
 import GHC.IO.Handle (Handle, hClose)
 
+import Network
+
 import System.Environment (lookupEnv)
-import System.IO (stdout)
-import System.Posix.IO (fdToHandle)
-import System.Posix.Types (Fd(..))
+import System.IO (stdin, stdout)
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -79,25 +85,49 @@ lambdaMain ::
   => (event -> IO res) -- ^ Function to process the event
   -> IO ()
 lambdaMain act =
-  withResultChannel $ \resultChannel -> do
-    input <- ByteString.getLine
-    case Aeson.eitherDecodeStrict input of
-      Left err -> error err
-      Right event -> do
-        result <- act event
-        Text.hPutStrLn resultChannel $ Aeson.encodeToLazyText result
-        pure ()
+  isLambda >>= \case
+    True -> lambdaMain' act
+    False -> localMain act
 
--- | Invoke an action with the handle to write the results to. On AWS Lambda,
--- use the channel opened by the JavaScript wrapper, otherwise use standard
--- output.
-withResultChannel :: (Handle -> IO r) -> IO r
-withResultChannel act = do
-  lambdaFunctionName <- lookupEnv "AWS_LAMBDA_FUNCTION_NAME"
-  case lambdaFunctionName of
-    Just _ -> bracket (fdToHandle communicationFd) hClose act
-    Nothing -> act stdout
+-- | Process the requests from the JavaScript wrapper using the provided action.
+lambdaMain' ::
+     (Aeson.FromJSON event, Aeson.ToJSON res)
+  => (event -> IO res) -- ^ Function to process the event
+  -> IO ()
+lambdaMain' act = do
+  listenSocket <- listenOn communicationPort
+  forever $ do
+    (socket, _, _) <- accept listenSocket
+    forkIO $ finally (hClose socket) $ handleEvent socket socket act
 
--- | File descriptor opened by the JavaScript wrapper to listen for the results
-communicationFd :: Fd
-communicationFd = Fd 3
+-- | Run the action outside the AWS Lambda, using the process' standard input
+-- and standard output.
+localMain ::
+     (Aeson.FromJSON event, Aeson.ToJSON res)
+  => (event -> IO res) -- ^ Function to process the event
+  -> IO ()
+localMain = handleEvent stdin stdout
+
+-- | Process an event from the given input channel and write the result to the
+-- given output channel.
+handleEvent ::
+     (Aeson.FromJSON event, Aeson.ToJSON res)
+  => Handle -- ^ Input channel
+  -> Handle -- ^ Output channel
+  -> (event -> IO res) -- ^ Function to process the event
+  -> IO ()
+handleEvent inputChan outputChan act = do
+  input <- ByteString.hGetLine inputChan
+  case Aeson.eitherDecodeStrict input of
+    Left err -> error err
+    Right event -> do
+      result <- act event
+      Text.hPutStrLn outputChan $ Aeson.encodeToLazyText result
+
+-- | Whether the code is running on AWS Lambda.
+isLambda :: IO Bool
+isLambda = isJust <$> lookupEnv "AWS_LAMBDA_FUNCTION_NAME"
+
+-- | The port used to communicate with the JavaScript wrapper.
+communicationPort :: PortID
+communicationPort = PortNumber 4275

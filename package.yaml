@@ -18,6 +18,7 @@ dependencies:
   - amazonka-s3
   - bytestring
   - lens
+  - network
   - text
   - time
   - unix
