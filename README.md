@@ -36,6 +36,8 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 * Create `serverless.yml` with the following contents:
 
   ```yaml
+  service: myservice
+
   provider:
     name: aws
     runtime: nodejs6.10
