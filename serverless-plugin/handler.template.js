@@ -1,6 +1,6 @@
 'use strict';
 
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const net = require('net');
 
 // The port used to communicate with the Haskell process
@@ -28,6 +28,9 @@ function wrapper(options) {
             stdio: ['ignore', process.stdout, process.stderr],
         });
         running = true;
+
+        // FIXME: Give the backend some time to start up
+        spawnSync('sleep', ['5']);
 
         main.on('exit', function (code) {
             if (running) {
