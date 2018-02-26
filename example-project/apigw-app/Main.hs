@@ -14,5 +14,5 @@ hello :: APIGatewayProxyRequest Text -> IO (APIGatewayProxyResponse Text)
 hello request = do
   putStrLn "This should go to logs"
   case HashMap.lookup "name" (request ^. agprqPathParameters) of
-    Just name -> return $ responseOK $ "Hello, " <> name
+    Just name -> return $ responseOK & responseBody ?~ "Hello, " <> name
     Nothing -> return responseNotFound

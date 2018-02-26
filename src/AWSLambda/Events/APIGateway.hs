@@ -124,29 +124,31 @@ instance FromText body => FromJSON (APIGatewayProxyResponse body) where
 
 $(makeLenses ''APIGatewayProxyResponse)
 
-responseOK :: body -> APIGatewayProxyResponse body
-responseOK body =
-  APIGatewayProxyResponse
-  { _agprsStatusCode = 200
-  , _agprsHeaders = HashMap.empty
-  , _agprsBody = Just (TextValue body)
-  }
+response :: Int -> APIGatewayProxyResponse body
+response statusCode = APIGatewayProxyResponse statusCode HashMap.empty Nothing
 
-responseOKEmbedded :: body -> APIGatewayProxyResponse (Embedded body)
-responseOKEmbedded = responseOK . Embedded
+responseOK :: APIGatewayProxyResponse body
+responseOK = response 200
 
 responseNotFound :: APIGatewayProxyResponse body
-responseNotFound =
-  APIGatewayProxyResponse
-  { _agprsStatusCode = 404
-  , _agprsHeaders = HashMap.empty
-  , _agprsBody = Nothing
-  }
+responseNotFound = response 404
+
+responseBadRequest :: APIGatewayProxyResponse body
+responseBadRequest = response 400
+
+responseBody :: Setter' (APIGatewayProxyResponse body) (Maybe body)
+responseBody = agprsBody . at () . mapping unTextValue
+
+responseBodyEmbedded :: Setter' (APIGatewayProxyResponse (Embedded body)) (Maybe body)
+responseBodyEmbedded = responseBody . mapping unEmbed
+
+responseBodyBinary :: Setter' (APIGatewayProxyResponse Base64) (Maybe ByteString)
+responseBodyBinary = responseBody . mapping _Base64
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
 --
--- This is a specialisation of lambdaMain for API Gateway
+-- This is a specialisation of lambdaMain for API Gateway.
 --
 -- The handler receives the input event given to the AWS Lambda function, and
 -- its return value is returned from the function.
@@ -156,6 +158,7 @@ responseNotFound =
 -- > import AWSLambda.Events.APIGateway
 -- > import Control.Lens
 -- > import Data.Aeson
+-- > import Data.Aeson.Embedded
 -- >
 -- > main = apiGatewayMain handler
 -- >
@@ -163,7 +166,7 @@ responseNotFound =
 -- > handler request = do
 -- >   putStrLn "This should go to logs"
 -- >   print $ request ^. requestBody
--- >   pure $ responseOKEmbedded [1, 2, 3]
+-- >   pure $ responseOK & responseBodyEmbedded ?~ [1, 2, 3]
 --
 -- The type parameters @reqBody@ and @resBody@ represent the types of request and response body, respectively.
 -- The @FromText@ and @ToText@ contraints are required because these values come from string fields

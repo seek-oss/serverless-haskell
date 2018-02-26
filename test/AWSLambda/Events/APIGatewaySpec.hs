@@ -174,7 +174,8 @@ sampleOKResponseJSON = [r|
 
 sampleOKResponse :: APIGatewayProxyResponse Text
 sampleOKResponse =
-  responseOK "Hello World"
+  responseOK
+  & responseBody ?~ "Hello World"
   & agprsHeaders .~ HashMap.fromList
     [ ("X-Forwarded-Proto", "https")
     , ("CloudFront-Is-Desktop-Viewer", "true")
