@@ -1,13 +1,12 @@
 {
   "name": "serverless-haskell-example",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "serverless": "^1.24.1",
+    "serverless": "^1.26.0",
     "serverless-haskell": "file:../serverless-plugin"
   },
   "devDependencies": {},
@@ -15,5 +14,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "description": ""
 }

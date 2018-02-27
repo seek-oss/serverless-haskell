@@ -9,13 +9,13 @@ import           AWSLambda.Events.SNSEvent
 
 import           Data.Aeson
 import           Data.Aeson.Embedded
+import           Data.Aeson.TextValue
 import           Data.ByteString.Lazy      (ByteString)
 import qualified Data.HashMap.Strict       as HashMap
 import           Data.Text                 (Text)
 import           Data.Time.Calendar
 import           Data.Time.Clock
 import           Network.AWS.S3            as S3
-import           Network.AWS.Types         as AWS
 
 import           Text.RawString.QQ
 
@@ -137,55 +137,62 @@ sampleSNSS3Event =
       , _srSns =
         SNSMessage
         { _smMessage =
-          Embedded
-          { _unEmbed =
-            RecordsEvent
-            { _reRecords =
-              [ S3EventNotification
-                { _senAwsRegion = Sydney
-                , _senEventName = S3ObjectCreatedPut
-                , _senEventSource = "aws:s3"
-                , _senEventTime = UTCTime (fromGregorian 2017 3 6) (picosecondsToDiffTime 10579713000000000)
-                , _senEventVersion = "2.0"
-                , _senRequestParameters =
-                  RequestParametersEntity
-                  { _rpeSourceIPAddress = "192.168.0.1"
-                  }
-                , _senResponseElements =
-                  ResponseElementsEntity
-                  { _reeXAmzId2 =
-                    "xsdSDF/pgAl401Fz3UIATJ5/didfljDSFDSFsdfkjsdfl8JdsfLSDF89ldsf7SDF898jsdfljiA="
-                  , _reeXAmzRequestId = "324098EDFLK0894F"
-                  }
-                , _senS3 =
-                  S3Entity
-                  { _seBucket =
-                    S3BucketEntity
-                    { _sbeArn = "arn:aws:s3:::some-bucket"
-                    , _sbeName = BucketName "some-bucket"
-                    , _sbeOwnerIdentity =
-                      UserIdentityEntity
-                      { _uiePrincipalId = "A3O1SDFLKJIJXU"
+          TextValue
+          { _unTextValue =
+            Embedded
+            { _unEmbed =
+              RecordsEvent
+              { _reRecords =
+                [ S3EventNotification
+                  { _senAwsRegion = Sydney
+                  , _senEventName = S3ObjectCreatedPut
+                  , _senEventSource = "aws:s3"
+                  , _senEventTime =
+                    UTCTime
+                      (fromGregorian 2017 3 6)
+                      (picosecondsToDiffTime 10579713000000000)
+                  , _senEventVersion = "2.0"
+                  , _senRequestParameters =
+                    RequestParametersEntity
+                    { _rpeSourceIPAddress = "192.168.0.1"
+                    }
+                  , _senResponseElements =
+                    ResponseElementsEntity
+                    { _reeXAmzId2 =
+                      "xsdSDF/pgAl401Fz3UIATJ5/didfljDSFDSFsdfkjsdfl8JdsfLSDF89ldsf7SDF898jsdfljiA="
+                    , _reeXAmzRequestId = "324098EDFLK0894F"
+                    }
+                  , _senS3 =
+                    S3Entity
+                    { _seBucket =
+                      S3BucketEntity
+                      { _sbeArn = "arn:aws:s3:::some-bucket"
+                      , _sbeName = BucketName "some-bucket"
+                      , _sbeOwnerIdentity =
+                        UserIdentityEntity
+                        { _uiePrincipalId = "A3O1SDFLKJIJXU"
+                        }
                       }
+                    , _seConfigurationId = "SomeS3Event:Created"
+                    , _seObject =
+                      S3ObjectEntity
+                      { _soeETag =
+                        Just (ETag "6b1f72b9e81e4d6fcd3e0c808e8477f8")
+                      , _soeKey = ObjectKey "path/to/some/object"
+                      , _soeSize = Just 53598442
+                      , _soeSequencer = "0058BCCFD25C798E7B"
+                      , _soeVersionId = Nothing
+                      }
+                    , _seS3SchemaVersion = "1.0"
                     }
-                  , _seConfigurationId = "SomeS3Event:Created"
-                  , _seObject =
-                    S3ObjectEntity
-                    { _soeETag = Just (ETag "6b1f72b9e81e4d6fcd3e0c808e8477f8")
-                    , _soeKey = ObjectKey "path/to/some/object"
-                    , _soeSize = Just 53598442
-                    , _soeSequencer = "0058BCCFD25C798E7B"
-                    , _soeVersionId = Nothing
+                  , _senUserIdentity =
+                    UserIdentityEntity
+                    { _uiePrincipalId =
+                      "AWS:DFLKSDFLKJ987SDFLJJDJ:some-principal-id"
                     }
-                  , _seS3SchemaVersion = "1.0"
                   }
-                , _senUserIdentity =
-                  UserIdentityEntity
-                  { _uiePrincipalId =
-                    "AWS:DFLKSDFLKJ987SDFLJJDJ:some-principal-id"
-                  }
-                }
-              ]
+                ]
+              }
             }
           }
         , _smMessageAttributes = HashMap.fromList []
@@ -196,7 +203,10 @@ sampleSNSS3Event =
         , _smSigningCertUrl =
           "https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-b95095beb82e8f6a046b3aafc7f4149a.pem"
         , _smSubject = "Amazon S3 Notification"
-        , _smTimestamp = UTCTime (fromGregorian 2017 3 6) (picosecondsToDiffTime 10579834000000000)
+        , _smTimestamp =
+          UTCTime
+            (fromGregorian 2017 3 6)
+            (picosecondsToDiffTime 10579834000000000)
         , _smTopicArn = "arn:aws:sns:ap-southeast-2:012345678901:SomeSNSEvent"
         , _smType = "Notification"
         , _smUnsubscribeUrl =
