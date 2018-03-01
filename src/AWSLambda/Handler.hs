@@ -29,7 +29,7 @@ import GHC.IO.Handle (Handle, hClose)
 import Network
 
 import System.Environment (lookupEnv)
-import System.IO (stdin, stdout)
+import System.IO (hFlush, stdin, stdout)
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -96,9 +96,12 @@ lambdaMain' ::
   -> IO ()
 lambdaMain' act = do
   listenSocket <- listenOn communicationPort
+  -- FIXME Use a separate channel to signal that the process is ready
+  putStrLn "Listening."
+  hFlush stdout
   forever $ do
     (socket, _, _) <- accept listenSocket
-    forkIO $ finally (hClose socket) $ handleEvent socket socket act
+    forkIO $ finally (handleEvent socket socket act) (hClose socket)
 
 -- | Run the action outside the AWS Lambda, using the process' standard input
 -- and standard output.
