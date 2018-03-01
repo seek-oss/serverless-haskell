@@ -29,7 +29,9 @@ import GHC.IO.Handle (Handle, hClose)
 import Network
 
 import System.Environment (lookupEnv)
-import System.IO (hFlush, stdin, stdout)
+import System.IO (hFlush, hPrint, stdin, stdout)
+import System.Posix.IO (fdToHandle)
+import System.Posix.Types (Fd(..))
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -95,10 +97,12 @@ lambdaMain' ::
   => (event -> IO res) -- ^ Function to process the event
   -> IO ()
 lambdaMain' act = do
-  listenSocket <- listenOn communicationPort
-  -- FIXME Use a separate channel to signal that the process is ready
-  putStrLn "Listening."
-  hFlush stdout
+  listenSocket <- listenOn $ PortNumber 0
+  -- Communicate the allocated port number to the JavaScript wrapper
+  commHandle <- fdToHandle communicationFd
+  PortNumber port <- socketPort listenSocket
+  hPrint commHandle port
+  hFlush commHandle
   forever $ do
     (socket, _, _) <- accept listenSocket
     forkIO $ finally (handleEvent socket socket act) (hClose socket)
@@ -131,6 +135,7 @@ handleEvent inputChan outputChan act = do
 isLambda :: IO Bool
 isLambda = isJust <$> lookupEnv "AWS_LAMBDA_FUNCTION_NAME"
 
--- | The port used to communicate with the JavaScript wrapper.
-communicationPort :: PortID
-communicationPort = PortNumber 4275
+-- | File descriptor opened by the JavaScript wrapper to communicate the process
+-- state
+communicationFd :: Fd
+communicationFd = Fd 3

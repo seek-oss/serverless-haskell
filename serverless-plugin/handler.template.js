@@ -3,9 +3,6 @@
 const { spawn, spawnSync } = require('child_process');
 const net = require('net');
 
-// The port used to communicate with the Haskell process
-const PORT = 4275;
-
 // Ensure the child processes can be started from and find libraries in the
 // right directory
 process.env['PATH'] = process.env['PATH'] + ':' +
@@ -15,45 +12,46 @@ function wrapper(options) {
     const executable = options['executable'];
     const execArguments = options['arguments'];
 
-    // Keep track of whether the backend process is started
-    let running = false;
+    // Keep track of the port the background process is listening on
+    let portPromise = null;
 
-    // Start the backend process and update its running state as needed
+    // Start the backend process and track its running state
     function startBackend() {
-        return new Promise(function (resolve, reject) {
-            if (running) {
-                // FIXME: Wait for actual startup?
-                resolve();
-            } else {
-                const main = spawn('./' + executable, execArguments, {
-                    stdio: ['ignore', 'pipe', process.stdout],
-                });
-                // FIXME: Track running and available separately
-                running = true;
+        if (portPromise !== null) {
+            // Process is already started, return the existing promise
+            return portPromise;
+        }
 
-                // Assume the backend is listening as soon as output is received
-                main.stdout.on('data', outputBuf => {
-                    let output = outputBuf.toString();
-                    resolve();
-                });
+        portPromise = new Promise(function (resolve, reject) {
+            const main = spawn('./' + executable, execArguments, {
+                stdio: ['ignore', process.stdout, process.stdout, 'pipe'],
+            });
+            const communication = main.stdio[3];
 
-                main.on('exit', function (code) {
-                    if (running) {
-                        running = false;
+            // Get the port number to connect to from the backend
+            communication.on('data', portBuf => {
+                let portStr = portBuf.toString();
+                resolve(parseInt(portStr, 10));
+            });
 
-                        console.error("Child process exited with code " + code);
-                    }
-                });
+            main.on('exit', function (code) {
+                if (portPromise) {
+                    portPromise = null;
 
-                main.on('error', function (err) {
-                    if (running) {
-                        running = false;
+                    console.error("Child process exited with code " + code);
+                }
+            });
 
-                        console.error("Child process error: " + err);
-                    }
-                });
-            }
+            main.on('error', function (err) {
+                if (portPromise) {
+                    portPromise = null;
+
+                    console.error("Child process error: " + err);
+                }
+            });
         });
+
+        return portPromise;
     }
 
     return function (event, context, callback) {
@@ -63,12 +61,12 @@ function wrapper(options) {
         context.callbackWaitsForEmptyEventLoop = false;
 
         // Ensure the backend is started
-        startBackend().then(() => {
+        startBackend().then(port => {
             // Keep track of the data sent via socket
             let output = '';
 
             // Open a new connection to the persistent process
-            const client = net.createConnection({ port: PORT }, function () {
+            const client = net.createConnection({ port }, function () {
                 // Accumulate the process output
                 client.on('data', chunk => output += chunk);
 
