@@ -105,7 +105,7 @@ lambdaMain' act = do
   hFlush commHandle
   forever $ do
     (socket, _, _) <- accept listenSocket
-    forkIO $ finally (handleEvent socket socket act) (hClose socket)
+    forkIO $ finally (handleEvent socket socket act) (hFlush stdout >> hClose socket)
 
 -- | Run the action outside the AWS Lambda, using the process' standard input
 -- and standard output.
