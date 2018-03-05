@@ -22,7 +22,7 @@ RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
 # Temporary directory to create a project in
 DIR=$(mktemp -d)
 echo "Testing in $DIR"
-trap "(sls --no-color remove || true); rm -rf $DIR" EXIT
+trap "(sls remove || true); rm -rf $DIR" EXIT
 cd $DIR
 
 NAME=s-h-test-$(pwgen 10 -0 -A)
