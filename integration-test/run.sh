@@ -49,6 +49,6 @@ diff $TEST/expected/output.json output.json && echo "Expected result verified."
 
 # Wait for the logs to be propagated and verify them
 sleep 10
-sls logs --function $NAME | grep -v RequestId > logs.txt
+sls logs --function $NAME | grep -v RequestId | grep . > logs.txt
 
 diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
