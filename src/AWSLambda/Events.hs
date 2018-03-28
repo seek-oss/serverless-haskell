@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module AWSLambda.Events where
@@ -5,6 +6,7 @@ module AWSLambda.Events where
 import           Control.Applicative           ((<|>))
 import           Control.Lens.TH
 import           Data.Aeson                    (FromJSON (..), Value)
+import           Network.AWS.Data.Text         (FromText)
 
 import           AWSLambda.Events.KinesisEvent
 import           AWSLambda.Events.S3Event
@@ -82,7 +84,7 @@ data LambdaEvent snsMessage
 -- | Attempt to parse the various event types.
 -- Any valid JSON that can't be parsed as a specific
 -- event type will result in a 'Custom' value.
-instance FromJSON snsMessage =>
+instance FromText snsMessage =>
          FromJSON (LambdaEvent snsMessage) where
   parseJSON v =
     try S3 v <|> try KinesisStream v <|> try SNS v <|> pure (Custom v)

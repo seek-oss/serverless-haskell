@@ -8,6 +8,12 @@ provider:
 functions:
   hello:
     handler: serverless-haskell-example.example-exe
+  apigw:
+    handler: serverless-haskell-example.api-exe
+    events:
+      - http:
+          path: hello/{name}
+          method: get
 
 plugins:
   - serverless-haskell

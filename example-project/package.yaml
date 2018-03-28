@@ -20,3 +20,17 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - serverless-haskell
+
+  api-exe:
+    main:                Main.hs
+    source-dirs:         apigw-app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - aeson
+    - lens
+    - serverless-haskell
+    - text
+    - unordered-containers

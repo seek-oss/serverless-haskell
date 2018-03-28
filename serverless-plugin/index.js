@@ -5,6 +5,8 @@ const fs = require('fs-extra');
 const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
+const PACKAGE_NAME = 'serverless-haskell';
+
 const ADDITIONAL_EXCLUDE = [
     '.stack-work/**',
     'node_modules/**',
@@ -90,6 +92,36 @@ class ServerlessPlugin {
 
     beforeCreateDeploymentArtifacts() {
         const service = this.serverless.service;
+
+        // Check that the Haskell package version corresponds to our own
+        const haskellPackageVersions = this.runStack(
+            [
+                'list-dependencies',
+                '--depth', '1',
+            ],
+            true
+        ).stdout.toString('utf8').trim().split('\n')
+              .reduce((packageDict, str) => {
+                  let [packageName, version] = str.split(' ');
+                  packageDict[packageName] = version;
+                  return packageDict;
+              }, {});
+        const haskellPackageVersion =
+              haskellPackageVersions[PACKAGE_NAME];
+
+        const javascriptPackageVersion = JSON.parse(spawnSync(
+            'npm',
+            [
+                'list',
+                PACKAGE_NAME,
+                '--json',
+            ]
+        ).stdout)['dependencies'][PACKAGE_NAME]['version'];
+
+        if (haskellPackageVersion != javascriptPackageVersion) {
+            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly.`);
+            throw new Error("Package version mismatch.");
+        }
 
         // Exclude Haskell artifacts from uploading
         service.package.exclude = service.package.exclude || [];

@@ -1,7 +1,7 @@
 name:                serverless-haskell
 category:            AWS, Cloud, Network
 maintainer:          akotlyarov@seek.com.au
-version:             '0.4.0'
+version:             '0.4.2'
 github:              seek-oss/serverless-haskell
 license:             MIT
 synopsis:            Deploying Haskell code onto AWS Lambda using Serverless
@@ -13,10 +13,12 @@ dependencies:
   - base >= 4.7 && < 5
   - aeson
   - aeson-casing
+  - aeson-extra
   - amazonka-core
   - amazonka-kinesis
   - amazonka-s3
   - bytestring
+  - case-insensitive
   - lens
   - network
   - text
@@ -32,6 +34,7 @@ tests:
   tests:
     main: Spec.hs
     source-dirs: test
+    ghc-options: -Wall
     dependencies:
       - serverless-haskell
       - hspec
