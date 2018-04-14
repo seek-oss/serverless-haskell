@@ -72,6 +72,7 @@ class ServerlessPlugin {
                 this.docker.haveImage = true;
             }
             dockerArgs.push('--docker');
+            dockerArgs.push('--no-nix');
         }
         return spawnSync(
             'stack',
