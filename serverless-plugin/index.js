@@ -116,16 +116,14 @@ class ServerlessPlugin {
 
         service.getAllFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
-            const handlerPattern = /((.*\/))?([^\./]*)\.(.*)/;
+            const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
 
             if (!matches) {
                 throw new Exception(`handler ${func.handler} was not of the form ${handlerPattern}`);
             }
 
-            const directory = matches[2];
-            const packageName = matches[3];
-            const executableName = matches[4];
+            const [_, directory, packageName, executableName] = matches;
 
             // Check that the Haskell package version corresponds to our own
             const haskellPackageVersions = this.runStack(
