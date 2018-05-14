@@ -105,9 +105,9 @@ class ServerlessPlugin {
         const fileName = `${packageName}.js`;
 
         if (directory) {
-            return path.resolve(directory, fileName);
+            return path.resolve(this.servicePath, directory, fileName);
         } else {
-            return fileName;
+            return path.resolve(this.servicePath, fileName);
         }
     }
 
