@@ -89,7 +89,7 @@ class ServerlessPlugin {
                 ...args,
                 ...dockerArgs,
                 ...this.custom.stackBuildArgs,
-                ...directoryArgs
+                ...directoryArgs,
             ],
             captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
