@@ -101,6 +101,36 @@ class ServerlessPlugin {
         this.additionalFiles.push(targetPath);
     }
 
+    assertServerlessPackageVersionsMatch(directory, packageName) {
+        // Check that the Haskell package version corresponds to our own
+        const haskellPackageVersions = this.runStack(
+            directory,
+            ['list-dependencies', '--depth', '1'],
+            true
+        ).stdout.toString('utf8').trim().split('\n')
+              .reduce((packageDict, str) => {
+                  let [packageName, version] = str.split(' ');
+                  packageDict[packageName] = version;
+                  return packageDict;
+              }, {});
+        const haskellPackageVersion =
+              haskellPackageVersions[PACKAGE_NAME];
+
+        const javascriptPackageVersion = JSON.parse(spawnSync(
+            'npm',
+            [
+                'list',
+                PACKAGE_NAME,
+                '--json',
+            ]
+        ).stdout)['dependencies'][PACKAGE_NAME]['version'];
+
+        if (haskellPackageVersion != javascriptPackageVersion) {
+            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly.`);
+            throw new Error("Package version mismatch.");
+        }
+    }
+
     buildHandlerFileName(directory, packageName) {
         const fileName = `${packageName}.js`;
 
@@ -111,8 +141,40 @@ class ServerlessPlugin {
         }
     }
 
+    writeHandlers(handlerOptions) {
+        const handlerTemplate = fs.readFileSync(TEMPLATE).toString('utf8');
+
+        for (const directory in handlerOptions) {
+            for (const packageName in handlerOptions[directory]) {
+                let handler = handlerTemplate + handlerOptions[directory][packageName].map(
+                    ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
+                ).join("\n") + "\n";
+                const handlerFileName = this.buildHandlerFileName(directory, packageName);
+
+                fs.writeFileSync(handlerFileName, handler);
+                this.additionalFiles.push(handlerFileName);
+            }
+        }
+    }
+
     beforeCreateDeploymentArtifacts() {
         const service = this.serverless.service;
+
+        // Exclude Haskell artifacts from uploading
+        service.package.exclude = service.package.exclude || [];
+        service.package.exclude = [
+            ...service.package.exclude,
+            ...ADDITIONAL_EXCLUDE,
+        ];
+
+        // Each package will have its own wrapper; remember its options to add
+        // to the handler template
+        const handlerOptions = {};
+
+        // Keep track of which extra libraries were copied
+        const libraries = {};
+        this.custom.extraLibraries.forEach(lib => { libraries[lib] = false; });
+        const foundLibraries = {};
 
         service.getAllFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
@@ -125,49 +187,7 @@ class ServerlessPlugin {
 
             const [_, directory, packageName, executableName] = matches;
 
-            // Check that the Haskell package version corresponds to our own
-            const haskellPackageVersions = this.runStack(
-                directory,
-                ['list-dependencies', '--depth', '1'],
-                true
-            ).stdout.toString('utf8').trim().split('\n')
-                  .reduce((packageDict, str) => {
-                      let [packageName, version] = str.split(' ');
-                      packageDict[packageName] = version;
-                      return packageDict;
-                  }, {});
-            const haskellPackageVersion =
-                  haskellPackageVersions[PACKAGE_NAME];
-
-            const javascriptPackageVersion = JSON.parse(spawnSync(
-                'npm',
-                [
-                    'list',
-                    PACKAGE_NAME,
-                    '--json',
-                ]
-            ).stdout)['dependencies'][PACKAGE_NAME]['version'];
-
-            if (haskellPackageVersion != javascriptPackageVersion) {
-                this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly.`);
-                throw new Error("Package version mismatch.");
-            }
-
-            // Exclude Haskell artifacts from uploading
-            service.package.exclude = service.package.exclude || [];
-            service.package.exclude = [
-                ...service.package.exclude,
-                ...ADDITIONAL_EXCLUDE,
-            ];
-
-            // Each package will have its own wrapper; remember its options to add
-            // to the handler template
-            const handlerOptions = {};
-
-            // Keep track of which extra libraries were copied
-            const libraries = {};
-            this.custom.extraLibraries.forEach(lib => { libraries[lib] = false; });
-            const foundLibraries = {};
+            this.assertServerlessPackageVersionsMatch(directory, packageName);
 
             //Ensure the executable is built
             this.serverless.cli.log("Building handler with Stack...");
@@ -193,8 +213,9 @@ class ServerlessPlugin {
             this.addFile(executableName, executablePath);
 
             // Remember the executable that needs to be handled by this package's shim
-            handlerOptions[packageName] = handlerOptions[packageName] || [];
-            handlerOptions[packageName].push([executableName, {
+            handlerOptions[directory] = handlerOptions[directory] || {};
+            handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
+            handlerOptions[directory][packageName].push([executableName, {
                 executable: executableName,
                 arguments: this.custom.arguments[funcName] || [],
             }]);
@@ -230,38 +251,25 @@ class ServerlessPlugin {
                     foundLibraries[name] = true;
                 });
             }
-
-            // Error if a requested extra library could not be found
-            Object.keys(libraries).forEach(name => {
-                if (!libraries[name]) {
-                    const msg = `Extra library not found: ${name}.`;
-                    this.serverless.cli.log(msg);
-                    // Show the libraries found, in case the name was misspelled
-                    const foundLibrariesStr = Object.keys(foundLibraries)
-                          .filter(l => !IGNORE_LIBRARIES.includes(l))
-                          .sort()
-                          .join(", ");
-                    this.serverless.cli.log(
-                        `Dependent libraries found: ${foundLibrariesStr}`);
-                    throw new Error(msg);
-                }
-            });
-
-            // Create a shim to start the executable and copy it to all the
-            // destination directories
-            const handlerTemplate = fs.readFileSync(TEMPLATE).toString('utf8');
-
-            Object.keys(handlerOptions).forEach(packageName => {
-                let handler = handlerTemplate + handlerOptions[packageName].map(
-                    ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
-                ).join("\n") + "\n";
-
-                const handlerFileName = this.buildHandlerFileName(directory, packageName);
-
-                fs.writeFileSync(handlerFileName, handler);
-                this.additionalFiles.push(handlerFileName);
-            });
         });
+
+        // Error if a requested extra library could not be found
+        Object.keys(libraries).forEach(name => {
+            if (!libraries[name]) {
+                const msg = `Extra library not found: ${name}.`;
+                this.serverless.cli.log(msg);
+                // Show the libraries found, in case the name was misspelled
+                const foundLibrariesStr = Object.keys(foundLibraries)
+                      .filter(l => !IGNORE_LIBRARIES.includes(l))
+                      .sort()
+                      .join(", ");
+                this.serverless.cli.log(
+                    `Dependent libraries found: ${foundLibrariesStr}`);
+                throw new Error(msg);
+            }
+        });
+
+        this.writeHandlers(handlerOptions);
     }
 
     afterCreateDeploymentArtifacts() {
