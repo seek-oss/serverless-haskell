@@ -182,7 +182,7 @@ class ServerlessPlugin {
             const matches = handlerPattern.exec(func.handler);
 
             if (!matches) {
-                throw new Exception(`handler ${func.handler} was not of the form 'packageName.executableName or dir1/dir2/packageName.executableName'.`);
+                throw new Exception(`handler ${func.handler} was not of the form 'packageName.executableName' or 'dir1/dir2/packageName.executableName'.`);
             }
 
             const [_, directory, packageName, executableName] = matches;
