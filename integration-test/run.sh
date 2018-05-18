@@ -48,8 +48,9 @@ sls invoke --function $NAME --data '[4, 5, 6]' > output.json
 
 diff $TEST/expected/output.json output.json && echo "Expected result verified."
 
-# Wait for the logs to be propagated and verify them
+# Wait for the logs to be propagated and verify them, ignoring volatile request
+# IDs and extra blank lines
 sleep 10
-sls logs --function $NAME | grep -v RequestId > logs.txt
+sls logs --function $NAME | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
 diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
