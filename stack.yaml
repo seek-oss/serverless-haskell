@@ -1,4 +1,12 @@
-resolver: lts-9.17
+resolver: lts-11.9
 packages:
 - .
 - example-project
+extra-deps:
+  - amazonka-core-1.6.0
+  - amazonka-kinesis-1.6.0
+  - amazonka-s3-1.6.0
+nix:
+  packages:
+    - zlib.dev
+    - zlib.out
