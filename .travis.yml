@@ -55,6 +55,7 @@ matrix:
 
   - env: BUILD=integration
     compiler: ": #integration"
+    addons: {apt: {packages: [jq, pwgen]}}
 
 before_install: source ./travis/before_install
 
