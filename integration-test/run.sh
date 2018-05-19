@@ -4,7 +4,7 @@
 
 set -e
 
-if [ "$1" == "--dry-run" ]
+if [ "$1" = "--dry-run" ]
 then
     DRY_RUN=true
 fi
