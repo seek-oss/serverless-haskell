@@ -53,6 +53,9 @@ matrix:
   - env: BUILD=npm
     compiler: ": #npm"
 
+  - env: BUILD=integration
+    compiler: ": #integration"
+
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
 - unset CC
@@ -149,6 +152,9 @@ script:
       cd serverless-plugin
       npm test
       cd -
+    integration)
+      ./integration-test/run.sh --dry-run
+      ;;
   esac
   set +ex
 
