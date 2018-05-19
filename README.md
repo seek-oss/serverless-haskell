@@ -40,7 +40,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 
   provider:
     name: aws
-    runtime: nodejs6.10
+    runtime: nodejs8.10
 
   functions:
     myfunc:

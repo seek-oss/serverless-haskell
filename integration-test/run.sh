@@ -15,9 +15,10 @@ DIST=$(cd $(dirname $0)/..; echo $PWD)
 # Directory with the integration test files
 TEST=$(cd $(dirname $0); echo $PWD)
 
-# Stackage resolver to use
+# Stackage resolver to use. LTS 11 cannot be used due to missing amazonka:
+# https://github.com/seek-oss/serverless-haskell/issues/34
 RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
-               jq -r .lts)
+               jq -r '."lts-10"')
 
 # Temporary directory to create a project in
 DIR=$(mktemp -d)
@@ -47,8 +48,9 @@ sls invoke --function $NAME --data '[4, 5, 6]' > output.json
 
 diff $TEST/expected/output.json output.json && echo "Expected result verified."
 
-# Wait for the logs to be propagated and verify them
+# Wait for the logs to be propagated and verify them, ignoring volatile request
+# IDs and extra blank lines
 sleep 10
-sls logs --function $NAME | grep -v RequestId > logs.txt
+sls logs --function $NAME | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
 diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
