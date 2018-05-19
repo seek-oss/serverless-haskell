@@ -18,6 +18,6 @@ custom:
       - one
       - two
       - --three
-    docker: true
+    docker: DOCKER
     extraLibraries:
     - libpcre.so.3
