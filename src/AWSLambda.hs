@@ -21,7 +21,7 @@ To deploy a Haskell function on AWS Lambda:
   >
   > provider:
   >   name: aws
-  >   runtime: nodejs6.10
+  >   runtime: nodejs8.10
   >
   > functions:
   >   myfunc:
