@@ -56,11 +56,11 @@ matrix:
   - env: BUILD=integration
     compiler: ": #integration"
 
-before_install: ./travis/before_install
+before_install: source ./travis/before_install
 
-install: ./travis/install
+install: source ./travis/install
 
-script: ./travis/build
+script: source ./travis/build
 
 deploy:
   provider: script
