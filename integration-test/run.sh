@@ -1,7 +1,13 @@
 #!/bin/sh
-# Test deploying a function to AWS and running it.
+# Test packaging a function, deploying it to AWS and running it. With --dry-run,
+# only packaging is tested.
 
 set -e
+
+if [ "$1" == "--dry-run" ]
+then
+    DRY_RUN=true
+fi
 
 for DEPENDENCY in curl jq npm pwgen stack
 do
@@ -23,7 +29,12 @@ RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
 # Temporary directory to create a project in
 DIR=$(mktemp -d)
 echo "Testing in $DIR"
-trap "(sls --no-color remove || true); rm -rf $DIR" EXIT
+if $DRY_RUN
+then
+    trap "rm -rf $DIR" EXIT
+else
+    trap "(sls --no-color remove || true); rm -rf $DIR" EXIT
+fi
 cd $DIR
 
 NAME=s-h-test-$(pwgen 10 -0 -A)
@@ -41,16 +52,22 @@ export PATH=$(npm bin):$PATH
 npm install serverless
 npm install $DIST/serverless-plugin
 
-sls deploy
+if $DRY_RUN
+then
+    sls package
+    echo "Packaging verified."
+else
+    sls deploy
 
-# Run the function and verify the results
-sls invoke --function $NAME --data '[4, 5, 6]' > output.json
+    # Run the function and verify the results
+    sls invoke --function $NAME --data '[4, 5, 6]' > output.json
 
-diff $TEST/expected/output.json output.json && echo "Expected result verified."
+    diff $TEST/expected/output.json output.json && echo "Expected result verified."
 
-# Wait for the logs to be propagated and verify them, ignoring volatile request
-# IDs and extra blank lines
-sleep 10
-sls logs --function $NAME | grep -v RequestId | grep -v '^\W*$' > logs.txt
+    # Wait for the logs to be propagated and verify them, ignoring volatile request
+    # IDs and extra blank lines
+    sleep 10
+    sls logs --function $NAME | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
-diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
+    diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
+fi
