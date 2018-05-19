@@ -31,6 +31,6 @@ case "$BUILD" in
         cd -
         ;;
     integration)
-        ./integration-test/run.sh --dry-run
+        ./integration-test/run.sh --dry-run --no-docker
         ;;
 esac

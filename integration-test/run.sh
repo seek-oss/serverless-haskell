@@ -1,13 +1,26 @@
 #!/bin/sh
 # Test packaging a function, deploying it to AWS and running it. With --dry-run,
-# only packaging is tested.
+# only packaging is tested. With --no-docker, Docker isn't used for packaging.
 
 set -e
 
-if [ "$1" = "--dry-run" ]
-then
-    DRY_RUN=true
-fi
+DOCKER=true
+while [ $# -gt 0 ]
+do
+    case "$1" in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --no-docker)
+            DOCKER=false
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
 
 for DEPENDENCY in curl jq npm pwgen stack
 do
@@ -40,7 +53,7 @@ cd $DIR
 NAME=s-h-test-$(pwgen 10 -0 -A)
 
 # Copy the test files over, replacing the values
-SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g"
+SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g"
 for FILE in Main.hs package.json package.yaml serverless.yml stack.yaml
 do
     $SED < $TEST/$FILE > $FILE
