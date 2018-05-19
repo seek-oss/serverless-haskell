@@ -29,3 +29,5 @@ if [ "$CABALVER" != "1.16" ]
 then
     echo 'jobs: $ncpus' >> $HOME/.cabal/config
 fi
+
+set +ex

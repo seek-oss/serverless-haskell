@@ -36,3 +36,5 @@ npm)
 integration)
     ;;
 esac
+
+set +ex

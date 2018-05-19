@@ -34,3 +34,5 @@ case "$BUILD" in
         ./integration-test/run.sh --dry-run --no-docker
         ;;
 esac
+
+set +ex
