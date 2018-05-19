@@ -96,13 +96,18 @@ for documentation, including additional options to control the deployment.
 
 ### Integration tests
 
-Integration tests are not run automatically due to the need for an AWS account.
-To run them manually:
+Integration test verifies that the project can build and deploy a complete
+function to AWS, and it runs with expected functionality.
+
+Integration test is only automatically run up to deployment due to the need for
+an AWS account. To run manually:
 
 * Ensure you have the required dependencies: `curl`, [jq], [NPM], `pwgen` and
   [Stack].
 * Get an AWS account and add the access credentials into your shell environment.
 * Run `./integration-test/run.sh`. The exit code indicates success.
+* To verify just the packaging, without deployment, run
+  `./integration-test/run.sh --dry-run`.
 
 ## Releasing
 
