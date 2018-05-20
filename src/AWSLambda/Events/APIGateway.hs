@@ -11,7 +11,7 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 -}
 module AWSLambda.Events.APIGateway where
 
-import           Control.Lens hiding ((.=))
+import           Control.Lens            hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Casing       (aesonDrop, camelCase)
 import           Data.Aeson.TH           (deriveFromJSON)
@@ -23,7 +23,7 @@ import           Data.ByteString         (ByteString)
 import qualified Data.CaseInsensitive    as CI
 import           Data.HashMap.Strict     (HashMap)
 import qualified Data.HashMap.Strict     as HashMap
-import           Data.Text               (splitOn, Text)
+import           Data.Text               (Text, splitOn)
 import qualified Data.Text               as Text
 import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 import           Data.Text.Read          (decimal)
@@ -31,7 +31,7 @@ import           Data.Word               (Word8)
 import           GHC.Generics            (Generic)
 import           Network.AWS.Data.Base64
 import           Network.AWS.Data.Text
-import qualified Network.HTTP.Types          as HTTP
+import qualified Network.HTTP.Types      as HTTP
 
 import           AWSLambda.Handler       (lambdaMain)
 
