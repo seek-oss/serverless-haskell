@@ -10,6 +10,8 @@ import qualified Data.Text             as Text
 import           Network.AWS.Data.Text (fromText)
 import qualified Network.AWS.S3        as S3
 
+deriving instance FromJSON S3.BucketName
+
 deriving instance FromJSON S3.ObjectKey
 
 instance FromJSON S3.ETag where
