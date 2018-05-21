@@ -19,6 +19,7 @@ dependencies:
   - amazonka-s3
   - bytestring
   - case-insensitive
+  - http-types
   - lens
   - text
   - time
