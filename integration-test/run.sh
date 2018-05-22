@@ -69,7 +69,7 @@ export PATH=$(npm bin):$PATH
 npm install serverless
 npm install $DIST/serverless-plugin
 
-if $DRY_RUN
+if [ "$DRY_RUN" = "true" ]
 then
     sls package
     echo "Packaging verified."
