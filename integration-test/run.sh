@@ -54,8 +54,9 @@ NAME=s-h-test-$(pwgen 10 -0 -A)
 
 # Copy the test files over, replacing the values
 SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g"
-for FILE in Main.hs package.json package.yaml serverless.yml stack.yaml
+for FILE in $(find $TEST -type f | grep -v run.sh | grep -v expected | grep -v /\\. | sed "s!$TEST/!!")
 do
+    mkdir -p $(dirname $FILE)
     $SED < $TEST/$FILE > $FILE
 done
 
@@ -73,14 +74,20 @@ else
     sls deploy
 
     # Run the function and verify the results
-    sls invoke --function $NAME --data '[4, 5, 6]' > output.json
+    sls invoke --function main --data '[4, 5, 6]' > output.json
 
     diff $TEST/expected/output.json output.json && echo "Expected result verified."
+
+    # Run the function from the subdirectory and verify the result
+    sls invoke --function subdir --data '{}' > subdir_output.json
+
+    diff $TEST/expected/subdir_output.json subdir_output.json && \
+        echo "Expected result verified from subdir function."
 
     # Wait for the logs to be propagated and verify them, ignoring volatile request
     # IDs and extra blank lines
     sleep 10
-    sls logs --function $NAME | grep -v RequestId | grep -v '^\W*$' > logs.txt
+    sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
     diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
 fi
