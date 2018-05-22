@@ -154,9 +154,9 @@ class ServerlessPlugin {
     }
 
     addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName) {
-	const directoryToAdd = directory ? directory : ".";
+        const directoryToAdd = directory ? directory : ".";
 
-	// Remember the executable that needs to be handled by this package's shim
+        // Remember the executable that needs to be handled by this package's shim
         handlerOptions[directoryToAdd] = handlerOptions[directoryToAdd] || {};
         handlerOptions[directoryToAdd][packageName] = handlerOptions[directoryToAdd][packageName] || [];
         handlerOptions[directoryToAdd][packageName].push([executableName, {
@@ -219,7 +219,7 @@ class ServerlessPlugin {
             ).stdout.toString('utf8').trim();
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
             this.addFile(executableName, executablePath);
-	    this.addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName);
+            this.addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName);
 
             // Copy specified extra libraries, if needed
             if (this.custom.extraLibraries.length > 0) {
