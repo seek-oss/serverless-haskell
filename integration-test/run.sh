@@ -31,8 +31,11 @@ done
 # Root directory of the repository
 DIST=$(cd $(dirname $0)/..; echo $PWD)
 
-# Directory with the integration test files
-TEST=$(cd $(dirname $0); echo $PWD)
+# Directory with the test project skeleton
+SKELETON=$(cd $(dirname $0)/skeleton; echo $PWD)
+
+# Directory with the expected outputs
+EXPECTED=$(cd $(dirname $0)/expected; echo $PWD)
 
 # Stackage resolver to use. LTS 11 cannot be used due to missing amazonka:
 # https://github.com/seek-oss/serverless-haskell/issues/34
@@ -54,10 +57,10 @@ NAME=s-h-test-$(pwgen 10 -0 -A)
 
 # Copy the test files over, replacing the values
 SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g"
-for FILE in $(find $TEST -type f | grep -v run.sh | grep -v expected | grep -v /\\. | sed "s!$TEST/!!")
+for FILE in $(find $SKELETON -type f | grep -v /\\. | sed "s!$SKELETON/!!")
 do
     mkdir -p $(dirname $FILE)
-    $SED < $TEST/$FILE > $FILE
+    $SED < $SKELETON/$FILE > $FILE
 done
 
 export PATH=$(npm bin):$PATH
@@ -76,12 +79,12 @@ else
     # Run the function and verify the results
     sls invoke --function main --data '[4, 5, 6]' > output.json
 
-    diff $TEST/expected/output.json output.json && echo "Expected result verified."
+    diff $EXPECTED/output.json output.json && echo "Expected result verified."
 
     # Run the function from the subdirectory and verify the result
     sls invoke --function subdir --data '{}' > subdir_output.json
 
-    diff $TEST/expected/subdir_output.json subdir_output.json && \
+    diff $EXPECTED/subdir_output.json subdir_output.json && \
         echo "Expected result verified from subdir function."
 
     # Wait for the logs to be propagated and verify them, ignoring volatile request
@@ -89,5 +92,5 @@ else
     sleep 10
     sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
-    diff $TEST/expected/logs.txt logs.txt && echo "Expected output verified."
+    diff $EXPECTED/logs.txt logs.txt && echo "Expected output verified."
 fi
