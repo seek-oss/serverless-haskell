@@ -81,16 +81,16 @@ else
 
     diff $EXPECTED/output.json output.json && echo "Expected result verified."
 
-    # Run the function from the subdirectory and verify the result
-    sls invoke --function subdir --data '{}' > subdir_output.json
-
-    diff $EXPECTED/subdir_output.json subdir_output.json && \
-        echo "Expected result verified from subdir function."
-
     # Wait for the logs to be propagated and verify them, ignoring volatile request
     # IDs and extra blank lines
     sleep 10
     sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
     diff $EXPECTED/logs.txt logs.txt && echo "Expected output verified."
+
+    # Run the function from the subdirectory and verify the result
+    sls invoke --function subdir --data '{}' > subdir_output.json
+
+    diff $EXPECTED/subdir_output.json subdir_output.json && \
+        echo "Expected result verified from subdir function."
 fi

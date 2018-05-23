@@ -17,7 +17,7 @@ plugins:
 custom:
   haskell:
     arguments:
-      NAME:
+      main:
       - one
       - two
       - --three
