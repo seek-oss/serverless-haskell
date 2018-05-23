@@ -95,12 +95,6 @@ class ServerlessPlugin {
         );
     }
 
-    addFile(fileName, filePath) {
-        const targetPath = path.resolve(this.servicePath, fileName);
-        copyFileSync(filePath, targetPath);
-        this.additionalFiles.push(targetPath);
-    }
-
     assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
         const haskellPackageVersions = this.runStack(
@@ -154,13 +148,11 @@ class ServerlessPlugin {
     }
 
     addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName) {
-        const directoryToAdd = directory ? directory : ".";
-
         // Remember the executable that needs to be handled by this package's shim
-        handlerOptions[directoryToAdd] = handlerOptions[directoryToAdd] || {};
-        handlerOptions[directoryToAdd][packageName] = handlerOptions[directoryToAdd][packageName] || [];
-        handlerOptions[directoryToAdd][packageName].push([executableName, {
-            executable: executableName,
+        handlerOptions[directory] = handlerOptions[directory] || {};
+        handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
+        handlerOptions[directory][packageName].push([executableName, {
+            executable: path.join(directory, executableName),
             arguments: this.custom.arguments[funcName] || [],
         }]);
     }
@@ -217,9 +209,12 @@ class ServerlessPlugin {
                 ],
                 true
             ).stdout.toString('utf8').trim();
+            const targetDirectory = directory ? directory : ".";
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
-            this.addFile(executableName, executablePath);
-            this.addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName);
+            const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
+            copyFileSync(executablePath, targetPath);
+            this.additionalFiles.push(targetPath);
+            this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
             // Copy specified extra libraries, if needed
             if (this.custom.extraLibraries.length > 0) {
