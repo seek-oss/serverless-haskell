@@ -11,20 +11,27 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 -}
 module AWSLambda.Events.APIGateway where
 
-import           Control.Lens
+import           Control.Lens            hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Casing       (aesonDrop, camelCase)
 import           Data.Aeson.TH           (deriveFromJSON)
 -- import           Data.CaseInsensitive (CI (..))
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
+import           Data.Aeson.Types        (Parser)
 import           Data.ByteString         (ByteString)
+import qualified Data.CaseInsensitive    as CI
 import           Data.HashMap.Strict     (HashMap)
 import qualified Data.HashMap.Strict     as HashMap
+import           Data.IP
 import           Data.Text               (Text)
+import qualified Data.Text               as Text
+import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 import           GHC.Generics            (Generic)
 import           Network.AWS.Data.Base64
 import           Network.AWS.Data.Text
+import qualified Network.HTTP.Types      as HTTP
+import           Text.Read
 
 import           AWSLambda.Handler       (lambdaMain)
 
@@ -45,7 +52,7 @@ data RequestIdentity = RequestIdentity
   , _riCognitoIdentityId             :: !(Maybe Text)
   , _riCaller                        :: !(Maybe Text)
   , _riApiKey                        :: !(Maybe Text)
-  , _riSourceIp                      :: !(Maybe Text)
+  , _riSourceIp                      :: !(Maybe IP)
   , _riCognitoAuthenticationType     :: !(Maybe Text)
   , _riCognitoAuthenticationProvider :: !(Maybe Text)
   , _riUserArn                       :: !(Maybe Text)
@@ -53,7 +60,25 @@ data RequestIdentity = RequestIdentity
   , _riUser                          :: !(Maybe Text)
   } deriving (Eq, Show)
 
-$(deriveFromJSON (aesonDrop 3 camelCase) ''RequestIdentity)
+readParse :: Read a => String -> Text -> Parser a
+readParse msg str =
+  case readMaybe (Text.unpack str) of
+    Just result -> pure result
+    Nothing     -> fail $ "Failed to parse an " ++ msg
+
+instance FromJSON RequestIdentity where
+  parseJSON =
+    withObject "RequestIdentity" $ \o ->
+      RequestIdentity <$> o .:? "cognitoIdentityPoolId" <*> o .:? "accountId" <*>
+      o .:? "cognitoIdentityId" <*>
+      o .:? "caller" <*>
+      o .:? "apiKey" <*>
+      (o .:? "sourceIp" >>= traverse (readParse "IP address")) <*>
+      o .:? "cognitoAuthenticationType" <*>
+      o .:? "cognitoAuthenticationProvider" <*>
+      o .:? "userArn" <*>
+      o .:? "userAgent" <*>
+      o .:? "user"
 $(makeLenses ''RequestIdentity)
 
 data ProxyRequestContext = ProxyRequestContext
@@ -66,16 +91,17 @@ data ProxyRequestContext = ProxyRequestContext
   , _prcResourcePath :: !Text
   , _prcHttpMethod   :: !Text
   , _prcApiId        :: !Text
+  , _prcProtocol     :: !Text
   } deriving (Eq, Show)
 $(deriveFromJSON (aesonDrop 4 camelCase) ''ProxyRequestContext)
 $(makeLenses ''ProxyRequestContext)
 
 data APIGatewayProxyRequest body = APIGatewayProxyRequest
   { _agprqResource              :: !Text
-  , _agprqPath                  :: !Text
-  , _agprqHttpMethod            :: !Method
-  , _agprqHeaders               :: !(HashMap HeaderName HeaderValue)
-  , _agprqQueryStringParameters :: !(HashMap QueryParamName QueryParamValue)
+  , _agprqPath                  :: !ByteString
+  , _agprqHttpMethod            :: !HTTP.Method
+  , _agprqHeaders               :: !HTTP.RequestHeaders
+  , _agprqQueryStringParameters :: !HTTP.Query
   , _agprqPathParameters        :: !(HashMap PathParamName PathParamValue)
   , _agprqStageVariables        :: !(HashMap StageVarName StageVarValue)
   , _agprqRequestContext        :: !ProxyRequestContext
@@ -86,15 +112,25 @@ instance FromText body => FromJSON (APIGatewayProxyRequest body) where
   parseJSON = withObject "APIGatewayProxyRequest" $ \o ->
     APIGatewayProxyRequest
     <$> o .: "resource"
-    <*> o .: "path"
-    <*> o .: "httpMethod"
-    <*> o .:? "headers" .!= HashMap.empty
-    <*> o .:? "queryStringParameters" .!= HashMap.empty
+    <*> (encodeUtf8 <$> o .: "path")
+    <*> (encodeUtf8 <$> o .: "httpMethod")
+    <*> (fmap fromAWSHeaders <$> o .:? "headers") .!= mempty
+    <*> (fmap fromAWSQuery <$> o .:? "queryStringParameters") .!= mempty
     <*> o .:? "pathParameters" .!= HashMap.empty
     <*> o .:? "stageVariables" .!= HashMap.empty
     <*> o .: "requestContext"
     <*> o .:? "body"
-
+    where
+      -- Explicit type signatures so that we don't accidentally tell Aeson
+      -- to try to parse the wrong sort of structure
+      fromAWSHeaders :: HashMap HeaderName HeaderValue -> HTTP.RequestHeaders
+      fromAWSHeaders = fmap toHeader . HashMap.toList
+        where
+          toHeader = bimap (CI.mk . encodeUtf8) encodeUtf8
+      fromAWSQuery :: HashMap QueryParamName QueryParamValue -> HTTP.Query
+      fromAWSQuery = fmap toQueryItem . HashMap.toList
+        where
+          toQueryItem = bimap encodeUtf8 (\x -> if Text.null x then Nothing else Just . encodeUtf8 $ x)
 
 $(makeLenses ''APIGatewayProxyRequest)
 
@@ -112,20 +148,39 @@ requestBodyBinary = requestBody . mapping _Base64
 
 data APIGatewayProxyResponse body = APIGatewayProxyResponse
   { _agprsStatusCode :: !Int
-  , _agprsHeaders    :: !(HashMap HeaderName HeaderValue)
+  , _agprsHeaders    :: !HTTP.ResponseHeaders
   , _agprsBody       :: !(Maybe (TextValue body))
   } deriving (Eq, Show, Generic)
 
 instance ToText body => ToJSON (APIGatewayProxyResponse body) where
-  toJSON = genericToJSON $ aesonDrop 6 camelCase
+  toJSON APIGatewayProxyResponse {..} =
+    object
+      [ "statusCode" .= _agprsStatusCode
+      , "headers" .= toAWSHeaders _agprsHeaders
+      , "body" .= _agprsBody
+      ]
+    where
+      toAWSHeaders :: HTTP.ResponseHeaders -> HashMap HeaderName HeaderValue
+      toAWSHeaders = HashMap.fromList . fmap (bimap (decodeUtf8 . CI.original) decodeUtf8)
 
 instance FromText body => FromJSON (APIGatewayProxyResponse body) where
-  parseJSON = genericParseJSON $ aesonDrop 6 camelCase
+  parseJSON =
+    withObject "APIGatewayProxyResponse" $ \o ->
+      APIGatewayProxyResponse <$> o .: "statusCode" <*>
+      (fromAWSHeaders <$> o .: "headers") <*>
+      o .:? "body"
+      -- Explicit type signatures so that we don't accidentally tell Aeson
+      -- to try to parse the wrong sort of structure
+    where
+      fromAWSHeaders :: HashMap HeaderName HeaderValue -> HTTP.RequestHeaders
+      fromAWSHeaders = fmap toHeader . HashMap.toList
+        where
+          toHeader = bimap (CI.mk . encodeUtf8) encodeUtf8
 
 $(makeLenses ''APIGatewayProxyResponse)
 
 response :: Int -> APIGatewayProxyResponse body
-response statusCode = APIGatewayProxyResponse statusCode HashMap.empty Nothing
+response statusCode = APIGatewayProxyResponse statusCode mempty Nothing
 
 responseOK :: APIGatewayProxyResponse body
 responseOK = response 200

@@ -19,6 +19,8 @@ dependencies:
   - amazonka-s3
   - bytestring
   - case-insensitive
+  - http-types
+  - iproute
   - lens
   - text
   - time
