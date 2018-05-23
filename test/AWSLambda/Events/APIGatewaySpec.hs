@@ -55,6 +55,7 @@ sampleGetRequestJSON = [r|
     "resourceId": "us4z18",
     "stage": "test",
     "requestId": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
+    "protocol": "HTTP/1.1",
     "identity": {
       "cognitoIdentityPoolId": "",
       "accountId": "",
@@ -90,7 +91,6 @@ sampleGetRequest =
   , _agprqPath = "/test/hello"
   , _agprqHttpMethod = "GET"
   , _agprqHeaders =
-    HashMap.fromList
       [ ("X-Forwarded-Proto", "https")
       , ("CloudFront-Is-Desktop-Viewer", "true")
       , ( "Accept"
@@ -113,7 +113,7 @@ sampleGetRequest =
         , "1.1 fb7cca60f0ecd82ce07790c9c5eef16c.cloudfront.net (CloudFront)")
       , ("X-Forwarded-For", "192.168.100.1, 192.168.1.1")
       ]
-  , _agprqQueryStringParameters = HashMap.fromList [("name", "me")]
+  , _agprqQueryStringParameters = [("name", Just "me")]
   , _agprqPathParameters = HashMap.fromList [("proxy", "hello")]
   , _agprqStageVariables = HashMap.fromList [("stageVarName", "stageVarValue")]
   , _agprqRequestContext =
@@ -130,7 +130,7 @@ sampleGetRequest =
       , _riCognitoIdentityId = Just ""
       , _riCaller = Just ""
       , _riApiKey = Just ""
-      , _riSourceIp = Just "192.168.100.1"
+      , _riSourceIp = (192, 168, 100, 1)
       , _riCognitoAuthenticationType = Just ""
       , _riCognitoAuthenticationProvider = Just ""
       , _riUserArn = Just ""
@@ -141,6 +141,7 @@ sampleGetRequest =
     , _prcResourcePath = "/{proxy+}"
     , _prcHttpMethod = "GET"
     , _prcApiId = "wt6mne2s9k"
+    , _prcProtocol = "HTTP/1.1"
     }
   , _agprqBody = Nothing
   }
@@ -176,7 +177,7 @@ sampleOKResponse :: APIGatewayProxyResponse Text
 sampleOKResponse =
   responseOK
   & responseBody ?~ "Hello World"
-  & agprsHeaders .~ HashMap.fromList
+  & agprsHeaders .~
     [ ("X-Forwarded-Proto", "https")
     , ("CloudFront-Is-Desktop-Viewer", "true")
     , ( "Accept"
