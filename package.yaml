@@ -20,6 +20,7 @@ dependencies:
   - bytestring
   - case-insensitive
   - http-types
+  - iproute
   - lens
   - text
   - time

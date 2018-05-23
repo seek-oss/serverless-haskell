@@ -23,15 +23,15 @@ import           Data.ByteString         (ByteString)
 import qualified Data.CaseInsensitive    as CI
 import           Data.HashMap.Strict     (HashMap)
 import qualified Data.HashMap.Strict     as HashMap
-import           Data.Text               (Text, splitOn)
+import           Data.IP
+import           Data.Text               (Text)
 import qualified Data.Text               as Text
 import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
-import           Data.Text.Read          (decimal)
-import           Data.Word               (Word8)
 import           GHC.Generics            (Generic)
 import           Network.AWS.Data.Base64
 import           Network.AWS.Data.Text
 import qualified Network.HTTP.Types      as HTTP
+import           Text.Read
 
 import           AWSLambda.Handler       (lambdaMain)
 
@@ -52,7 +52,7 @@ data RequestIdentity = RequestIdentity
   , _riCognitoIdentityId             :: !(Maybe Text)
   , _riCaller                        :: !(Maybe Text)
   , _riApiKey                        :: !(Maybe Text)
-  , _riSourceIp                      :: !(Word8, Word8, Word8, Word8)
+  , _riSourceIp                      :: !(Maybe IP)
   , _riCognitoAuthenticationType     :: !(Maybe Text)
   , _riCognitoAuthenticationProvider :: !(Maybe Text)
   , _riUserArn                       :: !(Maybe Text)
@@ -60,31 +60,25 @@ data RequestIdentity = RequestIdentity
   , _riUser                          :: !(Maybe Text)
   } deriving (Eq, Show)
 
+readParse :: Read a => String -> Text -> Parser a
+readParse msg str =
+  case readMaybe (Text.unpack str) of
+    Just result -> pure result
+    Nothing     -> fail $ "Failed to parse an " ++ msg
+
 instance FromJSON RequestIdentity where
-  parseJSON = withObject "RequestIdentity" $ \o ->
-    RequestIdentity
-    <$> o .:? "cognitoIdentityPoolId"
-    <*> o .:? "accountId"
-    <*> o .:? "cognitoIdentityId"
-    <*> o .:? "caller"
-    <*> o .:? "apiKey"
-    <*> (parseIP =<< o.: "sourceIp")
-    <*> o.:? "cognitoAuthenticationType"
-    <*> o.:? "cognitoAuthenticationProvider"
-    <*> o.:? "userArn"
-    <*> o.:? "userAgent"
-    <*> o.:? "user"
-    where
-      parseIP :: Text -> Parser (Word8, Word8, Word8, Word8)
-      parseIP t =
-        case splitOn "." t of
-          [a, b, c, d] -> either fail pure $ do
-            a' <- fst <$> decimal a
-            b' <- fst <$> decimal b
-            c' <- fst <$> decimal c
-            d' <- fst <$> decimal d
-            pure (a', b', c', d')
-          _ -> fail "String not IP format"
+  parseJSON =
+    withObject "RequestIdentity" $ \o ->
+      RequestIdentity <$> o .:? "cognitoIdentityPoolId" <*> o .:? "accountId" <*>
+      o .:? "cognitoIdentityId" <*>
+      o .:? "caller" <*>
+      o .:? "apiKey" <*>
+      (o .:? "sourceIp" >>= traverse (readParse "IP address")) <*>
+      o .:? "cognitoAuthenticationType" <*>
+      o .:? "cognitoAuthenticationProvider" <*>
+      o .:? "userArn" <*>
+      o .:? "userAgent" <*>
+      o .:? "user"
 $(makeLenses ''RequestIdentity)
 
 data ProxyRequestContext = ProxyRequestContext

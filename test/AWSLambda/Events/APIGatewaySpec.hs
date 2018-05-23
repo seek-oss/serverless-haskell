@@ -9,6 +9,7 @@ import           Control.Lens
 import           Data.Aeson
 import           Data.ByteString.Lazy        (ByteString)
 import qualified Data.HashMap.Strict         as HashMap
+import           Data.IP
 import           Data.Text                   (Text)
 
 import           Text.RawString.QQ
@@ -19,10 +20,10 @@ spec :: Spec
 spec =  do
   describe "APIGatewayProxyRequest" $
     it "parses sample GET request" $
-      decode sampleGetRequestJSON `shouldBe` Just sampleGetRequest
+      eitherDecode sampleGetRequestJSON `shouldBe` Right sampleGetRequest
   describe "APIGatewayProxyResponse" $
     it "parses sample text event" $
-      decode sampleOKResponseJSON `shouldBe` Just sampleOKResponse
+      eitherDecode sampleOKResponseJSON `shouldBe` Right sampleOKResponse
 
 sampleGetRequestJSON :: ByteString
 sampleGetRequestJSON = [r|
@@ -130,7 +131,7 @@ sampleGetRequest =
       , _riCognitoIdentityId = Just ""
       , _riCaller = Just ""
       , _riApiKey = Just ""
-      , _riSourceIp = (192, 168, 100, 1)
+      , _riSourceIp = Just $ IPv4 $ toIPv4 [192, 168, 100, 1]
       , _riCognitoAuthenticationType = Just ""
       , _riCognitoAuthenticationProvider = Just ""
       , _riUserArn = Just ""
