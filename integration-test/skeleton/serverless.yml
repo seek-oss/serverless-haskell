@@ -5,8 +5,11 @@ provider:
   runtime: nodejs8.10
 
 functions:
-  NAME:
-    handler: NAME.main
+  main:
+    handler: shtest.main
+
+  subdir:
+    handler: subdir/subtest.main
 
 plugins:
 - serverless-haskell
@@ -14,7 +17,7 @@ plugins:
 custom:
   haskell:
     arguments:
-      NAME:
+      main:
       - one
       - two
       - --three
