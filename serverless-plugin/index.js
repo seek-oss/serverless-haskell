@@ -63,7 +63,8 @@ class ServerlessPlugin {
         this.additionalFiles = [];
     }
 
-    runStack(directory, args, captureOutput) {
+    runStack(directory, args, options) {
+        options = options || {};
         const dockerArgs = [];
         if (this.docker.required) {
             if (!this.docker.haveImage) {
@@ -83,7 +84,7 @@ class ServerlessPlugin {
             directoryArgs = [];
         }
 
-        return spawnSync(
+        const result = spawnSync(
             'stack',
             [
                 ...args,
@@ -91,17 +92,32 @@ class ServerlessPlugin {
                 ...this.custom.stackBuildArgs,
                 ...directoryArgs,
             ],
-            captureOutput ? {} : NO_OUTPUT_CAPTURE
+            options.captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
+
+        if (result.error || result.status > 0) {
+            this.serverless.cli.log("Stack encountered an error: " + result.stderr);
+            const error = new Error(result.error);
+            error.result = result;
+            throw error;
+        }
+
+        return result;
+    }
+
+    runStackOutput(directory, args, options) {
+        options = options || {};
+        options.captureOutput = true;
+        const result = this.runStack(directory, args, options);
+        return result.stdout.toString('utf8').trim();
     }
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
-        const haskellPackageVersions = this.runStack(
+        const haskellPackageVersions = this.runStackOutput(
             directory,
-            ['list-dependencies', '--depth', '1'],
-            true
-        ).stdout.toString('utf8').trim().split('\n')
+            ['list-dependencies', '--depth', '1']
+        ).split('\n')
               .reduce((packageDict, str) => {
                   let [packageName, version] = str.split(' ');
                   packageDict[packageName] = version;
@@ -195,20 +211,15 @@ class ServerlessPlugin {
                 directory,
                 ['build', `${packageName}:exe:${executableName}`]
             );
-            if (res.error || res.status > 0) {
-                this.serverless.cli.log("Stack build encountered an error.");
-                throw new Error(res.error);
-            }
 
             // Copy the executable to the destination directory
-            const stackInstallRoot = this.runStack(
+            const stackInstallRoot = this.runStackOutput(
                 directory,
                 [
                     'path',
                     '--local-install-root',
-                ],
-                true
-            ).stdout.toString('utf8').trim();
+                ]
+            );
             const targetDirectory = directory ? directory : ".";
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
@@ -218,16 +229,15 @@ class ServerlessPlugin {
 
             // Copy specified extra libraries, if needed
             if (this.custom.extraLibraries.length > 0) {
-                const lddOutput = this.runStack(
+                const lddOutput = this.runStackOutput(
                     directory,
                     [
                         'exec',
                         'ldd',
                         executablePath,
-                    ],
-                    true
-                ).stdout.toString('utf8');
-                const lddList = lddOutput.trim().split('\n');
+                    ]
+                );
+                const lddList = lddOutput.split('\n');
 
                 lddList.forEach(s => {
                     const [name, _, libPath] = s.trim().split(' ');
