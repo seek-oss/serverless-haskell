@@ -201,14 +201,14 @@ class ServerlessPlugin {
 
             const [_, directory, packageName, executableName] = matches;
 
-            this.assertServerlessPackageVersionsMatch(directory, packageName);
-
             //Ensure the executable is built
             this.serverless.cli.log("Building handler with Stack...");
             const res = this.runStack(
                 directory,
                 ['build', `${packageName}:exe:${executableName}`]
             );
+
+            this.assertServerlessPackageVersionsMatch(directory, packageName);
 
             // Copy the executable to the destination directory
             const stackInstallRoot = this.runStackOutput(
