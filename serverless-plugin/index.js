@@ -114,17 +114,15 @@ class ServerlessPlugin {
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
-        const haskellPackageVersions = this.runStackOutput(
+        const haskellPackageVersion = this.runStackOutput(
             directory,
-            ['list-dependencies', '--depth', '1']
-        ).split('\n')
-              .reduce((packageDict, str) => {
-                  let [packageName, version] = str.split(' ');
-                  packageDict[packageName] = version;
-                  return packageDict;
-              }, {});
-        const haskellPackageVersion =
-              haskellPackageVersions[PACKAGE_NAME];
+            [
+                'exec', '--',
+                'ghc-pkg',
+                'field', PACKAGE_NAME, 'version',
+                '--simple-output'
+            ]
+        );
 
         const javascriptPackageVersion = JSON.parse(spawnSync(
             'npm',
