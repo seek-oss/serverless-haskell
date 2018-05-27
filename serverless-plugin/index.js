@@ -65,32 +65,27 @@ class ServerlessPlugin {
 
     runStack(directory, args, options) {
         options = options || {};
-        const dockerArgs = [];
+        const envArgs = [];
         if (this.docker.required) {
             if (!this.docker.haveImage) {
                 this.serverless.cli.log("Using Stack's Docker image.");
                 spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
                 this.docker.haveImage = true;
             }
-            dockerArgs.push('--docker');
-            dockerArgs.push('--no-nix');
+            envArgs.push('--docker');
+            envArgs.push('--no-nix');
         }
 
-        var directoryArgs;
-
         if (directory) {
-            directoryArgs = ['--stack-yaml', `${directory}stack.yaml`];
-        } else {
-            directoryArgs = [];
+            envArgs.push('--stack-yaml', `${directory}stack.yaml`);
         }
 
         const result = spawnSync(
             'stack',
             [
-                ...args,
-                ...dockerArgs,
+                ...envArgs,
                 ...this.custom.stackBuildArgs,
-                ...directoryArgs,
+                ...args,
             ],
             options.captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
