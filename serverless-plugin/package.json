@@ -1,6 +1,6 @@
 {
   "name": "serverless-haskell",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Deploy Haskell binaries onto AWS Lambda",
   "main": "index.js",
   "scripts": {
