@@ -40,13 +40,17 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 
   provider:
     name: aws
-    runtime: nodejs6.10
+    runtime: nodejs8.10
 
   functions:
     myfunc:
       handler: mypackage.myfunc
       # Here, mypackage is the Haskell package name and myfunc is the executable
-      # name as defined in the Cabal file
+      # name as defined in the Cabal file. The handler field may be prefixed
+      # with a path of the form `dir1/.../dirn`, relative to `serverless.yml`,
+      # which points to the location where the Haskell package `mypackage` is
+      # defined. This prefix is not needed when the Stack project is defined at
+      # the same level as `serverless.yml`.
 
   plugins:
     - serverless-haskell
@@ -96,13 +100,18 @@ for documentation, including additional options to control the deployment.
 
 ### Integration tests
 
-Integration tests are not run automatically due to the need for an AWS account.
-To run them manually:
+Integration test verifies that the project can build and deploy a complete
+function to AWS, and it runs with expected functionality.
+
+Integration test is only automatically run up to deployment due to the need for
+an AWS account. To run manually:
 
 * Ensure you have the required dependencies: `curl`, [jq], [NPM], `pwgen` and
   [Stack].
 * Get an AWS account and add the access credentials into your shell environment.
 * Run `./integration-test/run.sh`. The exit code indicates success.
+* To verify just the packaging, without deployment, run
+  `./integration-test/run.sh --dry-run`.
 
 ## Releasing
 

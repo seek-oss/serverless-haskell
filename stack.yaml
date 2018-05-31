@@ -1,4 +1,8 @@
-resolver: lts-9.17
+resolver: lts-10.10
 packages:
 - .
 - example-project
+nix:
+  packages:
+    - zlib.dev
+    - zlib.out

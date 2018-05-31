@@ -8,7 +8,7 @@ const path = require('path');
 const PACKAGE_NAME = 'serverless-haskell';
 
 const ADDITIONAL_EXCLUDE = [
-    '.stack-work/**',
+    '**/.stack-work/**',
     'node_modules/**',
 ];
 
@@ -63,51 +63,61 @@ class ServerlessPlugin {
         this.additionalFiles = [];
     }
 
-    runStack(args, captureOutput) {
-        const dockerArgs = [];
+    runStack(directory, args, options) {
+        options = options || {};
+        const envArgs = [];
         if (this.docker.required) {
             if (!this.docker.haveImage) {
                 this.serverless.cli.log("Using Stack's Docker image.");
                 spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
                 this.docker.haveImage = true;
             }
-            dockerArgs.push('--docker');
+            envArgs.push('--docker');
+            envArgs.push('--no-nix');
         }
-        return spawnSync(
+
+        if (directory) {
+            envArgs.push('--stack-yaml', `${directory}stack.yaml`);
+        }
+
+        const result = spawnSync(
             'stack',
             [
-                ...args,
-                ...dockerArgs,
+                ...envArgs,
                 ...this.custom.stackBuildArgs,
+                ...args,
             ],
-            captureOutput ? {} : NO_OUTPUT_CAPTURE
+            options.captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
+
+        if (result.error || result.status > 0) {
+            this.serverless.cli.log("Stack encountered an error: " + result.stderr);
+            const error = new Error(result.error);
+            error.result = result;
+            throw error;
+        }
+
+        return result;
     }
 
-    addFile(fileName, filePath) {
-        const targetPath = path.resolve(this.servicePath, fileName);
-        copyFileSync(filePath, targetPath);
-        this.additionalFiles.push(targetPath);
+    runStackOutput(directory, args, options) {
+        options = options || {};
+        options.captureOutput = true;
+        const result = this.runStack(directory, args, options);
+        return result.stdout.toString('utf8').trim();
     }
 
-    beforeCreateDeploymentArtifacts() {
-        const service = this.serverless.service;
-
+    assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
-        const haskellPackageVersions = this.runStack(
+        const haskellPackageVersion = this.runStackOutput(
+            directory,
             [
-                'list-dependencies',
-                '--depth', '1',
-            ],
-            true
-        ).stdout.toString('utf8').trim().split('\n')
-              .reduce((packageDict, str) => {
-                  let [packageName, version] = str.split(' ');
-                  packageDict[packageName] = version;
-                  return packageDict;
-              }, {});
-        const haskellPackageVersion =
-              haskellPackageVersions[PACKAGE_NAME];
+                'exec', '--',
+                'ghc-pkg',
+                'field', PACKAGE_NAME, 'version',
+                '--simple-output'
+            ]
+        );
 
         const javascriptPackageVersion = JSON.parse(spawnSync(
             'npm',
@@ -122,6 +132,42 @@ class ServerlessPlugin {
             this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly.`);
             throw new Error("Package version mismatch.");
         }
+    }
+
+    buildHandlerFileName(directory, packageName) {
+        const fileName = `${packageName}.js`;
+
+        return path.resolve(this.servicePath, directory, fileName);
+    }
+
+    writeHandlers(handlerOptions) {
+        const handlerTemplate = fs.readFileSync(TEMPLATE).toString('utf8');
+
+        for (const directory in handlerOptions) {
+            for (const packageName in handlerOptions[directory]) {
+                let handler = handlerTemplate + handlerOptions[directory][packageName].map(
+                    ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
+                ).join("\n") + "\n";
+                const handlerFileName = this.buildHandlerFileName(directory, packageName);
+
+                fs.writeFileSync(handlerFileName, handler);
+                this.additionalFiles.push(handlerFileName);
+            }
+        }
+    }
+
+    addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName) {
+        // Remember the executable that needs to be handled by this package's shim
+        handlerOptions[directory] = handlerOptions[directory] || {};
+        handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
+        handlerOptions[directory][packageName].push([executableName, {
+            executable: path.join(directory, executableName),
+            arguments: this.custom.arguments[funcName] || [],
+        }]);
+    }
+
+    beforeCreateDeploymentArtifacts() {
+        const service = this.serverless.service;
 
         // Exclude Haskell artifacts from uploading
         service.package.exclude = service.package.exclude || [];
@@ -141,60 +187,63 @@ class ServerlessPlugin {
 
         service.getAllFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
+            const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
+            const matches = handlerPattern.exec(func.handler);
 
-            // Extract the package and executable name
-            const [ packageName, executableName ] = func.handler.split('.');
+            if (!matches) {
+                throw new Exception(`handler ${func.handler} was not of the form 'packageName.executableName' or 'dir1/dir2/packageName.executableName'.`);
+            }
+
+            const [_, directory, packageName, executableName] = matches;
 
             //Ensure the executable is built
             this.serverless.cli.log("Building handler with Stack...");
-            const res = this.runStack([
-                'build',
-                `${packageName}:exe:${executableName}`,
-            ]);
-            if (res.error || res.status > 0) {
-                this.serverless.cli.log("Stack build encountered an error.");
-                throw new Error(res.error);
-            }
+            const res = this.runStack(
+                directory,
+                ['build', `${packageName}:exe:${executableName}`]
+            );
+
+            this.assertServerlessPackageVersionsMatch(directory, packageName);
 
             // Copy the executable to the destination directory
-            const stackInstallRoot = this.runStack(
+            const stackInstallRoot = this.runStackOutput(
+                directory,
                 [
                     'path',
                     '--local-install-root',
-                ],
-                true
-            ).stdout.toString('utf8').trim();
+                ]
+            );
+            const targetDirectory = directory ? directory : ".";
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
-            this.addFile(executableName, executablePath);
-
-            // Remember the executable that needs to be handled by this package's shim
-            handlerOptions[packageName] = handlerOptions[packageName] || [];
-            handlerOptions[packageName].push([executableName, {
-                executable: executableName,
-                arguments: this.custom.arguments[funcName] || [],
-            }]);
+            const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
+            copyFileSync(executablePath, targetPath);
+            this.additionalFiles.push(targetPath);
+            this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
             // Copy specified extra libraries, if needed
             if (this.custom.extraLibraries.length > 0) {
-                const lddOutput = this.runStack(
+                const lddOutput = this.runStackOutput(
+                    directory,
                     [
                         'exec',
                         'ldd',
                         executablePath,
-                    ],
-                    true
-                ).stdout.toString('utf8');
-                const lddList = lddOutput.trim().split('\n');
+                    ]
+                );
+                const lddList = lddOutput.split('\n');
+
                 lddList.forEach(s => {
                     const [name, _, libPath] = s.trim().split(' ');
                     if (libraries[name] === false) {
                         const targetPath = path.resolve(this.servicePath, name);
-                        this.runStack([
-                            'exec',
-                            'cp',
-                            libPath,
-                            targetPath,
-                        ]);
+                        this.runStack(
+                            directory,
+                            [
+                                'exec',
+                                'cp',
+                                libPath,
+                                targetPath,
+                            ]);
                         this.additionalFiles.push(targetPath);
                         libraries[name] = true;
                     }
@@ -219,23 +268,11 @@ class ServerlessPlugin {
             }
         });
 
-        // Create a shim to start the executable and copy it to all the
-        // destination directories
-        const handlerTemplate = fs.readFileSync(TEMPLATE).toString('utf8');
-
-        Object.keys(handlerOptions).forEach(packageName => {
-            let handler = handlerTemplate + handlerOptions[packageName].map(
-                ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
-            ).join("\n") + "\n";
-
-            const handlerFileName = path.resolve(this.servicePath, `${packageName}.js`);
-            fs.writeFileSync(handlerFileName, handler);
-            this.additionalFiles.push(handlerFileName);
-        });
+        this.writeHandlers(handlerOptions);
     }
 
     afterCreateDeploymentArtifacts() {
-        this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
+       this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
     }
 }
 

@@ -2,11 +2,14 @@ service: NAME
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs8.10
 
 functions:
-  NAME:
-    handler: NAME.main
+  main:
+    handler: shtest.main
+
+  subdir:
+    handler: subdir/subtest.main
 
 plugins:
 - serverless-haskell
@@ -14,10 +17,10 @@ plugins:
 custom:
   haskell:
     arguments:
-      NAME:
+      main:
       - one
       - two
       - --three
-    docker: true
+    docker: DOCKER
     extraLibraries:
     - libpcre.so.3
