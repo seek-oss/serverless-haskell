@@ -28,19 +28,34 @@ do
         (echo "$DEPENDENCY is required for the test." >&2; exit 1)
 done
 
+# Directory of the integration test
+HERE=$(dirname $0)
+
 # Root directory of the repository
-DIST=$(cd $(dirname $0)/..; echo $PWD)
+DIST=$(cd $HERE/..; echo $PWD)
 
 # Directory with the test project skeleton
-SKELETON=$(cd $(dirname $0)/skeleton; echo $PWD)
+SKELETON=$(cd $HERE/skeleton; echo $PWD)
 
 # Directory with the expected outputs
-EXPECTED=$(cd $(dirname $0)/expected; echo $PWD)
+EXPECTED=$(cd $HERE/expected; echo $PWD)
 
-# Stackage resolver to use. LTS 11 cannot be used due to missing amazonka:
-# https://github.com/seek-oss/serverless-haskell/issues/34
+# Stackage resolver series to use
+: "${RESOLVER_SERIES:=lts-10}"
+
+# Find the latest resolver in the series to use.
 RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
-               jq -r '."lts-10"')
+               jq -r '."'$RESOLVER_SERIES'"')
+echo "Using resolver: $RESOLVER"
+
+# Extra dependencies to use for the resolver
+EXTRA_DEPS_YAML=$HERE/extra-deps.$RESOLVER_SERIES
+if [ -f $EXTRA_DEPS_YAML ]
+then
+    EXTRA_DEPS=$(cat $EXTRA_DEPS_YAML)
+else
+    EXTRA_DEPS=''
+fi
 
 # Temporary directory to create a project in
 DIR=$(mktemp -d)
@@ -56,7 +71,7 @@ cd $DIR
 NAME=s-h-test-$(pwgen 10 -0 -A)
 
 # Copy the test files over, replacing the values
-SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g"
+SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g;s!EXTRA_DEPS!$EXTRA_DEPS!g"
 for FILE in $(find $SKELETON -type f | grep -v /\\. | sed "s!$SKELETON/!!")
 do
     mkdir -p $(dirname $FILE)
