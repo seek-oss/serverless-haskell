@@ -41,7 +41,7 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 EXPECTED=$(cd $HERE/expected; echo $PWD)
 
 # Stackage resolver series to use
-: "${RESOLVER_SERIES:=lts-10}"
+: "${RESOLVER_SERIES:=lts-11}"
 
 # Find the latest resolver in the series to use.
 RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \

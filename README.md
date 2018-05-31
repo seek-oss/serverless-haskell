@@ -114,7 +114,7 @@ an AWS account. To run manually:
 * Run `./integration-test/run.sh`. The exit code indicates success.
 * To verify just the packaging, without deployment, run
   `./integration-test/run.sh --dry-run`.
-* By default, the integration test is run with LTS 10. To specify a different
+* By default, the integration test is run with LTS 11. To specify a different
 series, use `RESOLVER_SERIES=lts-9`.
 
 ## Releasing
