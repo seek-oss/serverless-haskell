@@ -41,8 +41,16 @@ matrix:
   - env: BUILD=npm
     compiler: ": #npm"
 
-  - env: BUILD=integration
-    compiler: ": #integration"
+  - env: BUILD=integration RESOLVER_SERIES=lts-9
+    compiler: ": #integration LTS 9"
+    addons: {apt: {packages: [jq, pwgen]}}
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-10
+    compiler: ": #integration LTS 10"
+    addons: {apt: {packages: [jq, pwgen]}}
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-11
+    compiler: ": #integration LTS 11"
     addons: {apt: {packages: [jq, pwgen]}}
 
 before_install: source ./travis/before_install
