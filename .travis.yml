@@ -26,35 +26,31 @@ matrix:
     compiler: ": #stack default"
     addons: {apt: {packages: [libgmp-dev]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-9"
-    compiler: ": #stack 8.0.2"
+  - env: BUILD=stack ARGS="--resolver lts-9 --stack-yaml stack-travis.yaml"
+    compiler: ": #stack LTS 9"
     addons: {apt: {packages: [libgmp-dev]}}
 
-  - env: BUILD=stack ARGS="--resolver lts-10"
-    compiler: ": #stack 8.2.2"
+  - env: BUILD=stack ARGS="--resolver lts-10 --stack-yaml stack-travis.yaml"
+    compiler: ": #stack LTS 10"
     addons: {apt: {packages: [libgmp-dev]}}
 
-  # macOS builds on Travis CI are slow and backlogged:
-  # https://www.traviscistatus.com/incidents/6xb4kjczh4k6 Disable for now.
-
-  # # Build on macOS in addition to Linux
-  # - env: BUILD=stack ARGS=""
-  #   compiler: ": #stack default osx"
-  #   os: osx
-
-  # - env: BUILD=stack ARGS="--resolver lts-9"
-  #   compiler: ": #stack 8.0.2 osx"
-  #   os: osx
-
-  # - env: BUILD=stack ARGS="--resolver lts-10"
-  #   compiler: ": #stack 8.2.2 osx"
-  #   os: osx
+  - env: BUILD=stack ARGS="--resolver lts-11"
+    compiler: ": #stack LTS 11"
+    addons: {apt: {packages: [libgmp-dev]}}
 
   - env: BUILD=npm
     compiler: ": #npm"
 
-  - env: BUILD=integration
-    compiler: ": #integration"
+  - env: BUILD=integration RESOLVER_SERIES=lts-9
+    compiler: ": #integration LTS 9"
+    addons: {apt: {packages: [jq, pwgen]}}
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-10
+    compiler: ": #integration LTS 10"
+    addons: {apt: {packages: [jq, pwgen]}}
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-11
+    compiler: ": #integration LTS 11"
     addons: {apt: {packages: [jq, pwgen]}}
 
 before_install: source ./travis/before_install

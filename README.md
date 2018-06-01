@@ -22,7 +22,9 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   stack new mypackage
   ```
 
-  LTS 9 and 10 are supported, older versions are likely to work too but untested.
+  LTS 9, 10 and 11 are supported, older versions are likely to work too but
+  untested. For LTS 11, add the Amazonka 1.6.0 dependency manually - see
+  [stack.yaml](stack.yaml#L9-L12).
 
 * Initialise a Serverless project inside the Stack package directory and install
   the `serverless-haskell` plugin:
@@ -112,6 +114,8 @@ an AWS account. To run manually:
 * Run `./integration-test/run.sh`. The exit code indicates success.
 * To verify just the packaging, without deployment, run
   `./integration-test/run.sh --dry-run`.
+* By default, the integration test is run with LTS 11. To specify a different
+series, use `RESOLVER_SERIES=lts-9`.
 
 ## Releasing
 

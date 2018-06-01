@@ -2,3 +2,4 @@ node_modules
 .serverless
 .stack-work
 *.cabal
+/example-project/package-lock.json
