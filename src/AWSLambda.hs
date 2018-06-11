@@ -70,13 +70,8 @@ section of @serverless.yml@.
   >         - --arg2
   >         - arg3
 
-* To include dependent libraries, list them under @extraLibraries@. The
-  libraries will be uploaded to AWS Lambda along with the executable.
-
-  > custom:
-  >   haskell:
-  >     extraLibraries:
-  >       - libpcre.so.3
+* Dependent system libraries not present in the AWS Lambda environment will be
+  automatically uploaded along with the executable.
 
 * To force using Stack's Docker image, set @docker@ key to @true@.
 
