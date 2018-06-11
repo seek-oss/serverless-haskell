@@ -16,7 +16,7 @@ const ADDITIONAL_EXCLUDE = [
 const IGNORE_LIBRARIES = [
     'linux-vdso.so.1',
     '/lib64/ld-linux-x86-64.so.2',
-];
+] + require('./aws_libraries');
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
