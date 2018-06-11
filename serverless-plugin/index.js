@@ -5,6 +5,8 @@ const fs = require('fs-extra');
 const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
+const ld = require('./ld');
+
 const PACKAGE_NAME = 'serverless-haskell';
 
 const ADDITIONAL_EXCLUDE = [
@@ -226,11 +228,11 @@ class ServerlessPlugin {
                     executablePath,
                 ]
             );
-            const lddList = lddOutput.split('\n');
+            const executableLibraries = ld.parseLdOutput(lddOutput);
 
-            lddList.forEach(s => {
-                const [name, _, libPath] = s.trim().split(' ');
+            for (const name in executableLibraries) {
                 if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
+                    const libPath = executableLibraries[name];
                     const targetPath = path.resolve(this.servicePath, name);
                     this.runStack(
                         directory,
@@ -243,7 +245,7 @@ class ServerlessPlugin {
                     this.additionalFiles.push(targetPath);
                     libraries[name] = true;
                 }
-            });
+            }
         });
 
         this.writeHandlers(handlerOptions);
