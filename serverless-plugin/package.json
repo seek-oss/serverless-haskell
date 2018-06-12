@@ -4,7 +4,8 @@
   "description": "Deploy Haskell binaries onto AWS Lambda",
   "main": "index.js",
   "scripts": {
-    "test": "eslint ."
+    "test": "eslint .",
+    "update-aws-libraries": "./update_aws_libraries.js"
   },
   "repository": {
     "type": "git",

@@ -5,6 +5,8 @@ const fs = require('fs-extra');
 const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
+const ld = require('./ld');
+
 const PACKAGE_NAME = 'serverless-haskell';
 
 const ADDITIONAL_EXCLUDE = [
@@ -16,7 +18,7 @@ const ADDITIONAL_EXCLUDE = [
 const IGNORE_LIBRARIES = [
     'linux-vdso.so.1',
     '/lib64/ld-linux-x86-64.so.2',
-];
+] + require('./aws_libraries');
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
@@ -38,7 +40,6 @@ class ServerlessPlugin {
 
         this.custom = Object.assign(
             {
-                extraLibraries: [],
                 stackBuildArgs: [],
                 arguments: {},
                 docker: false,
@@ -182,8 +183,6 @@ class ServerlessPlugin {
 
         // Keep track of which extra libraries were copied
         const libraries = {};
-        this.custom.extraLibraries.forEach(lib => { libraries[lib] = false; });
-        const foundLibraries = {};
 
         service.getAllFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
@@ -220,51 +219,32 @@ class ServerlessPlugin {
             this.additionalFiles.push(targetPath);
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
-            // Copy specified extra libraries, if needed
-            if (this.custom.extraLibraries.length > 0) {
-                const lddOutput = this.runStackOutput(
-                    directory,
-                    [
-                        'exec',
-                        'ldd',
-                        executablePath,
-                    ]
-                );
-                const lddList = lddOutput.split('\n');
+            // Copy libraries not present on AWS Lambda environment
+            const lddOutput = this.runStackOutput(
+                directory,
+                [
+                    'exec',
+                    'ldd',
+                    executablePath,
+                ]
+            );
+            const executableLibraries = ld.parseLdOutput(lddOutput);
 
-                lddList.forEach(s => {
-                    const [name, _, libPath] = s.trim().split(' ');
-                    if (libraries[name] === false) {
-                        const targetPath = path.resolve(this.servicePath, name);
-                        this.runStack(
-                            directory,
-                            [
-                                'exec',
-                                'cp',
-                                libPath,
-                                targetPath,
-                            ]);
-                        this.additionalFiles.push(targetPath);
-                        libraries[name] = true;
-                    }
-                    foundLibraries[name] = true;
-                });
-            }
-        });
-
-        // Error if a requested extra library could not be found
-        Object.keys(libraries).forEach(name => {
-            if (!libraries[name]) {
-                const msg = `Extra library not found: ${name}.`;
-                this.serverless.cli.log(msg);
-                // Show the libraries found, in case the name was misspelled
-                const foundLibrariesStr = Object.keys(foundLibraries)
-                      .filter(l => !IGNORE_LIBRARIES.includes(l))
-                      .sort()
-                      .join(", ");
-                this.serverless.cli.log(
-                    `Dependent libraries found: ${foundLibrariesStr}`);
-                throw new Error(msg);
+            for (const name in executableLibraries) {
+                if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
+                    const libPath = executableLibraries[name];
+                    const targetPath = path.resolve(this.servicePath, name);
+                    this.runStack(
+                        directory,
+                        [
+                            'exec',
+                            'cp',
+                            libPath,
+                            targetPath,
+                        ]);
+                    this.additionalFiles.push(targetPath);
+                    libraries[name] = true;
+                }
             }
         });
 
