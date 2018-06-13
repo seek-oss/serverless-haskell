@@ -5,11 +5,12 @@ Portability : POSIX
 
 Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 -}
+{-# LANGUAGE TypeApplications #-}
 module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Exception (bracket)
+import Control.Exception (bracket, try)
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Text as Aeson
@@ -20,9 +21,9 @@ import qualified Data.Text.Lazy.IO as Text
 
 import GHC.IO.Handle (Handle, hClose)
 
-import System.Environment (lookupEnv)
 import System.IO (stdout)
 import System.Posix.IO (fdToHandle)
+import System.Posix.Files (getFdStatus)
 import System.Posix.Types (Fd(..))
 
 -- | Process incoming events from @serverless-haskell@ using a provided
@@ -93,10 +94,10 @@ lambdaMain act =
 -- output.
 withResultChannel :: (Handle -> IO r) -> IO r
 withResultChannel act = do
-  lambdaFunctionName <- lookupEnv "AWS_LAMBDA_FUNCTION_NAME"
-  case lambdaFunctionName of
-    Just _ -> bracket (fdToHandle communicationFd) hClose act
-    Nothing -> act stdout
+  commStatus <- try @IOError $ getFdStatus communicationFd
+  case commStatus of
+    Right _ -> bracket (fdToHandle communicationFd) hClose act
+    Left _ -> act stdout
 
 -- | File descriptor opened by the JavaScript wrapper to listen for the results
 communicationFd :: Fd
