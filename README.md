@@ -86,7 +86,6 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 ### Notes
 
 * `sls deploy function` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/20).
-* `sls invoke local` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/32).
 * Only AWS Lambda is supported at the moment. Other cloud providers would
   require different JavaScript wrappers to be implemented.
 
