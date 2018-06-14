@@ -84,6 +84,11 @@ export PATH=$(npm bin):$PATH
 npm install serverless
 npm install $DIST/serverless-plugin
 
+sls invoke local --function main --data '[4, 5, 6]' | \
+    grep -v 'Serverless: ' > local_output.txt
+
+diff $EXPECTED/local_output.txt local_output.txt && echo "Expected local result verified."
+
 if [ "$DRY_RUN" = "true" ]
 then
     sls package

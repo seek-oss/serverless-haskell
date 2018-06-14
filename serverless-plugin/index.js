@@ -32,14 +32,16 @@ class ServerlessPlugin {
         this.options = options;
 
         this.hooks = {
-            'before:package:createDeploymentArtifacts': this.beforeCreateDeploymentArtifacts.bind(this),
-            'after:package:createDeploymentArtifacts': this.afterCreateDeploymentArtifacts.bind(this),
+            'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
+            'after:package:createDeploymentArtifacts': this.cleanupHandlers.bind(this),
 
             // invoke local
-            'before:invoke:local:invoke': this.beforeCreateDeploymentArtifacts.bind(this),
-            'after:invoke:local:invoke': this.afterCreateDeploymentArtifacts.bind(this),
+            'before:invoke:local:invoke': this.buildHandlersLocal.bind(this),
+            'after:invoke:local:invoke': this.cleanupHandlers.bind(this),
+
             // serverless-offline
-            'before:offline:start:init': this.beforeCreateDeploymentArtifacts.bind(this),
+            'before:offline:start:init': this.buildHandlersLocal.bind(this),
+            'after:offline:start:end': this.cleanupHandlers.bind(this),
         };
 
         this.servicePath = this.serverless.config.servicePath || '';
@@ -173,8 +175,20 @@ class ServerlessPlugin {
         }]);
     }
 
-    beforeCreateDeploymentArtifacts() {
+    buildHandlersLocal(options) {
+        options = options || {};
+        this.buildHandlers(Object.assign(options, {
+            noDocker: true
+        }));
+    }
+
+    buildHandlers(options) {
         const service = this.serverless.service;
+
+        options = options || {};
+        if (options.noDocker) {
+            this.docker.required = false;
+        }
 
         // Exclude Haskell artifacts from uploading
         service.package.exclude = service.package.exclude || [];
@@ -257,8 +271,8 @@ class ServerlessPlugin {
         this.writeHandlers(handlerOptions);
     }
 
-    afterCreateDeploymentArtifacts() {
-       this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
+    cleanupHandlers(options) {
+        this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
     }
 }
 
