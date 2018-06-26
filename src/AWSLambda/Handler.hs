@@ -6,6 +6,7 @@ Portability : POSIX
 Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 -}
 {-# LANGUAGE TypeApplications #-}
+
 module AWSLambda.Handler
   ( lambdaMain
   ) where
@@ -19,11 +20,12 @@ import qualified Data.ByteString as ByteString
 
 import qualified Data.Text.Lazy.IO as Text
 
-import GHC.IO.Handle (Handle, hClose)
+import GHC.IO.Handle
+       (BufferMode(..), Handle, hClose, hSetBuffering)
 
 import System.IO (stdout)
-import System.Posix.IO (fdToHandle)
 import System.Posix.Files (getFdStatus)
+import System.Posix.IO (fdToHandle)
 import System.Posix.Types (Fd(..))
 
 -- | Process incoming events from @serverless-haskell@ using a provided
@@ -89,14 +91,17 @@ lambdaMain act =
         Text.hPutStrLn resultChannel $ Aeson.encodeToLazyText result
         pure ()
 
--- | Invoke an action with the handle to write the results to. On AWS Lambda,
--- use the channel opened by the JavaScript wrapper, otherwise use standard
--- output.
+-- | Invoke an action with the handle to write the results to. If called by the
+-- JavaScript wrapper, use the channel opened by it, otherwise use standard
+-- output. Also set line buffering on standard output for AWS Lambda so the logs
+-- are output in a timely manner.
 withResultChannel :: (Handle -> IO r) -> IO r
 withResultChannel act = do
   commStatus <- try @IOError $ getFdStatus communicationFd
   case commStatus of
-    Right _ -> bracket (fdToHandle communicationFd) hClose act
+    Right _ -> do
+      hSetBuffering stdout LineBuffering
+      bracket (fdToHandle communicationFd) hClose act
     Left _ -> act stdout
 
 -- | File descriptor opened by the JavaScript wrapper to listen for the results
