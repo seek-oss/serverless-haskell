@@ -83,6 +83,8 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   You can test the function and see the invocation results with `sls invoke
   myfunc`.
 
+  To invoke the function locally, use `sls invoke local -f myfunc`.
+
 ### Notes
 
 * `sls deploy function` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/20).

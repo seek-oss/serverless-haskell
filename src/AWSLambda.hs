@@ -45,6 +45,8 @@ To deploy a Haskell function on AWS Lambda:
   You can test the function and see the invocation results with @sls invoke
   myfunc@.
 
+  To invoke the function locally, use @sls invoke local -f myfunc@.
+
 = Additional features
 
 Configuration options are passed to the plugin under @haskell@ key in @custom@
