@@ -178,7 +178,7 @@ class ServerlessPlugin {
     buildHandlersLocal(options) {
         options = options || {};
         this.buildHandlers(Object.assign(options, {
-            noDocker: true
+            localRun: true
         }));
     }
 
@@ -186,7 +186,7 @@ class ServerlessPlugin {
         const service = this.serverless.service;
 
         options = options || {};
-        if (options.noDocker) {
+        if (options.localRun) {
             this.docker.required = false;
         }
 
@@ -239,31 +239,33 @@ class ServerlessPlugin {
             this.additionalFiles.push(targetPath);
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
-            // Copy libraries not present on AWS Lambda environment
-            const lddOutput = this.runStackOutput(
-                directory,
-                [
-                    'exec',
-                    'ldd',
-                    executablePath,
-                ]
-            );
-            const executableLibraries = ld.parseLdOutput(lddOutput);
+            if (!options.localRun) {
+                // Copy libraries not present on AWS Lambda environment
+                const lddOutput = this.runStackOutput(
+                    directory,
+                    [
+                        'exec',
+                        'ldd',
+                        executablePath,
+                    ]
+                );
+                const executableLibraries = ld.parseLdOutput(lddOutput);
 
-            for (const name in executableLibraries) {
-                if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
-                    const libPath = executableLibraries[name];
-                    const targetPath = path.resolve(this.servicePath, name);
-                    this.runStack(
-                        directory,
-                        [
-                            'exec',
-                            'cp',
-                            libPath,
-                            targetPath,
-                        ]);
-                    this.additionalFiles.push(targetPath);
-                    libraries[name] = true;
+                for (const name in executableLibraries) {
+                    if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
+                        const libPath = executableLibraries[name];
+                        const targetPath = path.resolve(this.servicePath, name);
+                        this.runStack(
+                            directory,
+                            [
+                                'exec',
+                                'cp',
+                                libPath,
+                                targetPath,
+                            ]);
+                        this.additionalFiles.push(targetPath);
+                        libraries[name] = true;
+                    }
                 }
             }
         });
