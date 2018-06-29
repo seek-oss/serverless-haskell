@@ -1,5 +1,5 @@
 {-|
-Module      : AWSLambda.Handler
+Module      : AWSLambda
 Stability   : experimental
 Portability : POSIX
 
@@ -44,6 +44,17 @@ To deploy a Haskell function on AWS Lambda:
 
   You can test the function and see the invocation results with @sls invoke
   myfunc@.
+
+  To invoke the function locally, use @sls invoke local -f myfunc@.
+
+= API Gateway
+
+This plugin supports handling API Gateway requests. Declare the HTTP events
+normally in @serverless.yml@ and use 'AWSLambda.Events.APIGateway' in the
+handler to process them.
+
+<https://github.com/dherault/serverless-offline Serverless Offline> can be used
+for local testing of API Gateway requests.
 
 = Additional features
 

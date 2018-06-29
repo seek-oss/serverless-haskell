@@ -83,10 +83,20 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   You can test the function and see the invocation results with `sls invoke
   myfunc`.
 
+  To invoke the function locally, use `sls invoke local -f myfunc`.
+
+### API Gateway
+
+This plugin supports handling API Gateway requests. Declare the HTTP events
+normally in `serverless.yml` and use
+[AWSLambda.Events.APIGateway](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda-Events-APIGateway.html)
+in the handler to process them.
+
+[Serverless Offline] can be used for local testing of API Gateway requests.
+
 ### Notes
 
 * `sls deploy function` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/20).
-* `sls invoke local` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/32).
 * Only AWS Lambda is supported at the moment. Other cloud providers would
   require different JavaScript wrappers to be implemented.
 
@@ -128,4 +138,5 @@ series, use `RESOLVER_SERIES=lts-9`.
 [jq]: https://stedolan.github.io/jq/
 [NPM]: https://www.npmjs.com/
 [Serverless]: https://serverless.com/framework/
+[Serverless Offline]: https://github.com/dherault/serverless-offline
 [Stack]: https://haskellstack.org

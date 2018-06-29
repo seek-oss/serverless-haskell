@@ -32,8 +32,16 @@ class ServerlessPlugin {
         this.options = options;
 
         this.hooks = {
-            'before:package:createDeploymentArtifacts': this.beforeCreateDeploymentArtifacts.bind(this),
-            'after:package:createDeploymentArtifacts': this.afterCreateDeploymentArtifacts.bind(this),
+            'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
+            'after:package:createDeploymentArtifacts': this.cleanupHandlers.bind(this),
+
+            // invoke local
+            'before:invoke:local:invoke': this.buildHandlersLocal.bind(this),
+            'after:invoke:local:invoke': this.cleanupHandlers.bind(this),
+
+            // serverless-offline
+            'before:offline:start:init': this.buildHandlersLocal.bind(this),
+            'after:offline:start:end': this.cleanupHandlers.bind(this),
         };
 
         this.servicePath = this.serverless.config.servicePath || '';
@@ -167,8 +175,20 @@ class ServerlessPlugin {
         }]);
     }
 
-    beforeCreateDeploymentArtifacts() {
+    buildHandlersLocal(options) {
+        options = options || {};
+        this.buildHandlers(Object.assign(options, {
+            localRun: true
+        }));
+    }
+
+    buildHandlers(options) {
         const service = this.serverless.service;
+
+        options = options || {};
+        if (options.localRun) {
+            this.docker.required = false;
+        }
 
         // Exclude Haskell artifacts from uploading
         service.package.exclude = service.package.exclude || [];
@@ -219,31 +239,33 @@ class ServerlessPlugin {
             this.additionalFiles.push(targetPath);
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
-            // Copy libraries not present on AWS Lambda environment
-            const lddOutput = this.runStackOutput(
-                directory,
-                [
-                    'exec',
-                    'ldd',
-                    executablePath,
-                ]
-            );
-            const executableLibraries = ld.parseLdOutput(lddOutput);
+            if (!options.localRun) {
+                // Copy libraries not present on AWS Lambda environment
+                const lddOutput = this.runStackOutput(
+                    directory,
+                    [
+                        'exec',
+                        'ldd',
+                        executablePath,
+                    ]
+                );
+                const executableLibraries = ld.parseLdOutput(lddOutput);
 
-            for (const name in executableLibraries) {
-                if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
-                    const libPath = executableLibraries[name];
-                    const targetPath = path.resolve(this.servicePath, name);
-                    this.runStack(
-                        directory,
-                        [
-                            'exec',
-                            'cp',
-                            libPath,
-                            targetPath,
-                        ]);
-                    this.additionalFiles.push(targetPath);
-                    libraries[name] = true;
+                for (const name in executableLibraries) {
+                    if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
+                        const libPath = executableLibraries[name];
+                        const targetPath = path.resolve(this.servicePath, name);
+                        this.runStack(
+                            directory,
+                            [
+                                'exec',
+                                'cp',
+                                libPath,
+                                targetPath,
+                            ]);
+                        this.additionalFiles.push(targetPath);
+                        libraries[name] = true;
+                    }
                 }
             }
         });
@@ -251,8 +273,8 @@ class ServerlessPlugin {
         this.writeHandlers(handlerOptions);
     }
 
-    afterCreateDeploymentArtifacts() {
-       this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
+    cleanupHandlers(options) {
+        this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
     }
 }
 

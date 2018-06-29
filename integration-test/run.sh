@@ -80,15 +80,32 @@ done
 
 export PATH=$(npm bin):$PATH
 
-# Install Serverless and deploy the project
+# Install Serverless
 npm install serverless
 npm install $DIST/serverless-plugin
+npm install serverless-offline
+
+# Just package the service first
+sls package
+echo "Packaging verified."
+
+# Test local invocation
+sls invoke local --function main --data '[4, 5, 6]' | \
+    grep -v 'Serverless: ' > local_output.txt
+
+diff $EXPECTED/local_output.txt local_output.txt && echo "Expected local result verified."
+
+# Test serverless-offline
+sls offline start --exec \
+    "sh -c 'curl -s http://localhost:3000/hello/integration > offline_output.txt'"
+diff $EXPECTED/offline_output.txt offline_output.txt && echo "Expected serverless-offline result verified."
 
 if [ "$DRY_RUN" = "true" ]
 then
-    sls package
-    echo "Packaging verified."
+    # All done (locally)
+    exit 0
 else
+    # Deploy to AWS
     sls deploy
 
     # Run the function and verify the results

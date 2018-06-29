@@ -8,11 +8,19 @@ functions:
   main:
     handler: shtest.main
 
+  apigw:
+    handler: shtest.apigw
+    events:
+      - http:
+          path: hello/{name}
+          method: get
+
   subdir:
     handler: subdir/subtest.main
 
 plugins:
 - serverless-haskell
+- serverless-offline
 
 custom:
   haskell:
