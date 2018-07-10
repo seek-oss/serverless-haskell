@@ -84,11 +84,13 @@ section of @serverless.yml@.
 * Dependent system libraries not present in the AWS Lambda environment will be
   automatically uploaded along with the executable.
 
-* To force using Stack's Docker image, set @docker@ key to @true@.
+* Stack's Docker image will be used to match the AWS Lambda Linux environment.
+  To disable this, set @docker@ key to @false@, but beware that the resulting
+  binary might not have the required libraries to run on Lambda.
 
   > custom:
   >   haskell:
-  >     docker: true
+  >     docker: false
 -}
 module AWSLambda
   ( Handler.lambdaMain
