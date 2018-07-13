@@ -50,15 +50,22 @@ class ServerlessPlugin {
             {
                 stackBuildArgs: [],
                 arguments: {},
-                docker: false,
+                docker: true,
             },
             this.serverless.service.custom &&
                 this.serverless.service.custom.haskell ||
                 {}
         );
 
+        // Warn when Docker is disabled
+        if (!this.custom.docker) {
+            this.serverless.cli.log(
+                "Warning: not using Docker to build. " +
+                    "The resulting binary might not match the AWS environment.");
+        }
+
         this.docker = {
-            required: this.custom.docker || process.platform !== 'linux',
+            use: this.custom.docker,
             haveImage: false,
         };
 
@@ -75,9 +82,8 @@ class ServerlessPlugin {
     runStack(directory, args, options) {
         options = options || {};
         const envArgs = [];
-        if (this.docker.required) {
+        if (this.docker.use) {
             if (!this.docker.haveImage) {
-                this.serverless.cli.log("Using Stack's Docker image.");
                 spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
                 this.docker.haveImage = true;
             }
@@ -187,7 +193,7 @@ class ServerlessPlugin {
 
         options = options || {};
         if (options.localRun) {
-            this.docker.required = false;
+            this.docker.use = false;
         }
 
         // Exclude Haskell artifacts from uploading

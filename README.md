@@ -12,7 +12,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 * AWS account
 * [Stack]
 * [NPM]
-* [Docker] unless running on a Linux host
+* [Docker]
 
 ## Usage
 
