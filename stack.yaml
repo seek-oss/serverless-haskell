@@ -1,4 +1,4 @@
-resolver: lts-11.12
+resolver: lts-12.0
 packages:
 - .
 - example-project
