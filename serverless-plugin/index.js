@@ -119,6 +119,30 @@ class ServerlessPlugin {
         return result.stdout.toString('utf8').trim();
     }
 
+    dependentLibraries(directory, executablePath) {
+        try {
+            const lddOutput = this.runStackOutput(
+                directory,
+                [
+                    'exec',
+                    'ldd',
+                    executablePath,
+                ]
+            );
+            return ld.parseLdOutput(lddOutput);
+        }
+        catch (error) {
+            if (error.result &&
+                error.result.stdout &&
+                error.result.stdout.includes("not a dynamic executable")) {
+                // Static executables have no dependencies
+                return {};
+            } else {
+                throw error;
+            }
+        }
+    }
+
     assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
         const haskellPackageVersion = this.runStackOutput(
@@ -244,15 +268,7 @@ class ServerlessPlugin {
 
             if (!options.localRun) {
                 // Copy libraries not present on AWS Lambda environment
-                const lddOutput = this.runStackOutput(
-                    directory,
-                    [
-                        'exec',
-                        'ldd',
-                        executablePath,
-                    ]
-                );
-                const executableLibraries = ld.parseLdOutput(lddOutput);
+                const executableLibraries = this.dependentLibraries(directory, executablePath);
 
                 for (const name in executableLibraries) {
                     if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
