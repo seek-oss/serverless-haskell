@@ -87,7 +87,7 @@ section of @serverless.yml@.
   the corresponding glibc version on the AWS environment.
 
 * To force using Stack's Docker image, set @docker@ key to @true@. It is
-  recommended to set this to avoid incompatibility issues with depednent system
+  recommended to set this to avoid incompatibility issues with dependent system
   libraries.
 
   > custom:
