@@ -82,7 +82,9 @@ section of @serverless.yml@.
   >         - arg3
 
 * Dependent system libraries not present in the AWS Lambda environment will be
-  automatically uploaded along with the executable.
+  automatically uploaded along with the executable. Note that while statically
+  linking the executable via Cabal options is possible, it might still require
+  the corresponding glibc version on the AWS environment.
 
 * Stack's Docker image will be used to match the AWS Lambda Linux environment.
   To disable this, set @docker@ key to @false@, but beware that the resulting
