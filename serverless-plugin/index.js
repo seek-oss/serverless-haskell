@@ -89,19 +89,22 @@ class ServerlessPlugin {
             envArgs.push('--stack-yaml', `${directory}stack.yaml`);
         }
 
+        const stackArgs = [
+            ...envArgs,
+            ...this.custom.stackBuildArgs,
+            ...args,
+        ];
+
         const result = spawnSync(
             'stack',
-            [
-                ...envArgs,
-                ...this.custom.stackBuildArgs,
-                ...args,
-            ],
+            stackArgs,
             options.captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
 
         if (result.error || result.status > 0) {
-            this.serverless.cli.log("Stack encountered an error: " + result.stderr);
-            const error = new Error(result.error);
+            const message = `Error when running Stack: ${result.stderr}\n` +
+                  `Stack command: stack ${stackArgs.join(" ")}`;
+            const error = new Error(message);
             error.result = result;
             throw error;
         }
@@ -114,6 +117,30 @@ class ServerlessPlugin {
         options.captureOutput = true;
         const result = this.runStack(directory, args, options);
         return result.stdout.toString('utf8').trim();
+    }
+
+    dependentLibraries(directory, executablePath) {
+        try {
+            const lddOutput = this.runStackOutput(
+                directory,
+                [
+                    'exec',
+                    'ldd',
+                    executablePath,
+                ]
+            );
+            return ld.parseLdOutput(lddOutput);
+        }
+        catch (error) {
+            if (error.result &&
+                error.result.stdout &&
+                error.result.stdout.includes("not a dynamic executable")) {
+                // Static executables have no dependencies
+                return {};
+            } else {
+                throw error;
+            }
+        }
     }
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
@@ -241,15 +268,7 @@ class ServerlessPlugin {
 
             if (!options.localRun) {
                 // Copy libraries not present on AWS Lambda environment
-                const lddOutput = this.runStackOutput(
-                    directory,
-                    [
-                        'exec',
-                        'ldd',
-                        executablePath,
-                    ]
-                );
-                const executableLibraries = ld.parseLdOutput(lddOutput);
+                const executableLibraries = this.dependentLibraries(directory, executablePath);
 
                 for (const name in executableLibraries) {
                     if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
