@@ -145,15 +145,19 @@ class ServerlessPlugin {
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
-        const haskellPackageVersion = this.runStackOutput(
+        const stackDependencies = this.runStackOutput(
             directory,
             [
-                'exec', '--',
-                'ghc-pkg',
-                'field', PACKAGE_NAME, 'version',
-                '--simple-output'
+                'ls',
+                'dependencies',
             ]
-        );
+        ).split("\n");
+        const haskellPackageVersions = stackDependencies.filter(dep => dep.startsWith(`${PACKAGE_NAME} `));
+        if (haskellPackageVersions.length === 0) {
+            this.serverless.cli.log(`Could not find ${PACKAGE_NAME} in stack's dependencies.`);
+            throw new Error("Package not found.");
+        }
+        const haskellPackageVersion = haskellPackageVersions[0].split(' ')[1];
 
         const javascriptPackageVersion = JSON.parse(spawnSync(
             'npm',
@@ -241,15 +245,16 @@ class ServerlessPlugin {
             }
 
             const [_, directory, packageName, executableName] = matches;
+            
+            // Ensure package versions match
+            this.assertServerlessPackageVersionsMatch(directory, packageName);
 
-            //Ensure the executable is built
+            // Ensure the executable is built
             this.serverless.cli.log("Building handler with Stack...");
             const res = this.runStack(
                 directory,
                 ['build', `${packageName}:exe:${executableName}`]
             );
-
-            this.assertServerlessPackageVersionsMatch(directory, packageName);
 
             // Copy the executable to the destination directory
             const stackInstallRoot = this.runStackOutput(
