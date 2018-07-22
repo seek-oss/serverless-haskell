@@ -154,7 +154,7 @@ class ServerlessPlugin {
         ).split("\n");
         const haskellPackageVersions = stackDependencies.filter(dep => dep.startsWith(`${PACKAGE_NAME} `));
         if (haskellPackageVersions.length === 0) {
-            this.serverless.cli.log(`Could not find ${PACKAGE_NAME} in stack's dependencies. Make sure ${PACKAGE_NAME} is listed as a dependency in your .cabal file, or as an extra-dep in your stack.yaml.`);
+            this.serverless.cli.log(`Could not find ${PACKAGE_NAME} in stack's dependencies. Make sure ${PACKAGE_NAME} you are using LTS 12 (or newer), or add it as an extra-dep in your stack.yaml.`);
             throw new Error("Package not found.");
         }
         const haskellPackageVersion = haskellPackageVersions[0].split(' ')[1];
