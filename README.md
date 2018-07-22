@@ -30,8 +30,11 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
   ```shell
   cd mypackage
   npm init .
-  npm install --save serverless serverless-haskell
+  npm install --save serverless serverless-haskell@x.y.z
   ```
+
+  The version of the NPM package to install must match the version of the
+  Haskell package.
 
 * Create `serverless.yml` with the following contents:
 
