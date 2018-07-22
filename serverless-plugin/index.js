@@ -159,7 +159,7 @@ class ServerlessPlugin {
                 'field', PACKAGE_NAME, 'version',
                 '--simple-output'
             ]
-        );
+        ).split("\n");
 
         const javascriptPackageVersion = JSON.parse(spawnSync(
             'npm',
@@ -170,8 +170,8 @@ class ServerlessPlugin {
             ]
         ).stdout)['dependencies'][PACKAGE_NAME]['version'];
 
-        if (haskellPackageVersion != javascriptPackageVersion) {
-            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly.`);
+        if (!haskellPackageVersion.includes(javascriptPackageVersion)) {
+            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion.join(", ")}. Versions must be in sync to work correctly.`);
             throw new Error("Package version mismatch.");
         }
     }
