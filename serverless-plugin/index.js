@@ -151,15 +151,19 @@ class ServerlessPlugin {
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
         // Check that the Haskell package version corresponds to our own
-        const haskellPackageVersion = this.runStackOutput(
+        const stackDependencies = this.runStackOutput(
             directory,
             [
-                'exec', '--',
-                'ghc-pkg',
-                'field', PACKAGE_NAME, 'version',
-                '--simple-output'
+                'ls',
+                'dependencies',
             ]
-        );
+        ).split("\n");
+        const haskellPackageVersions = stackDependencies.filter(dep => dep.startsWith(`${PACKAGE_NAME} `));
+        if (haskellPackageVersions.length === 0) {
+            this.serverless.cli.log(`Could not find ${PACKAGE_NAME} in stack's dependencies.`);
+            throw new Error("Package not found.");
+        }
+        const haskellPackageVersion = haskellPackageVersions[0].split(' ')[1];
 
         const javascriptPackageVersion = JSON.parse(spawnSync(
             'npm',
