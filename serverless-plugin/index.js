@@ -165,7 +165,7 @@ class ServerlessPlugin {
         ).stdout)['dependencies'][PACKAGE_NAME]['version'];
 
         if (haskellPackageVersion != javascriptPackageVersion) {
-            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly.`);
+            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly. Please install matching versions of NPM and Stack packages.`);
             throw new Error("Package version mismatch.");
         }
     }
