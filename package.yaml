@@ -1,7 +1,7 @@
 name:                serverless-haskell
 category:            AWS, Cloud, Network
 maintainer:          akotlyarov@seek.com.au
-version:             '0.6.5'
+version:             '0.6.6'
 github:              seek-oss/serverless-haskell
 license:             MIT
 synopsis:            Deploying Haskell code onto AWS Lambda using Serverless
