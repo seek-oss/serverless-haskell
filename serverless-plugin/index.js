@@ -35,6 +35,10 @@ class ServerlessPlugin {
             'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
             'after:package:createDeploymentArtifacts': this.cleanupHandlers.bind(this),
 
+            // deploy function
+            'before:deploy:function:packageFunction': this.buildHandlers.bind(this),
+            'after:deploy:function:packageFunction': this.cleanupHandlers.bind(this),
+
             // invoke local
             'before:invoke:local:invoke': this.buildHandlersLocal.bind(this),
             'after:invoke:local:invoke': this.cleanupHandlers.bind(this),
