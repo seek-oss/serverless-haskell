@@ -127,8 +127,8 @@ else
         echo "Expected result verified from subdir function."
 
     # Update a function
-    sed 's/33/44/g' Main.hs
-    sls deploy function --function hello
+    sed 's/33/44/g' Main.hs > Main_modified.hs && mv Main_modified.hs Main.hs
+    sls deploy function --function main
 
     # Verify the updated result
     sls invoke --function main --data '[4, 5, 6]' > output_modified.json
