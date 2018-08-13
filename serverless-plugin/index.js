@@ -249,7 +249,7 @@ class ServerlessPlugin {
             }
 
             const [_, directory, packageName, executableName] = matches;
-            
+
             // Ensure package versions match
             this.assertServerlessPackageVersionsMatch(directory, packageName);
 
