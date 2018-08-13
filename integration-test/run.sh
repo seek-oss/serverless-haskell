@@ -133,5 +133,5 @@ else
     # Verify the updated result
     sls invoke --function main --data '[4, 5, 6]' > output_modified.json
 
-    diff $EXPECTED/output_modified.json output.json && echo "Expected updated result verified."
+    diff $EXPECTED/output_modified.json output_modified.json && echo "Expected updated result verified."
 fi
