@@ -125,4 +125,13 @@ else
 
     diff $EXPECTED/subdir_output.json subdir_output.json && \
         echo "Expected result verified from subdir function."
+
+    # Update a function
+    sed 's/33/44/g' Main.hs > Main_modified.hs && mv Main_modified.hs Main.hs
+    sls deploy function --function main
+
+    # Verify the updated result
+    sls invoke --function main --data '[4, 5, 6]' > output_modified.json
+
+    diff $EXPECTED/output_modified.json output_modified.json && echo "Expected updated result verified."
 fi

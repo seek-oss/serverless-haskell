@@ -75,8 +75,7 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
     pure [1, 2, 3]
   ```
 
-* Use `sls deploy` to deploy the executable to AWS Lambda. **Note**: `sls deploy
-  function` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/20).
+* Use `sls deploy` to deploy the executable to AWS Lambda.
 
   The `serverless-haskell` plugin will build the package using Stack and upload
   it to AWS together with a JavaScript wrapper to pass the input and output
@@ -98,7 +97,6 @@ in the handler to process them.
 
 ### Notes
 
-* `sls deploy function` is [not supported yet](https://github.com/seek-oss/serverless-haskell/issues/20).
 * Only AWS Lambda is supported at the moment. Other cloud providers would
   require different JavaScript wrappers to be implemented.
 
