@@ -1,11 +1,14 @@
 {
-    "env": {
-        "node": true
-    },
-    "parserOptions": {
-        "ecmaVersion": 6,
-        "ecmaFeatures": {
-            "impliedStrict": true
-        }
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "ecmaFeatures": {
+      "impliedStrict": true
     }
+  },
+  "rules": {
+    "no-trailing-spaces": ["error", {}]
+  }
 }

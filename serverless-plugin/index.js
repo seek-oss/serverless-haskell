@@ -35,6 +35,10 @@ class ServerlessPlugin {
             'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
             'after:package:createDeploymentArtifacts': this.cleanupHandlers.bind(this),
 
+            // deploy function
+            'before:deploy:function:packageFunction': this.buildHandlers.bind(this),
+            'after:deploy:function:packageFunction': this.cleanupHandlers.bind(this),
+
             // invoke local
             'before:invoke:local:invoke': this.buildHandlersLocal.bind(this),
             'after:invoke:local:invoke': this.cleanupHandlers.bind(this),
@@ -213,6 +217,16 @@ class ServerlessPlugin {
         }));
     }
 
+    // Which functions are being deployed now - all (default) or only one of
+    // them ('deploy function')
+    deployedFunctions() {
+        if (this.options.function) {
+            return [this.options.function];
+        } else {
+            return this.serverless.service.getAllFunctions();
+        }
+    }
+
     buildHandlers(options) {
         const service = this.serverless.service;
 
@@ -235,7 +249,7 @@ class ServerlessPlugin {
         // Keep track of which extra libraries were copied
         const libraries = {};
 
-        service.getAllFunctions().forEach(funcName => {
+        this.deployedFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
             const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
@@ -245,7 +259,7 @@ class ServerlessPlugin {
             }
 
             const [_, directory, packageName, executableName] = matches;
-            
+
             // Ensure package versions match
             this.assertServerlessPackageVersionsMatch(directory, packageName);
 

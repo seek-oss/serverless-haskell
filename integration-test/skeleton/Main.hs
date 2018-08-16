@@ -25,4 +25,4 @@ handler evt = do
   -- Test passed event
   print evt
   -- Test return value
-  pure [1, 2, 3]
+  pure [11, 22, 33]
