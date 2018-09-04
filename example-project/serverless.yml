@@ -17,9 +17,3 @@ functions:
 
 plugins:
   - serverless-haskell
-
-custom:
-  haskell:
-    # Always recommended to set this to avoid incompatibility issues with
-    # dependent system libraries.
-    docker: true
