@@ -95,6 +95,12 @@ sls invoke local --function main --data '[4, 5, 6]' | \
 
 diff $EXPECTED/local_output.txt local_output.txt && echo "Expected local result verified."
 
+# Test local invocation of a JavaScript function
+sls invoke local --function jsfunc --data '{}' | \
+    grep -v 'Serverless: ' > local_output_js.txt
+
+diff $EXPECTED/local_output_js.txt local_output_js.txt && echo "Expected local result from JavaScript verified."
+
 # Test serverless-offline
 sls offline start --exec \
     "sh -c 'curl -s http://localhost:3000/hello/integration > offline_output.txt'"
@@ -125,6 +131,11 @@ else
 
     diff $EXPECTED/subdir_output.json subdir_output.json && \
         echo "Expected result verified from subdir function."
+
+    # Run the JavaScript function and verify the results
+    sls invoke --function jsfunc --data '[4, 5, 6]' > output_js.json
+
+    diff $EXPECTED/output_js.json output_js.json && echo "Expected result from JavaScript verified."
 
     # Update a function
     sed 's/33/44/g' Main.hs > Main_modified.hs && mv Main_modified.hs Main.hs
