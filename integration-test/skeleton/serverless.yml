@@ -2,7 +2,7 @@ service: NAME
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: haskell
 
 functions:
   main:

@@ -257,6 +257,14 @@ class ServerlessPlugin {
 
         this.deployedFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
+
+            // Only process Haskell functions
+            const runtime = func.runtime || this.serverless.service.provider.runtime;
+            if (runtime != 'haskell') {
+                return;
+            }
+            service.functions[funcName].runtime = 'nodejs8.10';
+
             const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
 
