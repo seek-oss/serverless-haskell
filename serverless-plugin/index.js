@@ -257,6 +257,9 @@ class ServerlessPlugin {
 
         this.deployedFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
+            if (func.runtime !== "haskell") {
+                return;
+            }
             const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
 
