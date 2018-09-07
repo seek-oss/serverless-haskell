@@ -120,7 +120,7 @@ else
 
     # Wait for the logs to be propagated and verify them, ignoring volatile request
     # IDs and extra blank lines
-    sleep 10
+    sleep 20
     sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
     assert_file_same "sls logs" logs.txt
