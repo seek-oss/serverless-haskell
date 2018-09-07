@@ -22,6 +22,12 @@ const IGNORE_LIBRARIES = [
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
+// Runtime handled by this plugin
+const HASKELL_RUNTIME = 'haskell';
+
+// Runtime used by the wrapper
+const BASE_RUNTIME = 'nodejs8.10';
+
 const SERVERLESS_DIRECTORY = '.serverless';
 
 const NO_OUTPUT_CAPTURE = {stdio: ['ignore', process.stdout, process.stderr]};
@@ -259,11 +265,11 @@ class ServerlessPlugin {
             const func = service.getFunction(funcName);
 
             // Only process Haskell functions
-            const runtime = func.runtime || this.serverless.service.provider.runtime;
-            if (runtime != 'haskell') {
+            const runtime = func.runtime || service.provider.runtime;
+            if (runtime != HASKELL_RUNTIME) {
                 return;
             }
-            service.functions[funcName].runtime = 'nodejs8.10';
+            service.functions[funcName].runtime = BASE_RUNTIME;
 
             const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
@@ -323,6 +329,11 @@ class ServerlessPlugin {
         });
 
         this.writeHandlers(handlerOptions);
+
+        // Ensure the runtime is set to a sane value for other plugins
+        if (service.provider.runtime == HASKELL_RUNTIME) {
+            service.provider.runtime = BASE_RUNTIME;
+        }
     }
 
     cleanupHandlers(options) {
