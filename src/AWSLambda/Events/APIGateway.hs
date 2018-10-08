@@ -94,6 +94,19 @@ instance FromJSON RequestIdentity where
       o .:? "user"
 $(makeLenses ''RequestIdentity)
 
+data Authorizer = Authorizer
+  { _aPrincipalId :: !Text
+  , _aClaims :: !(HashMap Text Text)
+  , _aContext :: !Object
+  } deriving (Eq, Show)
+instance FromJSON Authorizer where
+  parseJSON = withObject "Authorizer" $ \o ->
+    Authorizer
+      <$> o .: "principalId"
+      <*> o .:? "claims" .!= mempty
+      <*> (pure $ HashMap.delete "principalId" $ HashMap.delete "claims" o)
+$(makeLenses ''Authorizer)
+
 data ProxyRequestContext = ProxyRequestContext
   { _prcPath         :: !(Maybe Text)
   , _prcAccountId    :: !Text
@@ -105,6 +118,7 @@ data ProxyRequestContext = ProxyRequestContext
   , _prcHttpMethod   :: !Text
   , _prcApiId        :: !Text
   , _prcProtocol     :: !Text
+  , _prcAuthorizer   :: !Authorizer
   } deriving (Eq, Show)
 $(deriveFromJSON (aesonDrop 4 camelCase) ''ProxyRequestContext)
 $(makeLenses ''ProxyRequestContext)
