@@ -26,31 +26,6 @@
 * Default to building with Docker.
 * Support LTS 12.
 
-# v0.6.7
-
-* Add support for `sls deploy function`.
-
-# v0.6.6
-
-* Update serverless dependency to work with new NodeJS.
-
-# v0.6.5
-
-* Documentation fixes.
-
-# v0.6.4
-
-* Documentation fixes.
-
-# v0.6.3
-
-* Better display of Stack errors when building.
-* Support deploying static executables.
-
-# v0.6.2
-
-* Support LTS 12.
-
 # v0.6.1
 
 * Support `serverless-offline` and `serverless invoke local`.
