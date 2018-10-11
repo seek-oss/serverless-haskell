@@ -24,7 +24,7 @@ package and install the @serverless-haskell@ plugin:
     >
     > provider:
     >   name: aws
-    >   runtime: nodejs8.10
+    >   runtime: haskell
     >
     > functions:
     >   myfunc:

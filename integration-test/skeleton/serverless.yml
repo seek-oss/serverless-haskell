@@ -2,7 +2,7 @@ service: NAME
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: haskell
 
 functions:
   main:
@@ -17,6 +17,10 @@ functions:
 
   subdir:
     handler: subdir/subtest.main
+
+  jsfunc:
+    runtime: nodejs8.10
+    handler: jsfunc/handler.main
 
 plugins:
 - serverless-haskell

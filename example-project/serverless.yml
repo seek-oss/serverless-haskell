@@ -2,7 +2,7 @@ service: serverless-haskell-example
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: haskell
   region: ap-southeast-2
 
 functions:
@@ -17,9 +17,3 @@ functions:
 
 plugins:
   - serverless-haskell
-
-custom:
-  haskell:
-    # Always recommended to set this to avoid incompatibility issues with
-    # dependent system libraries.
-    docker: true

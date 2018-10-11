@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Test packaging a function, deploying it to AWS and running it. With --dry-run,
 # only packaging is tested. With --no-docker, Docker isn't used for packaging.
 
@@ -31,14 +31,13 @@ done
 # Directory of the integration test
 HERE=$(dirname $0)
 
+. $HERE/tests.sh
+
 # Root directory of the repository
 DIST=$(cd $HERE/..; echo $PWD)
 
 # Directory with the test project skeleton
 SKELETON=$(cd $HERE/skeleton; echo $PWD)
-
-# Directory with the expected outputs
-EXPECTED=$(cd $HERE/expected; echo $PWD)
 
 # Stackage resolver series to use
 : "${RESOLVER_SERIES:=lts-12}"
@@ -86,24 +85,30 @@ npm install $DIST/serverless-plugin
 npm install serverless-offline
 
 # Just package the service first
-sls package
-echo "Packaging verified."
+assert_success "sls package" sls package
 
 # Test local invocation
 sls invoke local --function main --data '[4, 5, 6]' | \
     grep -v 'Serverless: ' > local_output.txt
 
-diff $EXPECTED/local_output.txt local_output.txt && echo "Expected local result verified."
+assert_file_same "sls invoke local" local_output.txt
+
+# Test local invocation of a JavaScript function
+sls invoke local --function jsfunc --data '{}' | \
+    grep -v 'Serverless: ' > local_output_js.txt
+
+assert_file_same "sls invoke local (JavaScript)" local_output_js.txt
 
 # Test serverless-offline
 sls offline start --exec \
     "sh -c 'curl -s http://localhost:3000/hello/integration > offline_output.txt'"
-diff $EXPECTED/offline_output.txt offline_output.txt && echo "Expected serverless-offline result verified."
+
+assert_file_same "sls offline" offline_output.txt
 
 if [ "$DRY_RUN" = "true" ]
 then
     # All done (locally)
-    exit 0
+    :
 else
     # Deploy to AWS
     sls deploy
@@ -111,20 +116,24 @@ else
     # Run the function and verify the results
     sls invoke --function main --data '[4, 5, 6]' > output.json
 
-    diff $EXPECTED/output.json output.json && echo "Expected result verified."
+    assert_file_same "sls invoke" output.json
 
     # Wait for the logs to be propagated and verify them, ignoring volatile request
     # IDs and extra blank lines
-    sleep 10
+    sleep 20
     sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
 
-    diff $EXPECTED/logs.txt logs.txt && echo "Expected output verified."
+    assert_file_same "sls logs" logs.txt
 
     # Run the function from the subdirectory and verify the result
     sls invoke --function subdir --data '{}' > subdir_output.json
 
-    diff $EXPECTED/subdir_output.json subdir_output.json && \
-        echo "Expected result verified from subdir function."
+    assert_file_same "sls invoke (subdirectory)" subdir_output.json
+
+    # Run the JavaScript function and verify the results
+    sls invoke --function jsfunc --data '[4, 5, 6]' > output_js.json
+
+    assert_file_same "sls invoke (JavaScript)" output_js.json
 
     # Update a function
     sed 's/33/44/g' Main.hs > Main_modified.hs && mv Main_modified.hs Main.hs
@@ -133,5 +142,7 @@ else
     # Verify the updated result
     sls invoke --function main --data '[4, 5, 6]' > output_modified.json
 
-    diff $EXPECTED/output_modified.json output_modified.json && echo "Expected updated result verified."
+    assert_file_same "sls invoke (after sls deploy function)" output_modified.json
 fi
+
+end_tests
