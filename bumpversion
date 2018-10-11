@@ -1,0 +1,58 @@
+#!/bin/sh
+# Bump the package version and release it
+
+set -e
+
+if [ $(uname) == Linux ]
+then
+    SEDI="sed -i"
+else
+    SEDI="sed -i ''"
+fi
+
+# check if git is dirty
+if !(git diff-index --quiet HEAD --)
+then
+    echo "Index is dirty, commit the changes first." >&2
+    exit 1
+fi
+
+# find current version
+OLD_VERSION=$(cat package.yaml | grep -E '^version' | sed -r 's/.+"(.+)"/\1/')
+
+# find new version
+case "$1" in
+    ""|patch)
+        NEW_VERSION=$(echo $OLD_VERSION | awk -F . '{print $1 "." $2 "." ($3 + 1)}')
+        ;;
+
+    minor)
+        NEW_VERSION=$(echo $OLD_VERSION | awk -F . '{print $1 "." ($2 + 1) "." 0}')
+        ;;
+
+    major)
+        NEW_VERSION=$(echo $OLD_VERSION | awk -F . '{print ($1 + 1) "." 0 "." 0}')
+        ;;
+
+    *)
+        echo "Usage: $0 major|minor|patch" >&2
+        exit 1
+        ;;
+esac
+
+# update changelog
+$SEDI -r '/^## Unreleased changes/a\\n## '$NEW_VERSION ChangeLog.md
+
+# bump version
+$SEDI -r 's/version: "'$OLD_VERSION'"/version: "'$NEW_VERSION'"/g' package.yaml
+$SEDI -r 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
+$SEDI -r 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
+
+# commit and tag
+MESSAGE="Bump version: $OLD_VERSION → $NEW_VERSION"
+git commit -a -m "$MESSAGE"
+git tag -a -m "$MESSAGE" v$NEW_VERSION
+
+# push the tag then branch
+git push --tags
+git push
