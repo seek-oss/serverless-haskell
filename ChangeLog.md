@@ -1,5 +1,7 @@
 # Changelog for Serverless Haskell
 
+For the changes in v0.6.x, see this file on the corresponding branch.
+
 # v0.7.5
 
 * Add support for `sls deploy function`.
