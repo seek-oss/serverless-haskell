@@ -1,31 +1,5 @@
 # Changelog for Serverless Haskell
 
-# v0.7.5
-
-* Add support for `sls deploy function`.
-
-# v0.7.4
-
-* Update serverless dependency to work with new NodeJS.
-
-# v0.7.3
-
-* Documentation fixes.
-
-# v0.7.2
-
-* Documentation fixes.
-
-# v0.7.1
-
-* Better display of Stack errors when building.
-* Support deploying static executables.
-
-# v0.7.0
-
-* Default to building with Docker.
-* Support LTS 12.
-
 # v0.6.7
 
 * Add support for `sls deploy function`.
