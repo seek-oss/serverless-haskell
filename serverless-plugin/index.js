@@ -261,6 +261,8 @@ class ServerlessPlugin {
         // Keep track of which extra libraries were copied
         const libraries = {};
 
+        let haskellFunctionsFound = false;
+
         this.deployedFunctions().forEach(funcName => {
             const func = service.getFunction(funcName);
 
@@ -269,6 +271,7 @@ class ServerlessPlugin {
             if (runtime != HASKELL_RUNTIME) {
                 return;
             }
+            haskellFunctionsFound = true;
             service.functions[funcName].runtime = BASE_RUNTIME;
 
             const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
@@ -327,6 +330,14 @@ class ServerlessPlugin {
                 }
             }
         });
+
+        if (!haskellFunctionsFound) {
+            this.serverless.cli.log(
+                `Warning: no Haskell functions found. ` +
+                `Use 'runtime: ${HASKELL_RUNTIME}' in global or ` +
+                `function configuration to use this plugin.`
+            );
+        }
 
         this.writeHandlers(handlerOptions);
 
