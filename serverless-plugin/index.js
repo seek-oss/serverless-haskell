@@ -170,7 +170,7 @@ class ServerlessPlugin {
         ).split("\n");
         const haskellPackageVersions = stackDependencies.filter(dep => dep.startsWith(`${PACKAGE_NAME} `));
         if (haskellPackageVersions.length === 0) {
-            this.serverless.cli.log(`Could not find ${PACKAGE_NAME} in stack's dependencies. Make sure ${PACKAGE_NAME} you are using LTS 12 (or newer), or add it as an extra-dep in your stack.yaml.`);
+            this.serverless.cli.log(`Could not find ${PACKAGE_NAME} in stack's dependencies. Make sure ${PACKAGE_NAME} you are using LTS 12 (or newer), or add it as an extra-dep in your stack.yaml, and reference it in package.yaml or the Cabal file.`);
             throw new Error("Package not found.");
         }
         const haskellPackageVersion = haskellPackageVersions[0].split(' ')[1];
@@ -185,7 +185,7 @@ class ServerlessPlugin {
         ).stdout)['dependencies'][PACKAGE_NAME]['version'];
 
         if (haskellPackageVersion != javascriptPackageVersion) {
-            this.serverless.cli.log(`Package version mismatch: NPM: ${javascriptPackageVersion}, Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly. Please install matching versions of NPM and Stack packages by either pinning your NPM version to match stack, or adding an extra-dep in your stack.yaml to match the NPM version.`);
+            this.serverless.cli.log(`Package version mismatch: serverless-haskell installed from NPM: ${javascriptPackageVersion}, installed from Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly. Please install matching versions of serverless-haskell from NPM and Stack by either pinning your NPM version to match stack, or adding an extra-dep in your stack.yaml to match the NPM version.`);
             throw new Error("Package version mismatch.");
         }
     }
