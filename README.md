@@ -104,7 +104,17 @@ See
 [AWSLambda](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda.html)
 for documentation, including additional options to control the deployment.
 
-## Testing
+## Development
+
+Currently, apart from the `master` branch, an `v0.6.x` branch is maintained with
+no breaking changes since 0.6.0, for inclusion into Stackage LTS 12. For
+bugfixes and new features that do not change the existing behavior, please
+target `v0.6.x`. For anything else, target `master`.
+
+Changes to the LTS branch will be forward ported to the `master` branch after
+releasing.
+
+### Testing
 
 * Haskell code is tested with Stack: `stack test`.
 * JavaScript code is linted with `eslint`.
@@ -126,12 +136,16 @@ an AWS account. To run manually:
 * By default, the integration test is run with LTS 12. To specify a different
 series, use `RESOLVER_SERIES=lts-9`.
 
-## Releasing
+### Releasing
 
+* Ensure you are on a correct branch (`v0.6.x` or `master`).
+* Ensure that all the changes are reflected in the changelog.
 * Run the integration tests.
-* Install [bumpversion](https://github.com/peritus/bumpversion): `pip install bumpversion`.
-* Run `bumpversion major|minor|patch`.
-* Run `git push --tags && git push`.
+* Run `./bumpversion major|minor|patch`. This will increment the version number,
+  update the changelog, create and push the Git tag and the branch.
+* If you have released an LTS version, merge the version branch into `master`,
+  taking care of the conflicts around version numbers and changelog, and release
+  the latest version as well.
 
 [AWS Lambda]: https://aws.amazon.com/lambda/
 [Docker]: https://www.docker.com/
