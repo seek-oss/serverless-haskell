@@ -95,14 +95,14 @@ instance FromJSON RequestIdentity where
 $(makeLenses ''RequestIdentity)
 
 data Authorizer = Authorizer
-  { _aPrincipalId :: !Text
+  { _aPrincipalId :: !(Maybe Text)
   , _aClaims :: !Object
   , _aContext :: !Object
   } deriving (Eq, Show)
 instance FromJSON Authorizer where
   parseJSON = withObject "Authorizer" $ \o ->
     Authorizer
-      <$> o .: "principalId"
+      <$> o .:? "principalId"
       <*> o .:? "claims" .!= mempty
       <*> (pure $ HashMap.delete "principalId" $ HashMap.delete "claims" o)
 $(makeLenses ''Authorizer)
@@ -118,7 +118,7 @@ data ProxyRequestContext = ProxyRequestContext
   , _prcHttpMethod   :: !Text
   , _prcApiId        :: !Text
   , _prcProtocol     :: !Text
-  , _prcAuthorizer   :: !Authorizer
+  , _prcAuthorizer   :: !(Maybe Authorizer)
   } deriving (Eq, Show)
 $(deriveFromJSON (aesonDrop 4 camelCase) ''ProxyRequestContext)
 $(makeLenses ''ProxyRequestContext)

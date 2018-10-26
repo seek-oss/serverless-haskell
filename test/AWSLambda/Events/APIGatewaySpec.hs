@@ -152,8 +152,8 @@ sampleGetRequest =
     , _prcApiId = "wt6mne2s9k"
     , _prcProtocol = "HTTP/1.1"
     , _prcAuthorizer =
-      Authorizer
-      { _aPrincipalId = "test-principalId"
+      Just Authorizer
+      { _aPrincipalId = Just "test-principalId"
       , _aClaims = HashMap.fromList [("email", toJSON ("test@example.com" :: Text)), ("email_verified", toJSON True)]
       , _aContext = HashMap.fromList [("custom_context", toJSON (10 :: Int))]
       }
