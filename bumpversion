@@ -3,12 +3,14 @@
 
 set -e
 
-if [ $(uname) == Linux ]
-then
-    SEDI="sed -i"
-else
-    SEDI="sed -i ''"
-fi
+function sedi() {
+    if [ $(uname) == Linux ]
+    then
+        sed -i "$@"
+    else
+        sed -i '' "$@"
+    fi
+}
 
 # check if git is dirty
 if !(git diff-index --quiet HEAD --)
@@ -18,7 +20,7 @@ then
 fi
 
 # find current version
-OLD_VERSION=$(cat package.yaml | grep -E '^version' | sed -r 's/.+"(.+)"/\1/')
+OLD_VERSION=$(cat package.yaml | grep -E '^version' | sed -E 's/.+"(.+)"/\1/')
 
 # find new version
 case "$1" in
@@ -41,12 +43,14 @@ case "$1" in
 esac
 
 # update changelog
-$SEDI -r '/^## Unreleased changes/a\\n## '$NEW_VERSION ChangeLog.md
+sedi -E '/^## Unreleased changes/a\
+
+## '$NEW_VERSION ChangeLog.md
 
 # bump version
-$SEDI -r 's/version: "'$OLD_VERSION'"/version: "'$NEW_VERSION'"/g' package.yaml
-$SEDI -r 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
-$SEDI -r 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
+sedi -E 's/(version: +)"'$OLD_VERSION'"/\1"'$NEW_VERSION'"/g' package.yaml
+sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
+sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
 
 # commit and tag
 MESSAGE="Bump version: $OLD_VERSION → $NEW_VERSION"
