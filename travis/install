@@ -16,6 +16,9 @@ stack)
     stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
     ;;
 npm)
+    sudo apt-get update
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    sudo apt-get install -y nodejs
     node --version
     npm --version
     cd serverless-plugin
@@ -23,6 +26,9 @@ npm)
     cd -
     ;;
 integration)
+    sudo apt-get update
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    sudo apt-get install -y nodejs jq pwgen
     ;;
 esac
 
