@@ -3,12 +3,14 @@
 
 set -e
 
-if [ $(uname) == Linux ]
-then
-    SEDI="sed -i"
-else
-    SEDI="sed -i ''"
-fi
+function sedi() {
+    if [ $(uname) == Linux ]
+    then
+        sed -i "$@"
+    else
+        sed -i '' "$@"
+    fi
+}
 
 # check if git is dirty
 if !(git diff-index --quiet HEAD --)
@@ -41,14 +43,14 @@ case "$1" in
 esac
 
 # update changelog
-$SEDI -E '/^## Unreleased changes/a\
+sedi -E '/^## Unreleased changes/a\
 
 ## '$NEW_VERSION ChangeLog.md
 
 # bump version
-$SEDI -E 's/(version: +)"'$OLD_VERSION'"/\1"'$NEW_VERSION'"/g' package.yaml
-$SEDI -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
-$SEDI -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
+sedi -E 's/(version: +)"'$OLD_VERSION'"/\1"'$NEW_VERSION'"/g' package.yaml
+sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
+sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
 
 # commit and tag
 MESSAGE="Bump version: $OLD_VERSION → $NEW_VERSION"
