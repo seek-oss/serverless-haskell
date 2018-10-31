@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.8.2
+
 * Add authorizer parsing to proxy lambda request context
 * Use `runtime: haskell` to distinguish Haskell functions. This makes it
   possible to use Haskell and other language functions in a single project.
