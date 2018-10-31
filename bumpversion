@@ -3,6 +3,47 @@
 
 set -e
 
+# Set defaults and parse arguments
+
+PART=patch
+DRY_RUN=
+NO_DIRTY_CHECK=
+
+while test $# -gt 0
+do
+    case "$1" in
+        patch)
+            PART=patch
+            shift
+            ;;
+
+        minor)
+            PART=minor
+            shift
+            ;;
+
+        major)
+            PART=major
+            shift
+            ;;
+
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+
+        --no-dirty-check)
+            NO_DIRTY_CHECK=true
+            shift
+            ;;
+
+        *)
+            echo "Usage: $0 [major|minor|patch] [--dry-run] [--no-dirty-check]" >&2
+            exit 1
+            ;;
+    esac
+done
+
 function sedi() {
     if [ $(uname) == Linux ]
     then
@@ -13,7 +54,7 @@ function sedi() {
 }
 
 # check if git is dirty
-if !(git diff-index --quiet HEAD --)
+if [ -z $NO_DIRTY_CHECK ] && !(git diff-index --quiet HEAD --)
 then
     echo "Index is dirty, commit the changes first." >&2
     exit 1
@@ -23,8 +64,8 @@ fi
 OLD_VERSION=$(cat package.yaml | grep -E '^version' | sed -E 's/.+"(.+)"/\1/')
 
 # find new version
-case "$1" in
-    ""|patch)
+case "$PART" in
+    patch)
         NEW_VERSION=$(echo $OLD_VERSION | awk -F . '{print $1 "." $2 "." ($3 + 1)}')
         ;;
 
@@ -37,7 +78,7 @@ case "$1" in
         ;;
 
     *)
-        echo "Usage: $0 major|minor|patch" >&2
+        echo "Invalid PART value." >&2
         exit 1
         ;;
 esac
@@ -52,11 +93,14 @@ sedi -E 's/(version: +)"'$OLD_VERSION'"/\1"'$NEW_VERSION'"/g' package.yaml
 sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
 sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
 
-# commit and tag
-MESSAGE="Bump version: $OLD_VERSION → $NEW_VERSION"
-git commit -a -m "$MESSAGE"
-git tag -a -m "$MESSAGE" v$NEW_VERSION
+if [ -z $DRY_RUN ]
+then
+    # commit and tag
+    MESSAGE="Bump version: $OLD_VERSION → $NEW_VERSION"
+    git commit -a -m "$MESSAGE"
+    git tag -a -m "$MESSAGE" v$NEW_VERSION
 
-# push the tag then branch
-git push --tags
-git push
+    # push the tag then branch
+    git push --tags
+    git push
+fi
