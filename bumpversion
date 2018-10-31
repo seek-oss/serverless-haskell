@@ -84,9 +84,9 @@ case "$PART" in
 esac
 
 # update changelog
-sedi -E '/^## Unreleased changes/a\
-
-## '$NEW_VERSION ChangeLog.md
+sedi -E '/^## Unreleased changes/{G;a\
+## '$NEW_VERSION'
+}' ChangeLog.md
 
 # bump version
 sedi -E 's/(version: +)"'$OLD_VERSION'"/\1"'$NEW_VERSION'"/g' package.yaml
