@@ -332,8 +332,8 @@ class ServerlessPlugin {
         });
 
         if (!haskellFunctionsFound) {
-            this.serverless.cli.log(
-                `Warning: no Haskell functions found. ` +
+            throw new Error(
+                `Error: no Haskell functions found. ` +
                 `Use 'runtime: ${HASKELL_RUNTIME}' in global or ` +
                 `function configuration to use this plugin.`
             );
