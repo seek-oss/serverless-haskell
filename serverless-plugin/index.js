@@ -331,7 +331,7 @@ class ServerlessPlugin {
             }
         });
 
-        if (!haskellFunctionsFound) {
+        if (!this.options.function && !haskellFunctionsFound) {
             throw new Error(
                 `Error: no Haskell functions found. ` +
                 `Use 'runtime: ${HASKELL_RUNTIME}' in global or ` +
