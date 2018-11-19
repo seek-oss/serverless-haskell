@@ -153,6 +153,10 @@ class ServerlessPlugin {
                 error.result.stdout.includes("not a dynamic executable")) {
                 // Static executables have no dependencies
                 return {};
+            } else if (process.platform == 'darwin' && !this.custom.docker) {
+                // Even if ldd was available on macOS, the dependencies won't
+                // translate
+                return {};
             } else {
                 throw error;
             }
