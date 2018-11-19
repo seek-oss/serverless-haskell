@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* It is now an error if the plugin is enabled but there are no functions with
+  Haskell runtime.
+
 ## 0.8.2
 
 * Add authorizer parsing to proxy lambda request context
