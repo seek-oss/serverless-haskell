@@ -4,6 +4,13 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Change the communication method between the JavaScript wrapper and the Haskell
+  process to TCP. This fixes errors like "Resource vanished: broken pipe" when
+  running the Haskell executable standalone.
+* Do not crash when `ldd` is not found when locally invoking a function on macOS.
+* Fix error message about no Haskell functions being found when invoking a
+  function locally.
+
 ## 0.8.3
 
 * It is now an error if the plugin is enabled but there are no functions with
