@@ -135,7 +135,10 @@ an AWS account. To run manually:
 * To verify just the packaging, without deployment, run
   `./integration-test/run.sh --dry-run`.
 * By default, the integration test is run with LTS 12. To specify a different
-series, use `RESOLVER_SERIES=lts-9`.
+  series, use `RESOLVER_SERIES=lts-9`.
+* To avoid creating a temporary directory for every run, specify
+  `--no-clean-dir`. This can speed up repeated test runs, but does not guarantee
+  the same results as a clean test.
 
 ### Releasing
 

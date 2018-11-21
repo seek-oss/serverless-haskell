@@ -16,6 +16,10 @@ do
             DOCKER=false
             shift
             ;;
+        --no-clean-dir)
+            REUSE_DIR=true
+            shift
+            ;;
         *)
             shift
             ;;
@@ -56,18 +60,33 @@ else
     EXTRA_DEPS=''
 fi
 
-# Temporary directory to create a project in
-DIR=$(mktemp -d)
-echo "Testing in $DIR"
-if $DRY_RUN
+if [ -n "$REUSE_DIR" ]
 then
-    trap "rm -rf $DIR" EXIT
+    DIR=$HERE/run
+    mkdir -p $DIR
+    echo "Testing in $DIR"
+    if $DRY_RUN
+    then
+        :
+    else
+        trap "(sls --no-color remove || true)" EXIT
+    fi
+
+    NAME=s-h-test
 else
-    trap "(sls --no-color remove || true); rm -rf $DIR" EXIT
+    # Temporary directory to create a project in
+    DIR=$(mktemp -d)
+    echo "Testing in $DIR"
+    if $DRY_RUN
+    then
+        trap "rm -rf $DIR" EXIT
+    else
+        trap "(sls --no-color remove || true); rm -rf $DIR" EXIT
+    fi
+
+    NAME=s-h-test-$(pwgen 10 -0 -A)
 fi
 cd $DIR
-
-NAME=s-h-test-$(pwgen 10 -0 -A)
 
 # Copy the test files over, replacing the values
 SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g;s!EXTRA_DEPS!$EXTRA_DEPS!g"
