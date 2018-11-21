@@ -5,13 +5,11 @@ Portability : POSIX
 
 Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 -}
-{-# LANGUAGE TypeApplications #-}
-
 module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Exception (bracket, try)
+import Control.Exception (bracket)
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Text as Aeson
@@ -20,13 +18,13 @@ import qualified Data.ByteString as ByteString
 
 import qualified Data.Text.Lazy.IO as Text
 
-import GHC.IO.Handle
-       (BufferMode(..), Handle, hClose, hSetBuffering)
+import GHC.IO.Handle (BufferMode(..), Handle, hClose, hFlush, hSetBuffering)
 
-import System.IO (stdout)
-import System.Posix.Files (getFdStatus)
-import System.Posix.IO (fdToHandle)
-import System.Posix.Types (Fd(..))
+import Network.Simple.TCP (connect)
+import Network.Socket (socketToHandle, withSocketsDo)
+
+import System.Environment (lookupEnv)
+import System.IO (IOMode(..), stdout)
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -89,21 +87,25 @@ lambdaMain act =
       Right event -> do
         result <- act event
         Text.hPutStrLn resultChannel $ Aeson.encodeToLazyText result
+        hFlush resultChannel
         pure ()
 
 -- | Invoke an action with the handle to write the results to. If called by the
--- JavaScript wrapper, use the channel opened by it, otherwise use standard
+-- JavaScript wrapper, use the server started by it, otherwise use standard
 -- output. Also set line buffering on standard output for AWS Lambda so the logs
 -- are output in a timely manner.
 withResultChannel :: (Handle -> IO r) -> IO r
 withResultChannel act = do
-  commStatus <- try @IOError $ getFdStatus communicationFd
-  case commStatus of
-    Right _ -> do
+  communicationPortString <- lookupEnv communicationPortEnv
+  case communicationPortString of
+    Just communicationPort -> do
       hSetBuffering stdout LineBuffering
-      bracket (fdToHandle communicationFd) hClose act
-    Left _ -> act stdout
+      withSocketsDo $
+        connect "localhost" communicationPort $ \(socket, _) ->
+          bracket (socketToHandle socket WriteMode) hClose act
+    Nothing -> act stdout
 
--- | File descriptor opened by the JavaScript wrapper to listen for the results
-communicationFd :: Fd
-communicationFd = Fd 3
+-- | Environment variable signalling the port the JavaScript wrapper is
+-- listening on
+communicationPortEnv :: String
+communicationPortEnv = "SERVERLESS_HASKELL_COMMUNICATION_PORT"

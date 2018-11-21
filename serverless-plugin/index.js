@@ -291,7 +291,7 @@ class ServerlessPlugin {
             this.assertServerlessPackageVersionsMatch(directory, packageName);
 
             // Ensure the executable is built
-            this.serverless.cli.log("Building handler with Stack...");
+            this.serverless.cli.log(`Building handler ${funcName} with Stack...`);
             const res = this.runStack(
                 directory,
                 ['build', `${packageName}:exe:${executableName}`]

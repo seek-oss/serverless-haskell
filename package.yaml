@@ -22,6 +22,8 @@ dependencies:
   - http-types
   - iproute
   - lens
+  - network
+  - network-simple
   - text
   - time
   - unix
