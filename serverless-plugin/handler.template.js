@@ -33,7 +33,7 @@ function wrapper(options) {
 
         let exited = false;
 
-        const result = new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
 
             main.on('exit', function (code) {
                 if (!exited) {
@@ -59,8 +59,6 @@ function wrapper(options) {
                 }
             });
         });
-
-        return await result;
     };
 }
 
