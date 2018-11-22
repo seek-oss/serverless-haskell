@@ -101,7 +101,7 @@ withResultChannel act = do
     Just communicationPort -> do
       hSetBuffering stdout LineBuffering
       withSocketsDo $
-        connect "localhost" communicationPort $ \(socket, _) ->
+        connect "127.0.0.1" communicationPort $ \(socket, _) ->
           bracket (socketToHandle socket WriteMode) hClose act
     Nothing -> act stdout
 
