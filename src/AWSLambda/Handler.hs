@@ -9,22 +9,26 @@ module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Exception (bracket)
+import Control.Exception (finally)
+import Control.Monad (void)
 
 import qualified Data.Aeson as Aeson
-import qualified Data.Aeson.Text as Aeson
 
+import Data.ByteString (ByteString)
 import qualified Data.ByteString as ByteString
+import qualified Data.ByteString.Lazy as LBS
 
-import qualified Data.Text.Lazy.IO as Text
+import qualified Data.Text.Encoding as Text
+import qualified Data.Text.IO as Text
 
-import GHC.IO.Handle (BufferMode(..), Handle, hClose, hFlush, hSetBuffering)
+import GHC.IO.Handle (BufferMode(..), hSetBuffering)
 
 import Network.Simple.TCP (connect)
-import Network.Socket (socketToHandle, withSocketsDo)
+import Network.Socket (close, withSocketsDo)
+import Network.Socket.ByteString (send)
 
 import System.Environment (lookupEnv)
-import System.IO (IOMode(..), stdout)
+import System.IO (stdout)
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -80,30 +84,29 @@ lambdaMain ::
   => (event -> IO res) -- ^ Function to process the event
   -> IO ()
 lambdaMain act =
-  withResultChannel $ \resultChannel -> do
+  withSendResult $ \sendResult -> do
     input <- ByteString.getLine
     case Aeson.eitherDecodeStrict input of
       Left err -> error err
       Right event -> do
         result <- act event
-        Text.hPutStrLn resultChannel $ Aeson.encodeToLazyText result
-        hFlush resultChannel
+        sendResult $ LBS.toStrict $ Aeson.encode result
         pure ()
 
--- | Invoke an action with the handle to write the results to. If called by the
+-- | Invoke an action with the method to output the result. If called by the
 -- JavaScript wrapper, use the server started by it, otherwise use standard
 -- output. Also set line buffering on standard output for AWS Lambda so the logs
 -- are output in a timely manner.
-withResultChannel :: (Handle -> IO r) -> IO r
-withResultChannel act = do
+withSendResult :: ((ByteString -> IO ()) -> IO r) -> IO r
+withSendResult act = do
   communicationPortString <- lookupEnv communicationPortEnv
   case communicationPortString of
     Just communicationPort -> do
       hSetBuffering stdout LineBuffering
       withSocketsDo $
         connect "127.0.0.1" communicationPort $ \(socket, _) ->
-          bracket (socketToHandle socket WriteMode) hClose act
-    Nothing -> act stdout
+          act (void . send socket) `finally` close socket
+    Nothing -> act $ Text.putStrLn . Text.decodeUtf8
 
 -- | Environment variable signalling the port the JavaScript wrapper is
 -- listening on
