@@ -3,3 +3,4 @@ node_modules
 .stack-work
 *.cabal
 /example-project/package-lock.json
+/integration-test/run

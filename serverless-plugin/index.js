@@ -153,6 +153,10 @@ class ServerlessPlugin {
                 error.result.stdout.includes("not a dynamic executable")) {
                 // Static executables have no dependencies
                 return {};
+            } else if (process.platform == 'darwin' && !this.custom.docker) {
+                // Even if ldd was available on macOS, the dependencies won't
+                // translate
+                return {};
             } else {
                 throw error;
             }
@@ -287,7 +291,7 @@ class ServerlessPlugin {
             this.assertServerlessPackageVersionsMatch(directory, packageName);
 
             // Ensure the executable is built
-            this.serverless.cli.log("Building handler with Stack...");
+            this.serverless.cli.log(`Building handler ${funcName} with Stack...`);
             const res = this.runStack(
                 directory,
                 ['build', `${packageName}:exe:${executableName}`]
@@ -331,7 +335,7 @@ class ServerlessPlugin {
             }
         });
 
-        if (!haskellFunctionsFound) {
+        if (!this.options.function && !haskellFunctionsFound) {
             throw new Error(
                 `Error: no Haskell functions found. ` +
                 `Use 'runtime: ${HASKELL_RUNTIME}' in global or ` +
