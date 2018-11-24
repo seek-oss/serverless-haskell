@@ -1,6 +1,6 @@
 {-# START_FILE package.yaml #-}
 name:                {{name}}
-version:             0.1.0.0
+version:             0.1.0
 github:              "{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}"
 license:             BSD3
 author:              "{{author-name}}{{^author-name}}Author name here{{/author-name}}"
@@ -126,18 +126,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {-# START_FILE .gitignore #-}
 .stack-work/
 node_modules/
+.serverless/
 {{name}}.cabal
-*~
 
 {-# START_FILE serverless.yml #-}
-service: myservice
+service: {{name}}
 
 provider:
   name: aws
   runtime: haskell
 
 functions:
-  myfunc:
+  {{name}}-func:
     handler: {{name}}.{{name}}-exe
     # Here, mypackage is the Haskell package name and myfunc is the executable
     # name as defined in the Cabal file. The handler field may be prefixed
@@ -152,7 +152,7 @@ plugins:
 {-# START_FILE package.json #-}
 {
   "name": "{{name}}",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "directories": {
