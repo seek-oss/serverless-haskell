@@ -10,11 +10,9 @@ function wrapper(options) {
         process.env['PATH'] = process.env['PATH'] + ':' +
             process.env['LAMBDA_TASK_ROOT'];
 
-        // Keep track of the output result
-        let output = '';
-        const server = net.createServer(function(socket) {
-            socket.on('data', chunk => output += chunk);
-        });
+        const server = net.createServer();
+
+        const connection = new Promise(resolve => server.on('connection', resolve));
 
         const address = await new Promise(
             resolve =>
@@ -31,32 +29,40 @@ function wrapper(options) {
         // Send the event to the process
         stdin.end(JSON.stringify(event) + '\n', 'utf8');
 
-        let exited = false;
+        const socket = await connection;
 
+        // Keep track of the output result
+        let output = '';
+        socket.on('data', chunk => output += chunk);
+
+        // Wait for the process to exit or close the socket, whichever happens
+        // first
         return await new Promise((resolve, reject) => {
+            function resolveWithOutput() {
+                try {
+                    const result = JSON.parse(output);
+                    resolve(result);
+                } catch (err) {
+                    reject('child process output bad JSON: ' + output);
+                }
+            }
+
+            socket.on('end', resolveWithOutput);
 
             main.on('exit', function (code) {
-                if (!exited) {
-                    exited = true;
-                    if (code == 0) {
-                        try {
-                            const result = JSON.parse(output);
-                            resolve(result);
-                        } catch (err) {
-                            reject('child process output bad JSON: ' + output);
-                        }
-                    }
-                    else {
-                        reject('child process exited with code ' + code);
-                    }
+                if (code == 0) {
+                    // If the "main exit" was received before "socket closed",
+                    // wait for a while before resolving, since the data sent
+                    // over the socket might not have arrived yet either.
+                    setTimeout(resolveWithOutput, 100);
+                }
+                else {
+                    reject('child process exited with code ' + code);
                 }
             });
 
             main.on('error', function (err) {
-                if (!exited) {
-                    exited = true;
-                    reject(err, 'child process exited with error: ' + err);
-                }
+                reject(err, 'child process exited with error: ' + err);
             });
         });
     };
