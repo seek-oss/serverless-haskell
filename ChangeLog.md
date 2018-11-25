@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.8.4
+
 * Change the communication method between the JavaScript wrapper and the Haskell
   process to TCP. This fixes errors like "Resource vanished: broken pipe" when
   running the Haskell executable standalone.
