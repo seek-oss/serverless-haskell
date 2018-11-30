@@ -8,7 +8,7 @@
 
 Deploying Haskell code onto [AWS Lambda] using [Serverless].
 
-## Requirements
+## Prerequisites
 
 * AWS account
 * [Stack]
@@ -16,6 +16,33 @@ Deploying Haskell code onto [AWS Lambda] using [Serverless].
 * [Docker]
 
 ## Usage
+
+There are two ways to start, either via the stack template, or directly modifying a project. You may want to use the manual approach as the template specifies a specific stack resolver as it needs to hardcode the `stack.yaml` file.
+
+In either case, you will want to have [Serverless] installed, eg. `npm install -g serverless`.
+
+### Using the stack template
+
+* Create a [Stack] package for your code:
+
+  ```shell
+  stack new mypackage https://raw.githubusercontent.com/seek-oss/serverless-haskell/v0.8.4/serverless-haskell.hsfiles
+  ```
+
+* Update the resolver in the `stack.yaml` file. This is hardcoded as the resolver number is not known at template interpolation time. You should pick either the latest resolver, or one you have used before and have thus prebuilt many of the core packages for.
+  
+* Install the dependencies and build the project:
+ 
+  ```shell
+  cd mypackage
+  npm install
+  stack build
+  sls invoke local -f mypackage-func
+  ```
+  
+  This should invoke serverless locally and display output once everything has built.
+  
+### Manually
 
 * Create a [Stack] package for your code:
 
