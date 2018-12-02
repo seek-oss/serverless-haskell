@@ -26,7 +26,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 * Create a [Stack] package for your code:
 
   ```shell
-  stack new mypackage https://raw.githubusercontent.com/seek-oss/serverless-haskell/v0.8.4/serverless-haskell.hsfiles
+  stack new mypackage https://raw.githubusercontent.com/seek-oss/serverless-haskell/master/serverless-haskell.hsfiles
   ```
 
 * Update the resolver in the `stack.yaml` file. This is hardcoded as the resolver number is not known at template interpolation time. You should pick either the latest resolver, or one you have used before and have thus prebuilt many of the core packages for.
