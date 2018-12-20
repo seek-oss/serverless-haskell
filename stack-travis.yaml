@@ -2,3 +2,5 @@ resolver: lts-10.10
 packages:
 - .
 - example-project
+extra-deps:
+  - aws-lambda-haskell-runtime-1.0.6
