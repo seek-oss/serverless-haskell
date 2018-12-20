@@ -28,6 +28,7 @@ dependencies:
   - time
   - unix
   - unordered-containers
+  - aws-lambda-haskell-runtime >= 1.0.5 && < 1.1
 
 library:
   source-dirs: src
