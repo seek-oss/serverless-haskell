@@ -77,7 +77,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
     myfunc:
       handler: src/Lib.handler
       layers:
-        - arn:aws:lambda:us-east-1:785355572843:layer:haskell-runtime:3
+        - arn:aws:lambda:us-east-1:785355572843:layer:haskell-runtime:4
 
   plugins:
     - serverless-haskell
