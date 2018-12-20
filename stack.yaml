@@ -2,6 +2,8 @@ resolver: lts-13.0
 packages:
 - .
 - example-project
+extra-deps:
+  - aws-lambda-haskell-runtime-1.0.5
 nix:
   packages:
     - zlib.dev
