@@ -3,4 +3,4 @@ packages:
 - .
 - example-project
 extra-deps:
-  - aws-lambda-haskell-runtime-1.0.8
+  - aws-lambda-haskell-runtime-1.0.9
