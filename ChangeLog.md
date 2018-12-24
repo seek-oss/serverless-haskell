@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Explicitly support LTS 13
+
 ## 0.8.4
 
 * Change the communication method between the JavaScript wrapper and the Haskell
