@@ -15,8 +15,6 @@ dependencies:
   - aeson-casing
   - aeson-extra
   - amazonka-core
-  - amazonka-kinesis
-  - amazonka-s3
   - bytestring
   - case-insensitive
   - http-types

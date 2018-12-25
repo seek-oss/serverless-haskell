@@ -97,9 +97,6 @@ binary might not have the required libraries to run on Lambda.
 -}
 module AWSLambda
   ( Handler.lambdaMain
-  , module AWSLambda.Events
   ) where
 
 import qualified AWSLambda.Handler as Handler
-
-import AWSLambda.Events
