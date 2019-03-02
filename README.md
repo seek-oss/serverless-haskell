@@ -118,7 +118,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
 This plugin supports handling API Gateway requests. Declare the HTTP events
 normally in `serverless.yml` and use
-[AWSLambda.Events.APIGateway](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda-Events-APIGateway.html)
+[AWSLambda.Events.APIGateway](https://hackage.haskell.org/package/serverless-haskell-0.7.5/docs/AWSLambda-Events-APIGateway.html)
 in the handler to process them.
 
 [Serverless Offline] can be used for local testing of API Gateway requests.
