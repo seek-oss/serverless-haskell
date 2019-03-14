@@ -56,26 +56,8 @@ class ServerlessPlugin {
 
         this.servicePath = this.serverless.config.servicePath || '';
 
-        this.custom = Object.assign(
-            {
-                stackBuildArgs: [],
-                arguments: {},
-                docker: true,
-            },
-            this.serverless.service.custom &&
-                this.serverless.service.custom.haskell ||
-                {}
-        );
-
-        // Warn when Docker is disabled
-        if (!this.custom.docker) {
-            this.serverless.cli.log(
-                "Warning: not using Docker to build. " +
-                    "The resulting binary might not match the AWS environment.");
-        }
-
         this.docker = {
-            use: this.custom.docker,
+            skip: false,
             haveImage: false,
         };
 
@@ -89,10 +71,23 @@ class ServerlessPlugin {
         this.additionalFiles = [];
     }
 
+    custom() {
+        return Object.assign(
+            {
+                stackBuildArgs: [],
+                arguments: {},
+                docker: true,
+            },
+            this.serverless.service.custom &&
+                this.serverless.service.custom.haskell ||
+                {}
+        );
+    }
+
     runStack(directory, args, options) {
         options = options || {};
         const envArgs = [];
-        if (this.docker.use) {
+        if (this.custom().docker && !this.docker.skip) {
             if (!this.docker.haveImage) {
                 spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
                 this.docker.haveImage = true;
@@ -107,7 +102,7 @@ class ServerlessPlugin {
 
         const stackArgs = [
             ...envArgs,
-            ...this.custom.stackBuildArgs,
+            ...this.custom().stackBuildArgs,
             ...args,
         ];
 
@@ -153,7 +148,7 @@ class ServerlessPlugin {
                 error.result.stdout.includes("not a dynamic executable")) {
                 // Static executables have no dependencies
                 return {};
-            } else if (process.platform == 'darwin' && !this.custom.docker) {
+            } else if (process.platform == 'darwin' && !this.custom().docker) {
                 // Even if ldd was available on macOS, the dependencies won't
                 // translate
                 return {};
@@ -222,7 +217,7 @@ class ServerlessPlugin {
         handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
         handlerOptions[directory][packageName].push([executableName, {
             executable: path.join(directory, executableName),
-            arguments: this.custom.arguments[funcName] || [],
+            arguments: this.custom().arguments[funcName] || [],
         }]);
     }
 
@@ -248,7 +243,12 @@ class ServerlessPlugin {
 
         options = options || {};
         if (options.localRun) {
-            this.docker.use = false;
+            this.docker.skip = true;
+        } else if (!this.custom().docker) {
+            // Warn when Docker is disabled
+            this.serverless.cli.log(
+                "Warning: not using Docker to build. " +
+                    "The resulting binary might not match the AWS environment.");
         }
 
         // Exclude Haskell artifacts from uploading
