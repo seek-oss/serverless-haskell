@@ -10,14 +10,13 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 # Verify that a command succeeds
-function assert_success() {
+assert_success() {
     MESSAGE="$1"
     shift
-    COMMAND="$@"
 
     ((++TESTS))
 
-    if $COMMAND
+    if "$@"
     then
         echo -e "${GREEN}$MESSAGE: success${NC}"
     else
@@ -33,7 +32,7 @@ HERE=$(dirname $0)
 EXPECTED=$(cd $HERE/expected; echo $PWD)
 
 # Test that the file generated is the same as expected
-function assert_file_same() {
+assert_file_same() {
     MESSAGE="$1"
     shift
     FILE="$1"
@@ -42,7 +41,7 @@ function assert_file_same() {
 }
 
 # End testing and indicate the error code
-function end_tests() {
+end_tests() {
     if ((FAILED > 0))
     then
         echo -e "${RED}Run ${TESTS} tests, ${FAILED} failed.${NC}"
