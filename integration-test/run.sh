@@ -89,7 +89,7 @@ fi
 cd $DIR
 
 # Copy the test files over, replacing the values
-SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER!$DOCKER!g;s!EXTRA_DEPS!$EXTRA_DEPS!g"
+SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER_DEFAULT!$DOCKER!g;s!EXTRA_DEPS!$EXTRA_DEPS!g"
 for FILE in $(find $SKELETON -type f | grep -v /\\. | sed "s!$SKELETON/!!")
 do
     mkdir -p $(dirname $FILE)
@@ -105,6 +105,11 @@ npm install serverless-offline
 
 # Just package the service first
 assert_success "sls package" sls package
+
+# Test packaging without Docker
+FORCE_DOCKER=false sls package > no_docker_sls_package.txt
+assert_success "custom variable disables Docker" \
+                grep -q "Serverless: Warning: not using Docker to build" no_docker_sls_package.txt
 
 # Test local invocation
 sls invoke local --function main --data '[4, 5, 6]' | \

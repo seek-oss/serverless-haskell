@@ -33,4 +33,9 @@ custom:
       - one
       - two
       - --three
-    docker: DOCKER
+    # environment variables appear as strings. Index that string into a
+    # dictionary with actual boolean values to get the boolean back
+    docker: ${self:custom.boolean.${env:FORCE_DOCKER, "DOCKER_DEFAULT"}}
+  boolean:
+    true: true
+    false: false
