@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Ensure Serverless variable substitutions properly affect the `docker` value
+  in the configuration.
+
 ## 0.8.5
 
 * Explicitly support LTS 13
