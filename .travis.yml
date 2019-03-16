@@ -11,6 +11,7 @@ cache:
   - $HOME/.ghc
   - $HOME/.cabal
   - $HOME/.stack
+  timeout: 600
 
 matrix:
   include:
