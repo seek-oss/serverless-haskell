@@ -107,14 +107,6 @@ npm install serverless
 npm install $DIST/serverless-plugin
 npm install serverless-offline
 
-# Just package the service first
-assert_success "sls package" sls package
-
-# Test packaging without Docker
-FORCE_DOCKER=false sls package > no_docker_sls_package.txt
-assert_success "custom variable disables Docker" \
-                grep -q "Serverless: Warning: not using Docker to build" no_docker_sls_package.txt
-
 # Test local invocation
 sls invoke local --function main --data '[4, 5, 6]' | \
     grep -v 'Serverless: ' > local_output.txt
@@ -138,6 +130,14 @@ then
     # All done (locally)
     :
 else
+    # Just package the service first
+    assert_success "sls package" sls package
+
+    # Test packaging without Docker
+    FORCE_DOCKER=false sls package > no_docker_sls_package.txt
+    assert_success "custom variable disables Docker" \
+        grep -q "Serverless: Warning: not using Docker to build" no_docker_sls_package.txt
+
     # Deploy to AWS
     sls deploy
 
