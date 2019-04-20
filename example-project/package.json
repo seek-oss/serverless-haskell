@@ -6,7 +6,7 @@
     "test": "test"
   },
   "dependencies": {
-    "serverless": "^1.27.3",
+    "serverless": "^1.41.0",
     "serverless-haskell": "file:../serverless-plugin"
   },
   "devDependencies": {},
