@@ -22,6 +22,11 @@ assert_success() {
     else
         echo -e "${RED}${MESSAGE}: fail${NC}"
         ((++FAILED))
+        if [ "$FAILFAST" = "true" ]
+        then
+            echo -e "${RED}Aborting further tests.${NC}"
+            exit $FAILED
+        fi
     fi
 }
 
