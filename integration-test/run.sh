@@ -20,6 +20,10 @@ do
             REUSE_DIR=true
             shift
             ;;
+        --failfast)
+            FAILFAST=true
+            shift
+            ;;
         *)
             shift
             ;;
