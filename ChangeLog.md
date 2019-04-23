@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.8.7
+
 * Build the whole project instead of individual handlers by default for better
   caching behavior.
 
