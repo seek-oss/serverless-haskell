@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Build the whole project instead of individual handlers by default for better
+  caching behavior.
+
 ## 0.8.6
 
 * Ensure Serverless variable substitutions properly affect the `docker` value
