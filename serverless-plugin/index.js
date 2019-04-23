@@ -77,6 +77,7 @@ class ServerlessPlugin {
                 stackBuildArgs: [],
                 arguments: {},
                 docker: true,
+                buildAll: true,
             },
             this.serverless.service.custom &&
                 this.serverless.service.custom.haskell ||
@@ -292,10 +293,11 @@ class ServerlessPlugin {
 
             // Ensure the executable is built
             this.serverless.cli.log(`Building handler ${funcName} with Stack...`);
-            const res = this.runStack(
-                directory,
-                ['build', `${packageName}:exe:${executableName}`]
-            );
+            const buildCommand = this.custom().buildAll ?
+                ['build'] :
+                ['build', `${packageName}:exe:${executableName}`];
+
+            const res = this.runStack(directory, buildCommand);
 
             // Copy the executable to the destination directory
             const stackInstallRoot = this.runStackOutput(
