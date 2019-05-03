@@ -44,7 +44,7 @@ package and install the @serverless-haskell@ plugin:
     from/to AWS Lambda.
 
     You can test the function and see the invocation results with @sls invoke
-    myfunc@.
+    -f myfunc@.
 
     To invoke the function locally, use @sls invoke local -f myfunc@.
 
