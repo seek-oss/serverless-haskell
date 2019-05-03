@@ -109,8 +109,8 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   it to AWS together with a JavaScript wrapper to pass the input and output
   from/to AWS Lambda.
 
-  You can test the function and see the invocation results with `sls invoke
-  myfunc`.
+  You can test the function and see the invocation results with 
+  `sls invoke -f myfunc`.
 
   To invoke the function locally, use `sls invoke local -f myfunc`.
 
