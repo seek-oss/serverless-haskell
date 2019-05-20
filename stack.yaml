@@ -3,7 +3,7 @@ packages:
 - .
 - example-project
 extra-deps:
-  - aws-lambda-haskell-runtime-1.0.7
+  - aws-lambda-haskell-runtime-1.0.8
 nix:
   packages:
     - zlib.dev
