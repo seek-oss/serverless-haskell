@@ -30,18 +30,18 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   ```
 
 * Update the resolver in the `stack.yaml` file. This is hardcoded as the resolver number is not known at template interpolation time. You should pick either the latest resolver, or one you have used before and have thus prebuilt many of the core packages for.
-  
+
 * Install the dependencies and build the project:
- 
+
   ```shell
   cd mypackage
   npm install
   stack build
   sls invoke local -f mypackage-func
   ```
-  
+
   This should invoke serverless locally and display output once everything has built.
-  
+
 ### Manually
 
 * Create a [Stack] package for your code:
@@ -71,43 +71,49 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
   provider:
     name: aws
-    runtime: haskell
+    runtime: provided
 
   functions:
     myfunc:
-      handler: mypackage.myfunc
-      # Here, mypackage is the Haskell package name and myfunc is the executable
-      # name as defined in the Cabal file. The handler field may be prefixed
-      # with a path of the form `dir1/.../dirn`, relative to `serverless.yml`,
-      # which points to the location where the Haskell package `mypackage` is
-      # defined. This prefix is not needed when the Stack project is defined at
-      # the same level as `serverless.yml`.
+      handler: src/Lib.handler
+      layers:
+        - arn:aws:lambda:us-east-1:785355572843:layer:haskell-runtime:3
 
   plugins:
     - serverless-haskell
   ```
 
-* Write your `main` function:
+* Write your `handler` function at `src/Lib.hs`:
 
   ```haskell
   import qualified Data.Aeson as Aeson
 
   import AWSLambda
+  import qualified Data.Aeson as Aeson
 
-  main = lambdaMain handler
-
-  handler :: Aeson.Value -> IO [Int]
+  handler :: Aeson.Value -> Context -> IO (Either String [Int])
   handler evt = do
     putStrLn "This should go to logs"
     print evt
-    pure [1, 2, 3]
+    return (Right [1, 2, 3])
+  ```
+
+* Configure your project with the runtime at `app/Main.hs`:
+
+  ```haskell
+  module Main where
+
+  import qualified Lib
+
+  import AWSLambda
+
+  configureLambda
   ```
 
 * Use `sls deploy` to deploy the executable to AWS Lambda.
 
   The `serverless-haskell` plugin will build the package using Stack and upload
-  it to AWS together with a JavaScript wrapper to pass the input and output
-  from/to AWS Lambda.
+  it to AWS.
 
   You can test the function and see the invocation results with
   `sls invoke -f myfunc`.

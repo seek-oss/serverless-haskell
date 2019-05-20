@@ -29,7 +29,7 @@ library:
   source-dirs: src
 
 executables:
-  {{name}}-exe:
+  haskell_lambda:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -59,29 +59,25 @@ main :: IO ()
 main = putStrLn "Test suite not yet implemented"
 
 {-# START_FILE src/Lib.hs #-}
-module Lib
-    ( someFunc
-    ) where
+module Lib where
 
-someFunc :: IO ()
-someFunc = putStrLn "Serverless is running your lambda function!"
+import AWSLambda
+import qualified Data.Aeson as Aeson
+
+handler :: Aeson.Value -> Context -> IO (Either String [Int])
+handler evt = do
+  putStrLn "This should go to logs"
+  print evt
+  return (Right [1, 2, 3])
 
 {-# START_FILE app/Main.hs #-}
 module Main where
 
-import Lib
-import qualified Data.Aeson as Aeson
+import qualified Lib
 
 import AWSLambda
 
-main = lambdaMain handler
-
-handler :: Aeson.Value -> IO [Int]
-handler evt = do
-  putStrLn "This should go to logs"
-  someFunc
-  print evt
-  pure [1, 2, 3]
+configureLambda
 
 {-# START_FILE README.md #-}
 # {{name}}
@@ -134,17 +130,13 @@ service: {{name}}
 
 provider:
   name: aws
-  runtime: haskell
+  runtime: provided
 
 functions:
   {{name}}-func:
-    handler: {{name}}.{{name}}-exe
-    # Here, mypackage is the Haskell package name and myfunc is the executable
-    # name as defined in the Cabal file. The handler field may be prefixed
-    # with a path of the form `dir1/.../dirn`, relative to `serverless.yml`,
-    # which points to the location where the Haskell package `mypackage` is
-    # defined. This prefix is not needed when the Stack project is defined at
-    # the same level as `serverless.yml`.
+    handler: src/Lib.handler
+    layers:
+      - arn:aws:lambda:us-east-1:785355572843:layer:haskell-runtime:3
 
 plugins:
   - serverless-haskell
@@ -212,6 +204,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - serverless-haskell-0.8.7
+- aws-lambda-haskell-runtime-1.0.10
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
