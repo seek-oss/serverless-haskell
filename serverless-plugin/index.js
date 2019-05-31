@@ -26,7 +26,7 @@ const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 const HASKELL_RUNTIME = 'haskell';
 
 // Runtime used by the wrapper
-const BASE_RUNTIME = 'nodejs8.10';
+const BASE_RUNTIME = 'nodejs10.x';
 
 const SERVERLESS_DIRECTORY = '.serverless';
 
