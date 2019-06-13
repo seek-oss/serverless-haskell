@@ -25,8 +25,8 @@ const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 // Runtime handled by this plugin
 const HASKELL_RUNTIME = 'haskell';
 
-// Runtime used by the wrapper
-const BASE_RUNTIME = 'nodejs10.x';
+// Runtime used by the plugin
+const BASE_RUNTIME = 'provided';
 
 const SERVERLESS_DIRECTORY = '.serverless';
 
@@ -97,9 +97,9 @@ class ServerlessPlugin {
             envArgs.push('--no-nix');
         }
 
-        if (directory) {
-            envArgs.push('--stack-yaml', `${directory}stack.yaml`);
-        }
+        // if (directory) {
+        //     envArgs.push('--stack-yaml', `${directory}stack.yaml`);
+        // }
 
         const stackArgs = [
             ...envArgs,
@@ -279,14 +279,19 @@ class ServerlessPlugin {
             haskellFunctionsFound = true;
             service.functions[funcName].runtime = BASE_RUNTIME;
 
-            const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
+            const handlerPattern = /(.*\/)?([A-Z][^\./]*)\.(handler)/;
             const matches = handlerPattern.exec(func.handler);
 
             if (!matches) {
-                throw new Exception(`handler ${func.handler} was not of the form 'packageName.executableName' or 'dir1/dir2/packageName.executableName'.`);
+                throw new Exception(`handler ${func.handler} was not of the form 'FileName.handler' or 'dir1/Dir2/FileName.handler'.\n\nExample: 'src/Foo/Bar.handler'`);
             }
 
-            const [_, directory, packageName, executableName] = matches;
+            const [_, directory, packageName, __] = matches;
+            // Required executable name for 'aws-lambda-haskell-runtime'
+            let executableName = "haskell_lambda";
+
+            // Runtime executable name
+            let runtimeName = "bootstrap";
 
             // Ensure package versions match
             this.assertServerlessPackageVersionsMatch(directory, packageName);
@@ -299,7 +304,7 @@ class ServerlessPlugin {
 
             const res = this.runStack(directory, buildCommand);
 
-            // Copy the executable to the destination directory
+            // Copy the executable and runtime to the destination directory
             const stackInstallRoot = this.runStackOutput(
                 directory,
                 [
@@ -308,10 +313,15 @@ class ServerlessPlugin {
                 ]
             );
             const targetDirectory = directory ? directory : ".";
+            const runtimeTargetDirectory = path.join(targetDirectory, "layer")
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
+            const runtimeExecutablePath = path.resolve(stackInstallRoot, 'bin', runtimeName);
+            const runtimeTargetPath = path.resolve(this.servicePath, runtimeTargetDirectory, runtimeName);
             copyFileSync(executablePath, targetPath);
+            copyFileSync(runtimeExecutablePath, runtimeTargetPath);
             this.additionalFiles.push(targetPath);
+            this.additionalFiles.push(runtimeTargetPath);
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
             if (!options.localRun) {
@@ -345,7 +355,7 @@ class ServerlessPlugin {
             );
         }
 
-        this.writeHandlers(handlerOptions);
+        // this.writeHandlers(handlerOptions);
 
         // Ensure the runtime is set to a sane value for other plugins
         if (service.provider.runtime == HASKELL_RUNTIME) {
