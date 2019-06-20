@@ -97,10 +97,6 @@ class ServerlessPlugin {
             envArgs.push('--no-nix');
         }
 
-        // if (directory) {
-        //     envArgs.push('--stack-yaml', `${directory}stack.yaml`);
-        // }
-
         const stackArgs = [
             ...envArgs,
             ...this.custom().stackBuildArgs,
@@ -346,8 +342,6 @@ class ServerlessPlugin {
                 `function configuration to use this plugin.`
             );
         }
-
-        // this.writeHandlers(handlerOptions);
 
         // Ensure the runtime is set to a sane value for other plugins
         if (service.provider.runtime == HASKELL_RUNTIME) {
