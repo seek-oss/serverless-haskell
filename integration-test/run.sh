@@ -51,8 +51,9 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 : "${RESOLVER_SERIES:=lts-13}"
 
 # Find the latest resolver in the series to use.
-RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
-               jq -r '."'$RESOLVER_SERIES'"')
+# RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
+#                jq -r '."'$RESOLVER_SERIES'"')
+RESOLVER="lts-13.25" # somehow 13.26 is not available
 echo "Using resolver: $RESOLVER"
 
 # Extra dependencies to use for the resolver
@@ -128,7 +129,7 @@ sls invoke local --function jsfunc --data '{}' | \
 assert_file_same "sls invoke local (JavaScript)" local_output_js.txt
 
 # Test serverless-offline
-sls offline start --exec \
+sls offline start --providedRuntime --exec \
     "sh -c 'curl -s http://localhost:3000/hello/integration > offline_output.txt'"
 
 assert_file_same "sls offline" offline_output.txt

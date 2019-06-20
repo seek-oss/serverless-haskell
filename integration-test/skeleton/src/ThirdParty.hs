@@ -2,6 +2,7 @@
 Main module for the integration test.
 -}
 {-# LANGUAGE OverloadedStrings #-}
+module ThirdParty where
 
 import qualified Data.Aeson as Aeson
 
@@ -11,11 +12,8 @@ import System.Environment
 
 import Text.Regex.PCRE.Light
 
-main :: IO ()
-main = lambdaMain handler
-
-handler :: Aeson.Value -> IO [Int]
-handler evt = do
+handler :: Aeson.Value -> Context -> IO (Either String [Int])
+handler evt _ = do
   -- Test logs going through
   putStrLn "This should go to logs"
   -- Test passed arguments
@@ -25,4 +23,4 @@ handler evt = do
   -- Test passed event
   print evt
   -- Test return value
-  pure [11, 22, 33]
+  pure $ Right [11, 22, 33]

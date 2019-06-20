@@ -1,8 +1,0 @@
-resolver: RESOLVER
-
-packages:
-- .
-- location: DIST
-  extra-dep: true
-
-extra-deps: [EXTRA_DEPS]

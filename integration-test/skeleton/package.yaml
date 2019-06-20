@@ -6,22 +6,20 @@ dependencies:
 - aeson
 - pcre-light
 - serverless-haskell
+- lens
+- text
+- unordered-containers
+
+library:
+  source-dirs: src
 
 executables:
-  main:
+  bootstrap:
+    source-dirs: app
     main: Main.hs
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-
-  apigw:
-    main: ApiGateway.hs
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
     dependencies:
-      - lens
-      - text
-      - unordered-containers
+      - shtest
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N

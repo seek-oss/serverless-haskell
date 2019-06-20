@@ -6,17 +6,17 @@ provider:
 
 functions:
   main:
-    handler: shtest.main
+    handler: src/ThirdParty.handler
 
   apigw:
-    handler: shtest.apigw
+    handler: src/ApiGateway.handler
     events:
       - http:
           path: hello/{name}
           method: get
 
   subdir:
-    handler: subdir/subtest.main
+    handler: src/SubDir/SubModule.handler
 
   jsfunc:
     runtime: nodejs8.10

@@ -5,4 +5,6 @@ packages:
 - location: DIST
   extra-dep: true
 
-extra-deps: [EXTRA_DEPS]
+extra-deps: # [EXTRA_DEPS]
+  - github: theam/aws-lambda-haskell-runtime
+    commit: a4f2ab4e9de8d8f3afd1810b0ba8cf5afa2444b6
