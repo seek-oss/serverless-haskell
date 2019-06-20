@@ -17,6 +17,7 @@ dependencies:
   - amazonka-core
   - amazonka-kinesis
   - amazonka-s3
+  - aws-lambda-haskell-runtime >= 2.0
   - bytestring
   - case-insensitive
   - http-types

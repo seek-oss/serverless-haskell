@@ -97,7 +97,7 @@ binary might not have the required libraries to run on Lambda.
 
 * By default, @stack build@ command is invoked to build all the project's
 executables. To only build the ones used in the handlers, set @buildAll@ key to
-@false@. Note that at least Stack 1.9.3 has better caching behavior when 
+@false@. Note that at least Stack 1.9.3 has better caching behavior when
 building the whole project, as it doesn't need to reconfigure the build for the
 individual ones every time.
 
@@ -107,10 +107,11 @@ individual ones every time.
 
 -}
 module AWSLambda
-  ( Handler.lambdaMain
+  ( module Aws.Lambda
   , module AWSLambda.Events
   ) where
 
-import qualified AWSLambda.Handler as Handler
+-- Reexport of the runtime module for configuring the lambda project
+import Aws.Lambda
 
 import AWSLambda.Events
