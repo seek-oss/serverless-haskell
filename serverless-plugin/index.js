@@ -288,10 +288,7 @@ class ServerlessPlugin {
 
             const [_, directory, packageName, __] = matches;
             // Required executable name for 'aws-lambda-haskell-runtime'
-            let executableName = "haskell_lambda";
-
-            // Runtime executable name
-            let runtimeName = "bootstrap";
+            let executableName = "bootstrap";
 
             // Ensure package versions match
             this.assertServerlessPackageVersionsMatch(directory, packageName);
@@ -312,16 +309,11 @@ class ServerlessPlugin {
                     '--local-install-root',
                 ]
             );
-            const targetDirectory = directory ? directory : ".";
-            const runtimeTargetDirectory = path.join(targetDirectory, "layer")
+            const targetDirectory = ".";
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
-            const runtimeExecutablePath = path.resolve(stackInstallRoot, 'bin', runtimeName);
-            const runtimeTargetPath = path.resolve(this.servicePath, runtimeTargetDirectory, runtimeName);
             copyFileSync(executablePath, targetPath);
-            copyFileSync(runtimeExecutablePath, runtimeTargetPath);
             this.additionalFiles.push(targetPath);
-            this.additionalFiles.push(runtimeTargetPath);
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
             if (!options.localRun) {
