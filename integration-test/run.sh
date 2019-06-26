@@ -51,8 +51,6 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 : "${RESOLVER_SERIES:=lts-13}"
 
 # Find the latest resolver in the series to use.
-# RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
-#                jq -r '."'$RESOLVER_SERIES'"')
 RESOLVER="lts-13.25" # somehow 13.26 is not available
 echo "Using resolver: $RESOLVER"
 
