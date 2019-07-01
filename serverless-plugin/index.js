@@ -301,6 +301,7 @@ class ServerlessPlugin {
             const stackInstallRoot = this.runStackOutput(
                 directory,
                 [
+                    '--docker',
                     'path',
                     '--local-install-root',
                 ]
