@@ -297,7 +297,7 @@ class ServerlessPlugin {
 
             const res = this.runStack(directory, buildCommand);
 
-            // Copy the executable and runtime to the destination directory
+            // Copy the executable to the destination directory
             const stackInstallRoot = this.runStackOutput(
                 directory,
                 [
