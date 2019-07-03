@@ -8,10 +8,18 @@ synopsis:            Deploying Haskell code onto AWS Lambda using Serverless
 description:         Example package to demonstrate deployment of Haskell code onto AWS Lambda using Serverless
 
 dependencies:
-- base >= 4.7 && < 5
+  - base >= 4.7 && < 5
+  - aeson
+  - lens
+  - serverless-haskell
+  - text
+  - unordered-containers
+
+library:
+  source-dirs: src
 
 executables:
-  example-exe:
+  bootstrap:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -19,18 +27,5 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - serverless-haskell-example
     - serverless-haskell
-
-  api-exe:
-    main:                Main.hs
-    source-dirs:         apigw-app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - aeson
-    - lens
-    - serverless-haskell
-    - text
-    - unordered-containers
