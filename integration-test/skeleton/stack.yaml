@@ -2,5 +2,4 @@ resolver: RESOLVER
 
 extra-deps:
 - DIST
-- github: theam/aws-lambda-haskell-runtime
-  commit: a4f2ab4e9de8d8f3afd1810b0ba8cf5afa2444b6
+- aws-lambda-haskell-runtime-2.0.1
