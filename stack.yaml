@@ -1,11 +1,7 @@
-resolver: lts-13.0
+resolver: lts-13.27
 packages:
 - .
 - example-project
-
-extra-deps:
-  - github: theam/aws-lambda-haskell-runtime
-    commit: a4f2ab4e9de8d8f3afd1810b0ba8cf5afa2444b6
 
 nix:
   packages:
