@@ -108,9 +108,6 @@ individual ones every time.
 -}
 module AWSLambda
   ( Handler.lambdaMain
-  , module AWSLambda.Events
   ) where
 
 import qualified AWSLambda.Handler as Handler
-
-import AWSLambda.Events
