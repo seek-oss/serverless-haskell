@@ -44,8 +44,8 @@ do
     esac
 done
 
-function sedi() {
-    if [ $(uname) == Linux ]
+sedi() {
+    if [ "$(uname)" = "Linux" ]
     then
         sed -i "$@"
     else
