@@ -31,6 +31,9 @@ function wrapper(options) {
 
         const socket = await connection;
 
+        // Close the listening socket, no more connections needed
+        server.close();
+
         // Keep track of the output result
         let output = '';
         socket.on('data', chunk => output += chunk);
