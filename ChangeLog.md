@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Close the listening socket to fix local invocations hanging (#103).
+
 ## 0.8.8
 
 * Switch AWS Lambda runtime to NodeJS 10.x.
