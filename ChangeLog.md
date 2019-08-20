@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.8.10
+
 * Fix deployment to Hackage using new Stack.
 
 ## 0.8.9
