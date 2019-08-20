@@ -19,7 +19,7 @@ unless File.exists?(stack_credentials)
   }
 end
 
-hackage_uploaded = system('stack', 'upload', '.', '--no-signature')
+hackage_uploaded = system('stack', 'upload', '.')
 if not hackage_uploaded
   print "Failed to upload to Hackage.\n"
   exit(1)
