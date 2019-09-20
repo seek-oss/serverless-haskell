@@ -7,9 +7,10 @@ const {spawnSync} = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
 
+const config = require('./config');
 const ld = require('./ld');
 
-const LAMBDA_IMAGE = 'lambci/lambda:nodejs10.x';
+const LAMBDA_IMAGE = 'lambci/lambda:' + config.BASE_RUNTIME;
 
 const EXPORT_FILE_NAME = path.resolve(__dirname, 'aws_libraries.js');
 
