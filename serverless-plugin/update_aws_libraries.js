@@ -9,7 +9,7 @@ const path = require('path');
 
 const ld = require('./ld');
 
-const LAMBDA_IMAGE = 'amazonlinux:2017.03.1.20170812';
+const LAMBDA_IMAGE = 'lambci/lambda:nodejs10.x';
 
 const EXPORT_FILE_NAME = path.resolve(__dirname, 'aws_libraries.js');
 
@@ -19,8 +19,8 @@ function main() {
         [
             'run',
             '--rm',
+            '--entrypoint', '/usr/sbin/ldconfig',
             LAMBDA_IMAGE,
-            'ldconfig',
             '-c', 'new',
             '-p'
         ]
