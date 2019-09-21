@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.8.11
+
 * Update the list of system libraries available on AWS Lambda (#108).
 
 ## 0.8.10
