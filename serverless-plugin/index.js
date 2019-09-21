@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
+const config = require('./config');
 const ld = require('./ld');
 
 const PACKAGE_NAME = 'serverless-haskell';
@@ -21,12 +22,6 @@ const IGNORE_LIBRARIES = [
 ] + require('./aws_libraries');
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
-
-// Runtime handled by this plugin
-const HASKELL_RUNTIME = 'haskell';
-
-// Runtime used by the wrapper
-const BASE_RUNTIME = 'nodejs10.x';
 
 const SERVERLESS_DIRECTORY = '.serverless';
 
@@ -273,11 +268,11 @@ class ServerlessPlugin {
 
             // Only process Haskell functions
             const runtime = func.runtime || service.provider.runtime;
-            if (runtime != HASKELL_RUNTIME) {
+            if (runtime != config.HASKELL_RUNTIME) {
                 return;
             }
             haskellFunctionsFound = true;
-            service.functions[funcName].runtime = BASE_RUNTIME;
+            service.functions[funcName].runtime = config.BASE_RUNTIME;
 
             const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
@@ -340,7 +335,7 @@ class ServerlessPlugin {
         if (!this.options.function && !haskellFunctionsFound) {
             throw new Error(
                 `Error: no Haskell functions found. ` +
-                `Use 'runtime: ${HASKELL_RUNTIME}' in global or ` +
+                `Use 'runtime: ${config.HASKELL_RUNTIME}' in global or ` +
                 `function configuration to use this plugin.`
             );
         }
@@ -348,8 +343,8 @@ class ServerlessPlugin {
         this.writeHandlers(handlerOptions);
 
         // Ensure the runtime is set to a sane value for other plugins
-        if (service.provider.runtime == HASKELL_RUNTIME) {
-            service.provider.runtime = BASE_RUNTIME;
+        if (service.provider.runtime == config.HASKELL_RUNTIME) {
+            service.provider.runtime = config.BASE_RUNTIME;
         }
     }
 

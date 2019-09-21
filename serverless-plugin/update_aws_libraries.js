@@ -7,9 +7,10 @@ const {spawnSync} = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
 
+const config = require('./config');
 const ld = require('./ld');
 
-const LAMBDA_IMAGE = 'amazonlinux:2017.03.1.20170812';
+const LAMBDA_IMAGE = 'lambci/lambda:' + config.BASE_RUNTIME;
 
 const EXPORT_FILE_NAME = path.resolve(__dirname, 'aws_libraries.js');
 
@@ -19,8 +20,8 @@ function main() {
         [
             'run',
             '--rm',
+            '--entrypoint', '/usr/sbin/ldconfig',
             LAMBDA_IMAGE,
-            'ldconfig',
             '-c', 'new',
             '-p'
         ]
