@@ -44,7 +44,7 @@ data S3ObjectEntity = S3ObjectEntity
   , _soeKey       :: !S3.ObjectKey
   , _soeSize      :: !(Maybe Integer)
   , _soeSequencer :: !Text
-  , _soeVersionId :: !(Maybe Text)
+  , _soeVersionId :: !(Maybe S3.ObjectVersionId)
   } deriving (Eq, Show)
 
 $(deriveFromJSON (aesonDrop 4 camelCase) ''S3ObjectEntity)
