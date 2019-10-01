@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.9.1
+
 * Release a version following the proper release process.
 
 ## 0.9.0
