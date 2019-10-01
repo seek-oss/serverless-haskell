@@ -61,7 +61,7 @@ then
         echo "Index is dirty, commit the changes first." >&2
         exit 1
     fi
-    if [ "$(git rev-parse --abbrev-ref HEAD)" != "master" ]
+    if [ "$(git symbolic-ref --short HEAD)" != "master" ]
     then
         echo "Versions should only be tagged from master." >&2
         exit 1
