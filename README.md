@@ -134,13 +134,11 @@ for documentation, including additional options to control the deployment.
 
 ## Development
 
-Currently, apart from the `master` branch, an `v0.6.x` branch is maintained with
-no breaking changes since 0.6.0, for inclusion into Stackage LTS 12. For
-bugfixes and new features that do not change the existing behavior, please
-target `v0.6.x`. For anything else, target `master`.
+`master` branch is the stable version. It is normally released to Hackage once
+new changes are merged via Git tags.
 
-Changes to the LTS branch will be forward ported to the `master` branch after
-releasing.
+The package is also maintained in Stackage LTS, provided the dependencies are
+not blocking it.
 
 ### Testing
 
@@ -169,7 +167,7 @@ an AWS account. To run manually:
 
 ### Releasing
 
-* Ensure you are on a correct branch (`v0.6.x` or `master`).
+* Ensure you are on the `master` branch.
 * Ensure that all the changes are reflected in the changelog.
 * Run the integration tests.
 * Run `./bumpversion major|minor|patch`. This will increment the version number,
