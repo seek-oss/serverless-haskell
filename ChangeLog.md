@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Release a version following the proper release process.
+
 ## 0.9.0
 
 * Use `ObjectVersionId` from `amazonka-s3` in S3 events.
