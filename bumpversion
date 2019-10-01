@@ -54,10 +54,18 @@ sedi() {
 }
 
 # check if git is dirty
-if [ -z $NO_DIRTY_CHECK ] && !(git diff-index --quiet HEAD --)
+if [ -z $NO_DIRTY_CHECK ]
 then
-    echo "Index is dirty, commit the changes first." >&2
-    exit 1
+    if !(git diff-index --quiet HEAD --)
+    then
+        echo "Index is dirty, commit the changes first." >&2
+        exit 1
+    fi
+    if [ "$(git rev-parse --abbrev-ref HEAD)" != "master" ]
+    then
+        echo "Versions should only be tagged from master." >&2
+        exit 1
+    fi
 fi
 
 # find current version
