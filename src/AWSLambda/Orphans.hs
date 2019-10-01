@@ -17,6 +17,8 @@ deriving instance FromJSON S3.BucketName
 
 deriving instance FromJSON S3.ObjectKey
 
+deriving instance FromJSON S3.ObjectVersionId
+
 instance FromJSON S3.ETag where
   parseJSON = withText "ETag" $ either fail return . fromText
 
