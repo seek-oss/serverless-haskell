@@ -7,6 +7,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 * Support LTS 14.
 * Check glibc version of the resulting executable to avoid errors when running
   (#114).
+* Use LTS 13 Docker image for building the binary to avoid depending on glibc
+  version not present on AWS.
 
 ## 0.9.1
 
