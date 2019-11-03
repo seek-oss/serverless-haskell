@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Check glibc version of the resulting executable to avoid errors when running
+  (#114).
+
 ## 0.9.1
 
 * Release a version following the proper release process.
