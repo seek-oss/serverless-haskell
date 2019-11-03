@@ -91,6 +91,7 @@ class ServerlessPlugin {
                 this.docker.haveImage = true;
             }
             envArgs.push('--docker');
+            envArgs.push('--docker-image', config.BUILD_DOCKER_IMAGE);
             envArgs.push('--no-nix');
         }
 
