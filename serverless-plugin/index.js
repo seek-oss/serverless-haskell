@@ -86,12 +86,12 @@ class ServerlessPlugin {
         options = options || {};
         const envArgs = [];
         if (this.custom().docker && !this.docker.skip) {
-            if (!this.docker.haveImage) {
-                spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
-                this.docker.haveImage = true;
-            }
             envArgs.push('--docker');
             envArgs.push('--docker-image', config.BUILD_DOCKER_IMAGE);
+            if (!this.docker.haveImage) {
+                spawnSync('stack', [...envArgs, 'docker', 'pull'], NO_OUTPUT_CAPTURE);
+                this.docker.haveImage = true;
+            }
             envArgs.push('--no-nix');
         }
 
