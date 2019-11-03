@@ -102,7 +102,9 @@ npm install serverless-offline
 assert_success "sls package" sls package
 
 # Test packaging without Docker
-FORCE_DOCKER=false sls package > no_docker_sls_package.txt
+# This might fail due to glibc check, ignore the failure (but still compare
+# the output)
+(FORCE_DOCKER=false sls package || true) > no_docker_sls_package.txt
 assert_success "custom variable disables Docker" \
                 grep -q "Serverless: Warning: not using Docker to build" no_docker_sls_package.txt
 
