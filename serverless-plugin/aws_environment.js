@@ -71,6 +71,6 @@ module.exports.libraries = [
     "ld-linux-x86-64.so.2"
 ]
 module.exports.glibcVersion = [
-    "2",
-    "26"
+    2,
+    26
 ]

@@ -9,6 +9,7 @@ const path = require('path');
 
 const config = require('./config');
 const ld = require('./ld');
+const version = require('./version');
 
 const EXPORT_FILE_NAME = path.resolve(__dirname, 'aws_environment.js');
 
@@ -53,7 +54,7 @@ function getGlibcVersion() {
         console.log(lddOutput);
         throw "Unexpected output from ldd.";
     }
-    const glibcVersion = glibcVersionMatch[0].split('.');
+    const glibcVersion = version.parse(glibcVersionMatch[0]);
     return glibcVersion;
 }
 
