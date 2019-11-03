@@ -6,7 +6,8 @@ if [ -f configure.ac ]; then autoreconf -i; fi
 
 set -ex
 case "$BUILD" in
-stack)
+integration)
+    sudo apt-get install -y jq pwgen
     # Add in extra-deps for older snapshots, as necessary
     stack --no-terminal --install-ghc $ARGS test --bench --dry-run || ( \
     stack --no-terminal $ARGS build cabal-install && \
@@ -21,9 +22,6 @@ npm)
     cd serverless-plugin
     npm install
     cd -
-    ;;
-integration)
-    sudo apt-get install -y jq pwgen
     ;;
 esac
 
