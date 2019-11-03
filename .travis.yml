@@ -18,23 +18,23 @@ matrix:
   - env: BUILD=integration ARGS=""
     compiler: ": #integration default"
 
-  - env: BUILD=integration RESOLVER_SERIES=lts-9 ARGS="--resolver lts-9 --stack-yaml stack-travis.yaml"
-    compiler: ": #integration LTS 9"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-10 ARGS="--resolver lts-10 --stack-yaml stack-travis.yaml"
-    compiler: ": #integration LTS 10"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-11 ARGS="--resolver lts-11"
-    compiler: ": #integration LTS 11"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-12 ARGS="--resolver lts-12"
-    compiler: ": #integration LTS 12"
+  - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14"
+    compiler: ": #integration LTS 14"
 
   - env: BUILD=integration RESOLVER_SERIES=lts-13 ARGS="--resolver lts-13"
     compiler: ": #integration LTS 13"
 
-  - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14"
-    compiler: ": #integration LTS 14"
+  - env: BUILD=integration RESOLVER_SERIES=lts-12 ARGS="--resolver lts-12"
+    compiler: ": #integration LTS 12"
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-11 ARGS="--resolver lts-11"
+    compiler: ": #integration LTS 11"
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-10 ARGS="--resolver lts-10 --stack-yaml stack-travis.yaml"
+    compiler: ": #integration LTS 10"
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-9 ARGS="--resolver lts-9 --stack-yaml stack-travis.yaml"
+    compiler: ": #integration LTS 9"
 
   - env: BUILD=npm
     compiler: ": #npm"
