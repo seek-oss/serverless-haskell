@@ -35,6 +35,9 @@ matrix:
   - env: BUILD=stack ARGS="--resolver lts-13"
     compiler: ": #stack LTS 13"
 
+  - env: BUILD=stack ARGS="--resolver lts-14"
+    compiler: ": #stack LTS 14"
+
   - env: BUILD=npm
     compiler: ": #npm"
 
@@ -52,6 +55,9 @@ matrix:
 
   - env: BUILD=integration RESOLVER_SERIES=lts-13
     compiler: ": #integration LTS 13"
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-14
+    compiler: ": #integration LTS 14"
 
 before_install: source ./travis/before_install
 

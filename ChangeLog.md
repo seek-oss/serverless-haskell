@@ -4,6 +4,7 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Support LTS 14.
 * Check glibc version of the resulting executable to avoid errors when running
   (#114).
 

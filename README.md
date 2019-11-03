@@ -50,7 +50,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   stack new mypackage
   ```
 
-  LTS 9-13 are supported, older versions are likely to work too but untested.
+  LTS 9-14 are supported, older versions are likely to work too but untested.
 
 * Initialise a Serverless project inside the Stack package directory and install
   the `serverless-haskell` plugin:
@@ -159,7 +159,7 @@ an AWS account. To run manually:
 * Run `./integration-test/run.sh`. The exit code indicates success.
 * To verify just the packaging, without deployment, run
   `./integration-test/run.sh --dry-run`.
-* By default, the integration test is run with LTS 13. To specify a different
+* By default, the integration test is run with LTS 14. To specify a different
   series, use `RESOLVER_SERIES=lts-9`.
 * To avoid creating a temporary directory for every run, specify
   `--no-clean-dir`. This can speed up repeated test runs, but does not guarantee
