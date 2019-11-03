@@ -70,3 +70,7 @@ module.exports.libraries = [
     "libBrokenLocale.so.1",
     "ld-linux-x86-64.so.2"
 ]
+module.exports.glibcVersion = [
+    "2",
+    "26"
+]
