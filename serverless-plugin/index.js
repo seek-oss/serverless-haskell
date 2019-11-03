@@ -5,9 +5,10 @@ const fs = require('fs-extra');
 const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
+const aws_environment = require('./aws_environment');
 const config = require('./config');
 const ld = require('./ld');
-const aws_environment = require('./aws_environment');
+const version = require('./version');
 
 const PACKAGE_NAME = 'serverless-haskell';
 
@@ -153,6 +154,20 @@ class ServerlessPlugin {
                 throw error;
             }
         }
+    }
+
+    glibcVersion(directory, executablePath) {
+        const objdumpOutput = this.runStackOutput(
+            directory,
+            [
+                'exec',
+                'objdump',
+                '--',
+                '-T',
+                executablePath,
+            ]
+        );
+        return ld.parseObjdumpOutput(objdumpOutput);
     }
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
@@ -311,6 +326,15 @@ class ServerlessPlugin {
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
             if (!options.localRun) {
+                // Check glibc version
+                const glibcVersion = this.glibcVersion(directory, executablePath);
+                if (version.greater(glibcVersion, aws_environment.glibcVersion)) {
+                    this.serverless.cli.log(
+                        "Warning: glibc version required by the executable (" + version.format(glibcVersion) + ") is " +
+                            "higher than the one in AWS environment (" + version.format(aws_environment.glibcVersion) + ").");
+                    throw new Error("glibc version mismatch.");
+                }
+
                 // Copy libraries not present on AWS Lambda environment
                 const executableLibraries = this.dependentLibraries(directory, executablePath);
 
