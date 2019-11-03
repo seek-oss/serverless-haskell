@@ -7,6 +7,7 @@ const path = require('path');
 
 const config = require('./config');
 const ld = require('./ld');
+const aws_environment = require('./aws_environment');
 
 const PACKAGE_NAME = 'serverless-haskell';
 
@@ -19,7 +20,7 @@ const ADDITIONAL_EXCLUDE = [
 const IGNORE_LIBRARIES = [
     'linux-vdso.so.1',
     '/lib64/ld-linux-x86-64.so.2',
-] + require('./aws_libraries');
+] + aws_environment;
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 

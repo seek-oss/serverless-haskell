@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "eslint .",
-    "update-aws-libraries": "./update_aws_libraries.js"
+    "update-aws-environment": "./update_aws_environment.js"
   },
   "repository": {
     "type": "git",
