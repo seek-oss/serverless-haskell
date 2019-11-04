@@ -55,6 +55,15 @@ RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
                jq -r '."'$RESOLVER_SERIES'"')
 echo "Using resolver: $RESOLVER"
 
+# Extra dependencies to use for the resolver
+EXTRA_DEPS_YAML=$(cd $HERE; echo $PWD)/extra-deps.$RESOLVER_SERIES
+if [ -f $EXTRA_DEPS_YAML ]
+then
+    EXTRA_DEPS=$EXTRA_DEPS_YAML
+else
+    EXTRA_DEPS=/dev/null
+fi
+
 if [ -n "$REUSE_DIR" ]
 then
     DIR=$HERE/run
@@ -84,11 +93,20 @@ fi
 cd $DIR
 
 # Copy the test files over, replacing the values
-SED="sed s!NAME!$NAME!g;s!DIST!$DIST!g;s!RESOLVER!$RESOLVER!g;s!DOCKER_DEFAULT!$DOCKER!g"
+skeleton() {
+    mkdir -p $(dirname $1)
+    sed "s!NAME!$NAME!g
+s!DIST!$DIST!g
+s!RESOLVER!$RESOLVER!g
+s!DOCKER_DEFAULT!$DOCKER!g
+/EXTRA_DEPS/{
+r$EXTRA_DEPS
+d
+}" < $SKELETON/$1 > $1
+}
 for FILE in $(find $SKELETON -type f | grep -v /\\. | sed "s!$SKELETON/!!")
 do
-    mkdir -p $(dirname $FILE)
-    $SED < $SKELETON/$FILE > $FILE
+    skeleton $FILE
 done
 
 export PATH=$(npm bin):$PATH

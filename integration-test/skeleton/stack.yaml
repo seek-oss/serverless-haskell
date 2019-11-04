@@ -2,3 +2,4 @@ resolver: RESOLVER
 
 extra-deps:
 - DIST
+EXTRA_DEPS
