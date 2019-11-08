@@ -5,8 +5,10 @@ const fs = require('fs-extra');
 const copyFileSync = require('fs-copy-file-sync');
 const path = require('path');
 
+const aws_environment = require('./aws_environment');
 const config = require('./config');
 const ld = require('./ld');
+const version = require('./version');
 
 const PACKAGE_NAME = 'serverless-haskell';
 
@@ -19,7 +21,7 @@ const ADDITIONAL_EXCLUDE = [
 const IGNORE_LIBRARIES = [
     'linux-vdso.so.1',
     '/lib64/ld-linux-x86-64.so.2',
-] + require('./aws_libraries');
+] + aws_environment.libraries;
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
@@ -84,11 +86,12 @@ class ServerlessPlugin {
         options = options || {};
         const envArgs = [];
         if (this.custom().docker && !this.docker.skip) {
+            envArgs.push('--docker');
+            envArgs.push('--docker-image', config.BUILD_DOCKER_IMAGE);
             if (!this.docker.haveImage) {
-                spawnSync('stack', ['docker', 'pull'], NO_OUTPUT_CAPTURE);
+                spawnSync('stack', [...envArgs, 'docker', 'pull'], NO_OUTPUT_CAPTURE);
                 this.docker.haveImage = true;
             }
-            envArgs.push('--docker');
             envArgs.push('--no-nix');
         }
 
@@ -152,6 +155,20 @@ class ServerlessPlugin {
                 throw error;
             }
         }
+    }
+
+    glibcVersion(directory, executablePath) {
+        const objdumpOutput = this.runStackOutput(
+            directory,
+            [
+                'exec',
+                'objdump',
+                '--',
+                '-T',
+                executablePath,
+            ]
+        );
+        return ld.parseObjdumpOutput(objdumpOutput);
     }
 
     assertServerlessPackageVersionsMatch(directory, packageName) {
@@ -310,6 +327,15 @@ class ServerlessPlugin {
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
             if (!options.localRun) {
+                // Check glibc version
+                const glibcVersion = this.glibcVersion(directory, executablePath);
+                if (version.greater(glibcVersion, aws_environment.glibcVersion)) {
+                    this.serverless.cli.log(
+                        "Warning: glibc version required by the executable (" + version.format(glibcVersion) + ") is " +
+                            "higher than the one in AWS environment (" + version.format(aws_environment.glibcVersion) + ").");
+                    throw new Error("glibc version mismatch.");
+                }
+
                 // Copy libraries not present on AWS Lambda environment
                 const executableLibraries = this.dependentLibraries(directory, executablePath);
 

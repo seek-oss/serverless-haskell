@@ -2,6 +2,8 @@
 
 'use strict';
 
+const version = require('./version');
+
 // Parse output of ldd or ldconfig and return a map of library names to paths
 function parseLdOutput(output) {
     const libraryList = output.split('\n').filter(ln => ln.includes('=>'));
@@ -15,4 +17,22 @@ function parseLdOutput(output) {
     return result;
 }
 
+function flatten(arr) {
+    return arr.reduce((x, y) => x.concat(y), []);
+}
+
+// Parse output of objdump -T and return minimum glibc version required
+function parseObjdumpOutput(output) {
+    const glibcPrefix = 'GLIBC_';
+    const glibcReferences = flatten(output.split('\n').map(
+        ln => ln.split(/\s+/))).filter(p => p.indexOf(glibcPrefix) === 0);
+    const versions = glibcReferences.map(s => version.parse(s.substring(glibcPrefix.length)));
+    if (versions.length > 0) {
+        return versions.reduce(version.max);
+    } else {
+        return null;
+    }
+}
+
 module.exports.parseLdOutput = parseLdOutput;
+module.exports.parseObjdumpOutput = parseObjdumpOutput;

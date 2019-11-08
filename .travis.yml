@@ -15,43 +15,29 @@ cache:
 
 matrix:
   include:
-  # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
-  # variable, such as using --stack-yaml to point to a different file.
-  - env: BUILD=stack ARGS=""
-    compiler: ": #stack default"
+  - env: BUILD=integration ARGS=""
+    compiler: ": #integration default"
 
-  - env: BUILD=stack ARGS="--resolver lts-9 --stack-yaml stack-travis.yaml"
-    compiler: ": #stack LTS 9"
+  - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14"
+    compiler: ": #integration LTS 14"
 
-  - env: BUILD=stack ARGS="--resolver lts-10 --stack-yaml stack-travis.yaml"
-    compiler: ": #stack LTS 10"
+  - env: BUILD=integration RESOLVER_SERIES=lts-13 ARGS="--resolver lts-13"
+    compiler: ": #integration LTS 13"
 
-  - env: BUILD=stack ARGS="--resolver lts-11"
-    compiler: ": #stack LTS 11"
+  - env: BUILD=integration RESOLVER_SERIES=lts-12 ARGS="--resolver lts-12"
+    compiler: ": #integration LTS 12"
 
-  - env: BUILD=stack ARGS="--resolver lts-12"
-    compiler: ": #stack LTS 12"
+  - env: BUILD=integration RESOLVER_SERIES=lts-11 ARGS="--resolver lts-11"
+    compiler: ": #integration LTS 11"
 
-  - env: BUILD=stack ARGS="--resolver lts-13"
-    compiler: ": #stack LTS 13"
+  - env: BUILD=integration RESOLVER_SERIES=lts-10 ARGS="--resolver lts-10 --stack-yaml stack-travis.yaml"
+    compiler: ": #integration LTS 10"
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-9 ARGS="--resolver lts-9 --stack-yaml stack-travis.yaml"
+    compiler: ": #integration LTS 9"
 
   - env: BUILD=npm
     compiler: ": #npm"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-9
-    compiler: ": #integration LTS 9"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-10
-    compiler: ": #integration LTS 10"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-11
-    compiler: ": #integration LTS 11"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-12
-    compiler: ": #integration LTS 12"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-13
-    compiler: ": #integration LTS 13"
 
 before_install: source ./travis/before_install
 
