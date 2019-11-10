@@ -40,16 +40,9 @@ matrix:
     name: "npm"
 
   - stage: deploy
-    script: skip
-    deploy:
-      provider: script
-      script: ./travis/deploy
-      skip_cleanup: true
-      on:
-        tags: true
-        all_branches: true
-        condition:
-          - '$TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$'
+    script: ./travis/deploy
+    if:
+      - tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
 
 before_install: source ./travis/before_install
 
