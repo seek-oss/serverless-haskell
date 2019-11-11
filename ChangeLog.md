@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.9.3
+
 * More robust deployment process.
 
 ## 0.9.2
