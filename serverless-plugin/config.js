@@ -6,7 +6,7 @@
 const HASKELL_RUNTIME = 'haskell';
 
 // Runtime used by the wrapper
-const BASE_RUNTIME = 'nodejs10.x';
+const BASE_RUNTIME = 'nodejs12.x';
 
 // Docker image used as reference
 const DOCKER_IMAGE = 'lambci/lambda:' + BASE_RUNTIME;
