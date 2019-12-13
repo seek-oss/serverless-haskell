@@ -41,7 +41,7 @@ sampleSNSJSON = [r|
         "SignatureVersion": "1",
         "Timestamp": "1970-01-01T00:00:00.000Z",
         "Signature": "EXAMPLE",
-        "SigningCertUrl": "EXAMPLE",
+        "SigningCertURL": "EXAMPLE",
         "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
         "Message": "Hello from SNS!",
         "MessageAttributes": {
@@ -55,7 +55,7 @@ sampleSNSJSON = [r|
           }
         },
         "Type": "Notification",
-        "UnsubscribeUrl": "EXAMPLE",
+        "UnsubscribeURL": "EXAMPLE",
         "TopicArn": "topicarn",
         "Subject": "TestInvoke"
       }
@@ -74,7 +74,7 @@ sampleSNSEvent =
       , _srSns =
         SNSMessage
         { _smMessage = "Hello from SNS!"
-        , _smMessageAttributes =
+        , _smMessageAttributes = Just $
           HashMap.fromList
             [ ( "Test"
               , MessageAttribute
@@ -90,12 +90,12 @@ sampleSNSEvent =
         , _smMessageId = "95df01b4-ee98-5cb9-9903-4c221d41eb5e"
         , _smSignature = "EXAMPLE"
         , _smSignatureVersion = "1"
-        , _smSigningCertUrl = "EXAMPLE"
+        , _smSigningCertURL = "EXAMPLE"
         , _smSubject = "TestInvoke"
         , _smTimestamp = UTCTime (fromGregorian 1970 1 1) (secondsToDiffTime 0)
         , _smTopicArn = "topicarn"
         , _smType = "Notification"
-        , _smUnsubscribeUrl = "EXAMPLE"
+        , _smUnsubscribeURL = "EXAMPLE"
         }
       }
     ]
@@ -116,9 +116,8 @@ sampleSNSS3JSON = [r|
         "Timestamp":"2017-03-06T02:56:19.834Z",
         "SignatureVersion":"1",
         "Signature":"aybEgnTjKzSbC2puHxho7SUnYOje4SjBoCyt0Q13bMWyp7M64+EU6jzi7P01+gSIuBFyYPsHreSmyqGMRSxbFuzn7rG5JcVGN0901U3CRXdk42eh03je8evRvs/Oa7TJlhpCTEDDOScalCWbIH0RthYONQpPR01nEgaNKj3e8YVJqyRQV+4RbU3YWJOj+Spyi4u1hOC9PLUv4BH7U80nbhbOe9EwgX0zpeNU1WBRbEpqPoACm+7/uB0w79qFBKjB/Q7OWc1kASUZV9q8bz03yceoQeVvza0QGhPsnSXi49sn1mLWQOFS4KvgbJIC/Qk7H036ShrDioP6pP+UEg6kow==",
-        "SigningCertUrl":"https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-b95095beb82e8f6a046b3aafc7f4149a.pem",
-        "UnsubscribeUrl":"https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:012345678901:SomeSNSEvent:23e2d254-e8bb-4db5-92ce-d917e5aad090",
-        "MessageAttributes":{}
+        "SigningCertURL":"https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-b95095beb82e8f6a046b3aafc7f4149a.pem",
+        "UnsubscribeURL":"https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:012345678901:SomeSNSEvent:23e2d254-e8bb-4db5-92ce-d917e5aad090",
       }
     }
   ]
@@ -195,12 +194,12 @@ sampleSNSS3Event =
               }
             }
           }
-        , _smMessageAttributes = HashMap.fromList []
+        , _smMessageAttributes = Nothing
         , _smMessageId = "89f6fe8b-a751-5dcd-8e0c-afbd75420455"
         , _smSignature =
           "aybEgnTjKzSbC2puHxho7SUnYOje4SjBoCyt0Q13bMWyp7M64+EU6jzi7P01+gSIuBFyYPsHreSmyqGMRSxbFuzn7rG5JcVGN0901U3CRXdk42eh03je8evRvs/Oa7TJlhpCTEDDOScalCWbIH0RthYONQpPR01nEgaNKj3e8YVJqyRQV+4RbU3YWJOj+Spyi4u1hOC9PLUv4BH7U80nbhbOe9EwgX0zpeNU1WBRbEpqPoACm+7/uB0w79qFBKjB/Q7OWc1kASUZV9q8bz03yceoQeVvza0QGhPsnSXi49sn1mLWQOFS4KvgbJIC/Qk7H036ShrDioP6pP+UEg6kow=="
         , _smSignatureVersion = "1"
-        , _smSigningCertUrl =
+        , _smSigningCertURL =
           "https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-b95095beb82e8f6a046b3aafc7f4149a.pem"
         , _smSubject = "Amazon S3 Notification"
         , _smTimestamp =
@@ -209,7 +208,7 @@ sampleSNSS3Event =
             (picosecondsToDiffTime 10579834000000000)
         , _smTopicArn = "arn:aws:sns:ap-southeast-2:012345678901:SomeSNSEvent"
         , _smType = "Notification"
-        , _smUnsubscribeUrl =
+        , _smUnsubscribeURL =
           "https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:012345678901:SomeSNSEvent:23e2d254-e8bb-4db5-92ce-d917e5aad090"
         }
       }
