@@ -12,7 +12,7 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 module AWSLambda.Events.SNSEvent where
 
 import           Control.Lens
-import           Data.Aeson               (FromJSON (..), genericParseJSON)
+import           Data.Aeson               (FromJSON (..), genericParseJSON, omitNothingFields)
 import           Data.Aeson.Casing        (aesonDrop, pascalCase)
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
@@ -37,20 +37,20 @@ $(makeLenses ''MessageAttribute)
 
 data SNSMessage message = SNSMessage
   { _smMessage           :: !(TextValue message )
-  , _smMessageAttributes :: !(HashMap Text MessageAttribute)
+  , _smMessageAttributes :: !(Maybe (HashMap Text MessageAttribute))
   , _smMessageId         :: !Text
   , _smSignature         :: !Text
   , _smSignatureVersion  :: !Text
-  , _smSigningCertUrl    :: !Text
+  , _smSigningCertURL    :: !Text
   , _smSubject           :: !Text
   , _smTimestamp         :: !UTCTime
   , _smTopicArn          :: !Text
   , _smType              :: !Text
-  , _smUnsubscribeUrl    :: !Text
+  , _smUnsubscribeURL    :: !Text
   } deriving (Eq, Show, Generic)
 
 instance FromText message => FromJSON (SNSMessage message) where
-  parseJSON = genericParseJSON $ aesonDrop 3 pascalCase
+  parseJSON = genericParseJSON $ (aesonDrop 3 pascalCase){omitNothingFields = True}
 
 $(makeLenses ''SNSMessage)
 
