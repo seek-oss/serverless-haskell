@@ -11,6 +11,7 @@ import           Network.AWS.Data.Text         (FromText)
 import           AWSLambda.Events.KinesisEvent
 import           AWSLambda.Events.S3Event
 import           AWSLambda.Events.SNSEvent
+import           AWSLambda.Events.SQSEvent
 
 -- | Not yet implemented
 data DynamoDBEvent
@@ -60,11 +61,12 @@ data InvokeEvent
 -- | Sum type for all possible Lambda events.
 -- Parameterised on the type of SNS Events to be handled.
 -- See @SNSEvent@ for details.
-data LambdaEvent snsMessage
+data LambdaEvent message
   = S3 !S3Event
   | DynamoDB !DynamoDBEvent
   | KinesisStream !KinesisEvent
-  | SNS !(SNSEvent snsMessage)
+  | SNS !(SNSEvent message)
+  | SQS !(SQSEvent message)
   | SES !SESEvent
   | Cognito !CognitoEvent
   | CloudFormation !CloudFormationEvent
@@ -84,10 +86,10 @@ data LambdaEvent snsMessage
 -- | Attempt to parse the various event types.
 -- Any valid JSON that can't be parsed as a specific
 -- event type will result in a 'Custom' value.
-instance FromText snsMessage =>
-         FromJSON (LambdaEvent snsMessage) where
+instance FromText message =>
+         FromJSON (LambdaEvent message) where
   parseJSON v =
-    try S3 v <|> try KinesisStream v <|> try SNS v <|> pure (Custom v)
+    try S3 v <|> try KinesisStream v <|> try SNS v <|> try SQS v <|> pure (Custom v)
     where
       try f = fmap f . parseJSON
 

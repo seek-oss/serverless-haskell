@@ -3,6 +3,7 @@
 
 module AWSLambda.Events.SNSEventSpec where
 
+import           AWSLambda.Events.MessageAttribute
 import           AWSLambda.Events.Records
 import           AWSLambda.Events.S3Event
 import           AWSLambda.Events.SNSEvent
