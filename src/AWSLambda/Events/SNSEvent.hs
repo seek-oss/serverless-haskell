@@ -43,6 +43,14 @@ data SNSMessage message = SNSMessage
   , _smUnsubscribeUrl    :: !Text
   } deriving (Eq, Show, Generic)
 
+-- When a lambda is triggered directly off of an SNS topic,
+-- the SNS message contains message attributes and the URI
+-- fileds are cased as `SigningCertUrl` and `UnsubscribeUrl`.
+-- When an SNS message is embedded in an SQS event,
+-- the SNS message changes in two ways; `MessageAttributes`
+-- is not present and the casing for the URI fields becomes
+-- `SigningCertURL` and `UnsubscribeURL`.
+-- For these reasons we must hand-roll the `FromJSON` instance.
 instance FromText message => FromJSON (SNSMessage message) where
   parseJSON = withObject "SNSMessage'" $ \o ->
     SNSMessage
