@@ -4,10 +4,8 @@
 {-# LANGUAGE TemplateHaskell   #-}
 
 {-|
-Module: AWSLambda.Events.SNSEvent
-Description: Types for SNS Lambda events
-
-Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.SNSEvents
+Module: AWSLambda.Events.SQSEvent
+Description: Types for SQS Lambda events
 -}
 module AWSLambda.Events.SQSEvent where
 
