@@ -11,12 +11,13 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 -}
 module AWSLambda.Events.SNSEvent where
 
+import           Control.Applicative      ((<|>))
 import           Control.Lens
-import           Data.Aeson               (FromJSON (..), genericParseJSON)
+import           Data.Aeson               (FromJSON (..), genericParseJSON,
+                                           withObject, (.:), (.:?), (.!=))
 import           Data.Aeson.Casing        (aesonDrop, pascalCase)
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
-import           Data.Aeson.TH            (deriveFromJSON)
 import           Data.ByteString          (ByteString)
 import           Data.HashMap.Strict      (HashMap)
 import           Data.Text                (Text)
@@ -25,15 +26,8 @@ import           GHC.Generics             (Generic)
 import           Network.AWS.Data.Base64
 import           Network.AWS.Data.Text    (FromText)
 
+import           AWSLambda.Events.MessageAttribute
 import           AWSLambda.Events.Records
-
-data MessageAttribute = MessageAttribute
-  { _maType  :: !Text
-  , _maValue :: !Text
-  } deriving (Eq, Show)
-
-$(deriveFromJSON (aesonDrop 3 pascalCase) ''MessageAttribute)
-$(makeLenses ''MessageAttribute)
 
 data SNSMessage message = SNSMessage
   { _smMessage           :: !(TextValue message )
@@ -49,8 +43,28 @@ data SNSMessage message = SNSMessage
   , _smUnsubscribeUrl    :: !Text
   } deriving (Eq, Show, Generic)
 
+-- When a lambda is triggered directly off of an SNS topic,
+-- the SNS message contains message attributes and the URI
+-- fields are cased as `SigningCertUrl` and `UnsubscribeUrl`.
+-- When an SNS message is embedded in an SQS event,
+-- the SNS message changes in two ways; `MessageAttributes`
+-- is not present and the casing for the URI fields becomes
+-- `SigningCertURL` and `UnsubscribeURL`.
+-- For these reasons we must hand-roll the `FromJSON` instance.
 instance FromText message => FromJSON (SNSMessage message) where
-  parseJSON = genericParseJSON $ aesonDrop 3 pascalCase
+  parseJSON = withObject "SNSMessage'" $ \o ->
+    SNSMessage
+      <$> o .: "Message"
+      <*> o .:? "MessageAttributes" .!= mempty
+      <*> o .: "MessageId"
+      <*> o .: "Signature"
+      <*> o .: "SignatureVersion"
+      <*> do o .: "SigningCertUrl" <|> o .: "SigningCertURL"
+      <*> o .: "Subject"
+      <*> o .: "Timestamp"
+      <*> o .: "TopicArn"
+      <*> o .: "Type"
+      <*> do o .: "UnsubscribeUrl" <|> o .: "UnsubscribeURL"
 
 $(makeLenses ''SNSMessage)
 
