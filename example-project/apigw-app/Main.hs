@@ -4,6 +4,7 @@ module Main where
 import           AWSLambda.Events.APIGateway
 import           Control.Lens
 import qualified Data.HashMap.Strict         as HashMap
+import           Data.Semigroup
 import           Data.Text                   (Text)
 
 main :: IO ()
