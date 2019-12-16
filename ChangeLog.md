@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.10.0
+
 * Adds support for SQS events, including those with embedded SNS and S3 messages.
 
 ## 0.9.4
