@@ -6,6 +6,3 @@ nix:
   packages:
     - zlib.dev
     - zlib.out
-
-extra-deps:
-- aeson-extra-0.4.1.3@sha256:e92dee5b770a4026da69fc127360e6a2b32c834da278db4e7642647d1aabbf7d,2960
