@@ -11,7 +11,7 @@ module Data.Aeson.Embedded where
 
 import           Control.Lens.TH
 import           Data.Aeson
-import           Data.Aeson.Extra      (encodeStrict)
+import qualified Data.ByteString.Lazy as LBS
 import           Data.Text.Encoding    (decodeUtf8, encodeUtf8)
 import           Network.AWS.Data.Text (FromText (..), ToText (..), fromText,
                                         takeText)
@@ -29,7 +29,7 @@ instance FromJSON a =>
   parseJSON v = either fail pure . fromText =<< parseJSON v
 
 instance ToJSON a => ToText (Embedded a) where
-  toText = decodeUtf8 . encodeStrict . _unEmbed
+  toText = decodeUtf8 . LBS.toStrict . encode . _unEmbed
 
 instance ToJSON a => ToJSON (Embedded a) where
   toJSON = toJSON . toText

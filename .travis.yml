@@ -18,7 +18,10 @@ jobs:
   - env: BUILD=integration ARGS=""
     name: "Default"
 
-  - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14"
+  - env: BUILD=integration RESOLVER_SERIES=lts-15 ARGS="--resolver lts-15"
+    name: "LTS 15"
+
+  - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14 --stack-yaml stack-14.yaml"
     name: "LTS 14"
 
   - env: BUILD=integration RESOLVER_SERIES=lts-13 ARGS="--resolver lts-13"
@@ -30,10 +33,10 @@ jobs:
   - env: BUILD=integration RESOLVER_SERIES=lts-11 ARGS="--resolver lts-11"
     name: "LTS 11"
 
-  - env: BUILD=integration RESOLVER_SERIES=lts-10 ARGS="--resolver lts-10 --stack-yaml stack-travis.yaml"
+  - env: BUILD=integration RESOLVER_SERIES=lts-10 ARGS="--resolver lts-10"
     name: "LTS 10"
 
-  - env: BUILD=integration RESOLVER_SERIES=lts-9 ARGS="--resolver lts-9 --stack-yaml stack-travis.yaml"
+  - env: BUILD=integration RESOLVER_SERIES=lts-9 ARGS="--resolver lts-9"
     name: "LTS 9"
 
   - env: BUILD=npm

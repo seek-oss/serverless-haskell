@@ -2,19 +2,11 @@
 
 set -ex
 
-# We want to always allow newer versions of packages when building on GHC HEAD
-CABALARGS=""
-
 # Download and unpack the stack executable
-export PATH=$HOME/.local/bin:$HOME/.cabal/bin:$PATH
+export PATH=$HOME/.local/bin:$PATH
 mkdir -p ~/.local/bin
 
-if [ `uname` = "Darwin" ]
-then
-    curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
-else
-    curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-fi
+curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 sudo apt-get update
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
