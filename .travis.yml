@@ -18,6 +18,9 @@ jobs:
   - env: BUILD=integration ARGS=""
     name: "Default"
 
+  - env: BUILD=integration RESOLVER_SERIES=lts-15 ARGS="--resolver lts-15"
+    name: "LTS 15"
+
   - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14"
     name: "LTS 14"
 
