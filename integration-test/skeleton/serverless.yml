@@ -19,7 +19,7 @@ functions:
     handler: subdir/subtest.main
 
   jsfunc:
-    runtime: nodejs8.10
+    runtime: nodejs12.x
     handler: jsfunc/handler.main
 
 plugins:
