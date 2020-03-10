@@ -17,16 +17,19 @@ function parseLdOutput(output) {
     return result;
 }
 
-const glibcPattern = /\bGLIBC_([0-9.]+)\b/gm;
-
 // Parse output of objdump -T and return minimum glibc version required
 function parseObjdumpOutput(output) {
-    const versions = output.matchAll(glibcPattern).map(match => version.parse(match[1]));
-    if (versions.length > 0) {
-        return versions.reduce(version.max);
-    } else {
-        return null;
+    const glibcPattern = /\bGLIBC_([0-9.]+)\b/g;
+
+    let maxVersion = null;
+    let match;
+    while (match = glibcPattern.exec(output)) {
+        const thisVersion = version.parse(match[1]);
+        if (!maxVersion || version.greater(thisVersion, maxVersion)) {
+            maxVersion = thisVersion;
+        }
     }
+    return maxVersion;
 }
 
 module.exports.parseLdOutput = parseLdOutput;
