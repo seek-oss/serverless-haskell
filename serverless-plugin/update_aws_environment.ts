@@ -8,7 +8,7 @@ import * as config from './config';
 import * as ld from './ld';
 import * as version from './version';
 
-const EXPORT_FILE_NAME = path.resolve(__dirname, 'aws_environment.js');
+const EXPORT_FILE_NAME = path.resolve(__dirname, 'aws_environment.ts');
 
 function commandOutput(cmd: string, args: string[]): string {
     const result = spawnSync(
@@ -60,8 +60,8 @@ function main(): void {
         "// Please use 'npm run update-aws-environment' to update.\n";
 
     function add_export(name: string, value: any): string {
-        return "module.exports." + name + " = " +
-            JSON.stringify(value, null, 4) + "\n";
+        return "export const " + name + " = " +
+            JSON.stringify(value, null, 4) + ";\n";
     }
 
     content += add_export("libraries", getLibraries());
