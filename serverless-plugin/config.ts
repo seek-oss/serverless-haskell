@@ -1,10 +1,12 @@
 // Constants
 
+export type Runtime = string;
+
 // Runtime handled by this plugin
-export const HASKELL_RUNTIME = 'haskell';
+export const HASKELL_RUNTIME: Runtime = 'haskell';
 
 // Runtime used by the wrapper
-export const BASE_RUNTIME = 'nodejs12.x';
+export const BASE_RUNTIME: Runtime = 'nodejs12.x';
 
 // Docker image used as reference
 export const DOCKER_IMAGE = 'lambci/lambda:' + BASE_RUNTIME;

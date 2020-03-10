@@ -1,14 +1,14 @@
 'use strict';
 
-const {spawnSync} = require('child_process');
-const fs = require('fs-extra');
-const copyFileSync = require('fs-copy-file-sync');
-const path = require('path');
+import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
+import { readFileSync, removeSync, writeFileSync } from 'fs-extra';
+import { copyFileSync } from 'fs-copy-file-sync';
+import * as path from 'path';
 
-const aws_environment = require('./aws_environment');
-const config = require('./config');
-const ld = require('./ld');
-const version = require('./version');
+import * as aws_environment from './aws_environment';
+import * as config from './config';
+import * as ld from './ld';
+import * as version from './version';
 
 const PACKAGE_NAME = 'serverless-haskell';
 
@@ -27,10 +27,81 @@ const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
 const SERVERLESS_DIRECTORY = '.serverless';
 
-const NO_OUTPUT_CAPTURE = {stdio: ['ignore', process.stdout, process.stderr]};
+const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
+
+type Custom = {
+    stackBuildArgs: string[],
+    arguments: { [executable: string]: string[] },
+    docker: boolean,
+    buildAll: boolean,
+};
+
+type HandlerOptions = {
+    [ directory: string ]: {
+        [ packageName: string ]: [
+            string,
+            {
+                executable: string,
+                arguments: string[],
+            }
+        ][]
+    }
+};
+
+type Serverless = {
+    cli: {
+        log: (message: string) => void,
+    },
+    config: {
+        servicePath?: string,
+    },
+    service: {
+        custom?: {
+            haskell?: Custom,
+        },
+        functions: Record<string, ServerlessFunction>,
+        package: {
+            exclude: string[],
+            excludeDevDependencies?: boolean,
+        },
+        provider: {
+            runtime: config.Runtime,
+        },
+        getFunction: (name: string) => ServerlessFunction,
+        getAllFunctions: () => string[],
+    },
+};
+
+type ServerlessFunction = {
+    handler: string,
+    runtime: config.Runtime,
+};
+
+type Options = {
+    function?: string,
+};
+
+class ProcessError extends Error {
+    result: SpawnSyncReturns<Buffer>;
+    constructor(message: string, result: SpawnSyncReturns<Buffer>) {
+        super(message);
+        this.result = result;
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
 
 class ServerlessPlugin {
-    constructor(serverless, options) {
+    serverless: Serverless;
+    options: Options;
+    hooks: { [hook: string]: (options: {}) => void };
+    servicePath: string;
+    docker: {
+        skip: boolean,
+        haveImage: boolean,
+    };
+    additionalFiles: string[];
+
+    constructor(serverless: Serverless, options: Options) {
         this.serverless = serverless;
         this.options = options;
 
@@ -68,7 +139,7 @@ class ServerlessPlugin {
         this.additionalFiles = [];
     }
 
-    custom() {
+    custom(): Custom {
         return Object.assign(
             {
                 stackBuildArgs: [],
@@ -82,7 +153,7 @@ class ServerlessPlugin {
         );
     }
 
-    runStack(directory, args, options) {
+    runStack(directory: string, args: string[], options: {captureOutput?: boolean} = {}): SpawnSyncReturns<Buffer> {
         options = options || {};
         const envArgs = [];
         if (this.custom().docker && !this.docker.skip) {
@@ -111,25 +182,21 @@ class ServerlessPlugin {
             options.captureOutput ? {} : NO_OUTPUT_CAPTURE
         );
 
-        if (result.error || result.status > 0) {
+        if (result.error || result.status && result.status > 0) {
             const message = `Error when running Stack: ${result.stderr}\n` +
                   `Stack command: stack ${stackArgs.join(" ")}`;
-            const error = new Error(message);
-            error.result = result;
-            throw error;
+            throw new ProcessError(message, result);
         }
 
         return result;
     }
 
-    runStackOutput(directory, args, options) {
-        options = options || {};
-        options.captureOutput = true;
-        const result = this.runStack(directory, args, options);
-        return result.stdout.toString('utf8').trim();
+    runStackOutput(directory: string, args: string[]) {
+        const result = this.runStack(directory, args, {captureOutput: true});
+        return result.stdout.toString().trim();
     }
 
-    dependentLibraries(directory, executablePath) {
+    dependentLibraries(directory: string, executablePath: string) {
         try {
             const lddOutput = this.runStackOutput(
                 directory,
@@ -157,7 +224,7 @@ class ServerlessPlugin {
         }
     }
 
-    glibcVersion(directory, executablePath) {
+    glibcVersion(directory: string, executablePath: string): version.Version | null {
         const objdumpOutput = this.runStackOutput(
             directory,
             [
@@ -171,7 +238,7 @@ class ServerlessPlugin {
         return ld.parseObjdumpOutput(objdumpOutput);
     }
 
-    assertServerlessPackageVersionsMatch(directory, packageName) {
+    assertServerlessPackageVersionsMatch(directory: string, packageName: string) {
         // Check that the Haskell package version corresponds to our own
         const stackDependencies = this.runStackOutput(
             directory,
@@ -202,14 +269,14 @@ class ServerlessPlugin {
         }
     }
 
-    buildHandlerFileName(directory, packageName) {
+    buildHandlerFileName(directory: string, packageName: string): string {
         const fileName = `${packageName}.js`;
 
         return path.resolve(this.servicePath, directory, fileName);
     }
 
-    writeHandlers(handlerOptions) {
-        const handlerTemplate = fs.readFileSync(TEMPLATE).toString('utf8');
+    writeHandlers(handlerOptions: HandlerOptions) {
+        const handlerTemplate = readFileSync(TEMPLATE).toString('utf8');
 
         for (const directory in handlerOptions) {
             for (const packageName in handlerOptions[directory]) {
@@ -218,13 +285,13 @@ class ServerlessPlugin {
                 ).join("\n") + "\n";
                 const handlerFileName = this.buildHandlerFileName(directory, packageName);
 
-                fs.writeFileSync(handlerFileName, handler);
+                writeFileSync(handlerFileName, handler);
                 this.additionalFiles.push(handlerFileName);
             }
         }
     }
 
-    addToHandlerOptions(handlerOptions, funcName, directory, packageName, executableName) {
+    addToHandlerOptions(handlerOptions: HandlerOptions, funcName: string, directory: string, packageName: string, executableName: string) {
         // Remember the executable that needs to be handled by this package's shim
         handlerOptions[directory] = handlerOptions[directory] || {};
         handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
@@ -234,7 +301,7 @@ class ServerlessPlugin {
         }]);
     }
 
-    buildHandlersLocal(options) {
+    buildHandlersLocal(options: {}): void {
         options = options || {};
         this.buildHandlers(Object.assign(options, {
             localRun: true
@@ -243,7 +310,7 @@ class ServerlessPlugin {
 
     // Which functions are being deployed now - all (default) or only one of
     // them ('deploy function')
-    deployedFunctions() {
+    deployedFunctions(): string[] {
         if (this.options.function) {
             return [this.options.function];
         } else {
@@ -251,7 +318,7 @@ class ServerlessPlugin {
         }
     }
 
-    buildHandlers(options) {
+    buildHandlers(options: {localRun?: boolean}): void {
         const service = this.serverless.service;
 
         options = options || {};
@@ -276,7 +343,7 @@ class ServerlessPlugin {
         const handlerOptions = {};
 
         // Keep track of which extra libraries were copied
-        const libraries = {};
+        const libraries: { [name: string]: boolean } = {};
 
         let haskellFunctionsFound = false;
 
@@ -295,7 +362,7 @@ class ServerlessPlugin {
             const matches = handlerPattern.exec(func.handler);
 
             if (!matches) {
-                throw new Exception(`handler ${func.handler} was not of the form 'packageName.executableName' or 'dir1/dir2/packageName.executableName'.`);
+                throw new Error(`handler ${func.handler} was not of the form 'packageName.executableName' or 'dir1/dir2/packageName.executableName'.`);
             }
 
             const [_, directory, packageName, executableName] = matches;
@@ -329,7 +396,7 @@ class ServerlessPlugin {
             if (!options.localRun) {
                 // Check glibc version
                 const glibcVersion = this.glibcVersion(directory, executablePath);
-                if (version.greater(glibcVersion, aws_environment.glibcVersion)) {
+                if (glibcVersion && version.greater(glibcVersion, aws_environment.glibcVersion)) {
                     this.serverless.cli.log(
                         "Warning: glibc version required by the executable (" + version.format(glibcVersion) + ") is " +
                             "higher than the one in AWS environment (" + version.format(aws_environment.glibcVersion) + ").");
@@ -374,8 +441,8 @@ class ServerlessPlugin {
         }
     }
 
-    cleanupHandlers(options) {
-        this.additionalFiles.forEach(fileName => fs.removeSync(fileName));
+    cleanupHandlers(options: {}) {
+        this.additionalFiles.forEach(fileName => removeSync(fileName));
     }
 }
 
