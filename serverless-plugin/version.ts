@@ -1,8 +1,10 @@
-function parse(str) {
+export type Version = number[];
+
+export function parse(str: string): Version {
     return str.split('.').map(n => +n);
 }
 
-function format(version) {
+export function format(version: Version): string {
     return version.join('.');
 }
 
@@ -10,7 +12,7 @@ function format(version) {
 // -1 if x < y
 // 0 if x == y
 // 1 if x > y
-function compare(x, y) {
+export function compare(x: Version, y: Version): number {
     for (let i = 0; i < x.length && i < y.length; i++) {
         if (x[i] < y[i]) {
             return -1;
@@ -28,16 +30,10 @@ function compare(x, y) {
     return 0;
 }
 
-function greater(x, y) {
+export function greater(x: Version, y: Version): boolean {
     return compare(x, y) > 0;
 }
 
-function max(x, y) {
+export function max(x: Version, y: Version): Version {
     return greater(x, y) ? x : y;
 }
-
-module.exports.compare = compare;
-module.exports.format = format;
-module.exports.greater = greater;
-module.exports.max = max;
-module.exports.parse = parse;

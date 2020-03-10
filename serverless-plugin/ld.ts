@@ -1,14 +1,14 @@
 // Parse output of ldd and ldconfig
 
-'use strict';
+import * as version from './version';
 
-const version = require('./version');
+export type Paths = { [path: string]: string };
 
 // Parse output of ldd or ldconfig and return a map of library names to paths
-function parseLdOutput(output) {
+export function parseLdOutput(output: string): Paths {
     const libraryList = output.split('\n').filter(ln => ln.includes('=>'));
 
-    const result = {};
+    const result: Paths = {};
     libraryList.forEach(s => {
         const [name, _, libPath] = s.trim().split(' ');
         result[name] = libPath;
@@ -18,7 +18,7 @@ function parseLdOutput(output) {
 }
 
 // Parse output of objdump -T and return minimum glibc version required
-function parseObjdumpOutput(output) {
+export function parseObjdumpOutput(output: string): version.Version | null {
     const glibcPattern = /\bGLIBC_([0-9.]+)\b/g;
 
     let maxVersion = null;
@@ -31,6 +31,3 @@ function parseObjdumpOutput(output) {
     }
     return maxVersion;
 }
-
-module.exports.parseLdOutput = parseLdOutput;
-module.exports.parseObjdumpOutput = parseObjdumpOutput;

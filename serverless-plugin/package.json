@@ -2,9 +2,10 @@
   "name": "serverless-haskell",
   "version": "0.10.2",
   "description": "Deploy Haskell binaries onto AWS Lambda",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "eslint .",
+    "prepublish": "tsc",
     "update-aws-environment": "./update_aws_environment.js"
   },
   "repository": {
@@ -19,6 +20,10 @@
     "serverless": "^1.67.0"
   },
   "devDependencies": {
-    "eslint": "^4.19.1"
+    "@types/fs-extra": "^8.1.0",
+    "@types/node": "^13.9.0",
+    "@types/serverless": "^1.18.6",
+    "eslint": "^4.19.1",
+    "typescript": "^3.8.3"
   }
 }
