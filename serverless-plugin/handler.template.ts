@@ -1,25 +1,27 @@
-'use strict';
+import { spawn } from 'child_process';
+import * as net from 'net';
 
-const { spawn } = require('child_process');
-const net = require('net');
+type Options = {
+    executable: string,
+    arguments: string[],
+};
 
-function wrapper(options) {
-    const executable = options['executable'];
-    const execArguments = options['arguments'];
-    return async function (event, context) {
-        process.env['PATH'] = process.env['PATH'] + ':' +
-            process.env['LAMBDA_TASK_ROOT'];
+function wrapper(options: Options) {
+    const executable = options.executable;
+    const execArguments = options.arguments;
+    return async (event: any, context: {}) => {
+        process.env.PATH = `${process.env.PATH}:${process.env.LAMBDA_TASK_ROOT}`;
 
         const server = net.createServer();
 
-        const connection = new Promise(resolve => server.on('connection', resolve));
+        const connection = new Promise<net.Socket>(resolve => server.on('connection', resolve));
 
-        const address = await new Promise(
+        const address: net.AddressInfo = await new Promise<net.AddressInfo>(
             resolve =>
-                server.listen({port: 0, host: "127.0.0.1"}, () => resolve(server.address())));
+                server.listen({port: 0, host: "127.0.0.1"}, () => resolve(server.address() as net.AddressInfo)));
         const port = address.port;
 
-        process.env['SERVERLESS_HASKELL_COMMUNICATION_PORT'] = `${port}`;
+        process.env.SERVERLESS_HASKELL_COMMUNICATION_PORT = `${port}`;
 
         const main = spawn('./' + executable, execArguments, {
             stdio: ['pipe', process.stdout, process.stderr],
@@ -52,8 +54,8 @@ function wrapper(options) {
 
             socket.on('end', resolveWithOutput);
 
-            main.on('exit', function (code) {
-                if (code == 0) {
+            main.on('exit', code => {
+                if (code === 0) {
                     // If the "main exit" was received before "socket closed",
                     // wait for a while before resolving, since the data sent
                     // over the socket might not have arrived yet either.
@@ -64,9 +66,7 @@ function wrapper(options) {
                 }
             });
 
-            main.on('error', function (err) {
-                reject(err, 'child process exited with error: ' + err);
-            });
+            main.on('error', err => reject('child process exited with error: ' + err));
         });
     };
 }
