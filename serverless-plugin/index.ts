@@ -1,8 +1,7 @@
 'use strict';
 
 import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
-import { readFileSync, removeSync, writeFileSync } from 'fs-extra';
-import { copyFileSync } from 'fs-copy-file-sync';
+import { copySync, readFileSync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
 
 import * as aws_environment from './aws_environment';
@@ -21,7 +20,7 @@ const ADDITIONAL_EXCLUDE = [
 const IGNORE_LIBRARIES = [
     'linux-vdso.so.1',
     '/lib64/ld-linux-x86-64.so.2',
-] + aws_environment.libraries;
+].concat(aws_environment.libraries);
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
@@ -214,7 +213,7 @@ class ServerlessPlugin {
                 error.result.stdout.includes("not a dynamic executable")) {
                 // Static executables have no dependencies
                 return {};
-            } else if (process.platform == 'darwin' && !this.custom().docker) {
+            } else if (process.platform === 'darwin' && !this.custom().docker) {
                 // Even if ldd was available on macOS, the dependencies won't
                 // translate
                 return {};
@@ -261,9 +260,9 @@ class ServerlessPlugin {
                 PACKAGE_NAME,
                 '--json',
             ]
-        ).stdout)['dependencies'][PACKAGE_NAME]['version'];
+        ).stdout).dependencies[PACKAGE_NAME].version;
 
-        if (haskellPackageVersion != javascriptPackageVersion) {
+        if (haskellPackageVersion !== javascriptPackageVersion) {
             this.serverless.cli.log(`Package version mismatch: serverless-haskell installed from NPM: ${javascriptPackageVersion}, installed from Stack: ${haskellPackageVersion}. Versions must be in sync to work correctly. Please install matching versions of serverless-haskell from NPM and Stack by either pinning your NPM version to match stack, or adding an extra-dep in your stack.yaml to match the NPM version.`);
             throw new Error("Package version mismatch.");
         }
@@ -279,14 +278,18 @@ class ServerlessPlugin {
         const handlerTemplate = readFileSync(TEMPLATE).toString('utf8');
 
         for (const directory in handlerOptions) {
-            for (const packageName in handlerOptions[directory]) {
-                let handler = handlerTemplate + handlerOptions[directory][packageName].map(
-                    ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
-                ).join("\n") + "\n";
-                const handlerFileName = this.buildHandlerFileName(directory, packageName);
+            if (handlerOptions.hasOwnProperty(directory)) {
+                for (const packageName in handlerOptions[directory]) {
+                    if (handlerOptions[directory].hasOwnProperty(packageName)) {
+                        const handler = handlerTemplate + handlerOptions[directory][packageName].map(
+                            ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
+                        ).join("\n") + "\n";
+                        const handlerFileName = this.buildHandlerFileName(directory, packageName);
 
-                writeFileSync(handlerFileName, handler);
-                this.additionalFiles.push(handlerFileName);
+                        writeFileSync(handlerFileName, handler);
+                        this.additionalFiles.push(handlerFileName);
+                    }
+                }
             }
         }
     }
@@ -340,7 +343,7 @@ class ServerlessPlugin {
 
         // Each package will have its own wrapper; remember its options to add
         // to the handler template
-        const handlerOptions = {};
+        const handlerOptions: HandlerOptions = {};
 
         // Keep track of which extra libraries were copied
         const libraries: { [name: string]: boolean } = {};
@@ -352,7 +355,7 @@ class ServerlessPlugin {
 
             // Only process Haskell functions
             const runtime = func.runtime || service.provider.runtime;
-            if (runtime != config.HASKELL_RUNTIME) {
+            if (runtime !== config.HASKELL_RUNTIME) {
                 return;
             }
             haskellFunctionsFound = true;
@@ -389,7 +392,7 @@ class ServerlessPlugin {
             const targetDirectory = directory ? directory : ".";
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
-            copyFileSync(executablePath, targetPath);
+            copySync(executablePath, targetPath);
             this.additionalFiles.push(targetPath);
             this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
 
@@ -409,16 +412,16 @@ class ServerlessPlugin {
                 for (const name in executableLibraries) {
                     if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
                         const libPath = executableLibraries[name];
-                        const targetPath = path.resolve(this.servicePath, name);
+                        const libTargetPath = path.resolve(this.servicePath, name);
                         this.runStack(
                             directory,
                             [
                                 'exec',
                                 'cp',
                                 libPath,
-                                targetPath,
+                                libTargetPath,
                             ]);
-                        this.additionalFiles.push(targetPath);
+                        this.additionalFiles.push(libTargetPath);
                         libraries[name] = true;
                     }
                 }
@@ -436,7 +439,7 @@ class ServerlessPlugin {
         this.writeHandlers(handlerOptions);
 
         // Ensure the runtime is set to a sane value for other plugins
-        if (service.provider.runtime == config.HASKELL_RUNTIME) {
+        if (service.provider.runtime === config.HASKELL_RUNTIME) {
             service.provider.runtime = config.BASE_RUNTIME;
         }
     }

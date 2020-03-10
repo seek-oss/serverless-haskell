@@ -23,9 +23,8 @@ function commandOutput(cmd: string, args: string[]): string {
     );
 
     if (result.error || result.status && result.status > 0) {
-        console.log("Error calling " + cmd + " in the AWS image.");
-        console.log(result.stderr.toString().trim());
-        throw "Error calling " + cmd;
+        const stderr = result.stderr.toString().trim();
+        throw new Error(`Error calling ${cmd} in the AWS image: ${stderr}`);
     }
 
     return result.stdout.toString().trim();
@@ -47,9 +46,7 @@ function getGlibcVersion(): version.Version {
 
     const glibcVersionMatch = lddOutput.match(/((\d+.)+\d+)/);
     if (!glibcVersionMatch) {
-        console.log("Unexpected output from ldd.")
-        console.log(lddOutput);
-        throw "Unexpected output from ldd.";
+        throw new Error(`Unexpected output from ldd: ${lddOutput}`);
     }
     const glibcVersion = version.parse(glibcVersionMatch[0]);
     return glibcVersion;

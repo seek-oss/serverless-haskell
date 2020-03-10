@@ -23,11 +23,14 @@ export function parseObjdumpOutput(output: string): version.Version | null {
 
     let maxVersion = null;
     let match;
-    while (match = glibcPattern.exec(output)) {
-        const thisVersion = version.parse(match[1]);
-        if (!maxVersion || version.greater(thisVersion, maxVersion)) {
-            maxVersion = thisVersion;
+    do {
+        match = glibcPattern.exec(output);
+        if (match) {
+            const thisVersion = version.parse(match[1]);
+            if (!maxVersion || version.greater(thisVersion, maxVersion)) {
+                maxVersion = thisVersion;
+            }
         }
-    }
+    } while (match);
     return maxVersion;
 }
