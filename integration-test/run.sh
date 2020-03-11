@@ -124,6 +124,7 @@ npm install serverless-offline
 
 # Compile and install the plugin
 pushd $DIST/serverless-plugin >/dev/null
+npm install
 npm run prepare
 popd >/dev/null
 npm install $DIST/serverless-plugin
