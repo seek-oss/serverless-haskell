@@ -118,10 +118,15 @@ done
 
 export PATH=$(npm bin):$PATH
 
-# Install Serverless
+# Install Serverless and serverless-offline
 npm install serverless
-npm install $DIST/serverless-plugin
 npm install serverless-offline
+
+# Compile and install the plugin
+pushd $DIST/serverless-plugin >/dev/null
+npm run prepare
+popd >/dev/null
+npm install $DIST/serverless-plugin
 
 # Just package the service first
 assert_success "sls package" sls package
