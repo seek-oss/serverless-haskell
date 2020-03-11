@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Speed up checking required glibc version, avoiding potentially very long
+  deployment times (#124).
+
 ## 0.10.1
 
 * Support LTS 15.
