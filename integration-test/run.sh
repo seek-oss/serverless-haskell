@@ -48,7 +48,7 @@ DIST=$(cd $HERE/..; echo $PWD)
 SKELETON=$(cd $HERE/skeleton; echo $PWD)
 
 # Stackage resolver series to use
-: "${RESOLVER_SERIES:=$(cat stack.yaml | grep resolver | sed 's/resolver: \(lts-[0-9]\+\).\+/\1/')}"
+: "${RESOLVER_SERIES:=$(cat stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
 
 # Find the latest resolver in the series to use.
 RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
