@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.10.2
+
 * Speed up checking required glibc version, avoiding potentially very long
   deployment times (#124).
 * Fix running integration tests on macOS (#125).
