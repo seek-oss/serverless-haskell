@@ -64,29 +64,33 @@ else
     EXTRA_DEPS=/dev/null
 fi
 
+function cleanup () {
+  if [ -z "$REUSE_DIR" ]
+  then
+    rm -rf $DIR
+  fi
+  if ! $DRY_RUN
+  then
+    sls --no-color remove || true
+  fi
+  if [ -n "$SLS_OFFLINE_PID" ]
+  then
+    kill $SLS_OFFLINE_PID || true
+  fi
+}
+trap cleanup exit
+
 if [ -n "$REUSE_DIR" ]
 then
     DIR=$HERE/run
     mkdir -p $DIR
     echo "Testing in $DIR"
-    if $DRY_RUN
-    then
-        :
-    else
-        trap "(sls --no-color remove || true)" EXIT
-    fi
 
     NAME=s-h-test
 else
     # Temporary directory to create a project in
     DIR=$(mktemp -d)
     echo "Testing in $DIR"
-    if $DRY_RUN
-    then
-        trap "rm -rf $DIR" EXIT
-    else
-        trap "(sls --no-color remove || true); rm -rf $DIR" EXIT
-    fi
 
     NAME=s-h-test-$(pwgen 10 -0 -A)
 fi
