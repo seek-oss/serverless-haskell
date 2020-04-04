@@ -5,6 +5,9 @@
 set -euo pipefail
 
 DOCKER=true
+DRY_RUN=
+REUSE_DIR=
+FAILFAST=
 while [ $# -gt 0 ]
 do
     case "$1" in
@@ -70,7 +73,7 @@ function cleanup () {
   then
     rm -rf $DIR
   fi
-  if ! $DRY_RUN
+  if [ -z "$DRY_RUN" ]
   then
     sls --no-color remove || true
   fi
@@ -155,7 +158,7 @@ kill $SLS_OFFLINE_PID
 
 assert_file_same "sls offline" offline_output.txt
 
-if [ "$DRY_RUN" = "true" ]
+if [ -n "$DRY_RUN" ]
 then
     # All done (locally)
     :
