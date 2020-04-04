@@ -2,7 +2,7 @@
 # Test packaging a function, deploying it to AWS and running it. With --dry-run,
 # only packaging is tested. With --no-docker, Docker isn't used for packaging.
 
-set -e
+set -euo pipefail
 
 DOCKER=true
 while [ $# -gt 0 ]
