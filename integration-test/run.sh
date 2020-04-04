@@ -64,6 +64,7 @@ else
     EXTRA_DEPS=/dev/null
 fi
 
+SLS_OFFLINE_PID=
 function cleanup () {
   if [ -z "$REUSE_DIR" ]
   then
