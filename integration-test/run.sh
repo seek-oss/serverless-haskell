@@ -40,7 +40,7 @@ do
 done
 
 # Directory of the integration test
-HERE=$(dirname $0)
+HERE=$(cd $(dirname $0); echo $PWD)
 
 . $HERE/tests.sh
 
@@ -52,20 +52,6 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 
 # Stackage resolver series to use
 : "${RESOLVER_SERIES:=$(cat stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
-
-# Find the latest resolver in the series to use.
-RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
-               jq -r '."'$RESOLVER_SERIES'"')
-echo "Using resolver: $RESOLVER"
-
-# Extra dependencies to use for the resolver
-EXTRA_DEPS_YAML=$(cd $HERE; echo $PWD)/extra-deps.$RESOLVER_SERIES
-if [ -f $EXTRA_DEPS_YAML ]
-then
-    EXTRA_DEPS=$EXTRA_DEPS_YAML
-else
-    EXTRA_DEPS=/dev/null
-fi
 
 SLS_OFFLINE_PID=
 function cleanup () {
@@ -99,6 +85,20 @@ else
     NAME=s-h-test-$(pwgen 10 -0 -A)
 fi
 cd $DIR
+
+# Find the latest resolver in the series to use.
+curl -o snapshots.json https://www.stackage.org/download/snapshots.json
+RESOLVER=$(cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"')
+echo "Using resolver: $RESOLVER"
+
+# Extra dependencies to use for the resolver
+EXTRA_DEPS_YAML=$HERE/extra-deps.$RESOLVER_SERIES
+if [ -f $EXTRA_DEPS_YAML ]
+then
+    EXTRA_DEPS=$EXTRA_DEPS_YAML
+else
+    EXTRA_DEPS=/dev/null
+fi
 
 # Copy the test files over, replacing the values
 skeleton() {
