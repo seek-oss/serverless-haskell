@@ -92,11 +92,10 @@ RESOLVER=$(cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"')
 echo "Using resolver: $RESOLVER"
 
 # Extra dependencies to use for the resolver
-EXTRA_DEPS_YAML=$HERE/extra-deps.$RESOLVER_SERIES
-if [ -f $EXTRA_DEPS_YAML ]
+EXTRA_DEPS=$HERE/extra-deps.$RESOLVER_SERIES
+echo $EXTRA_DEPS
+if ! [ -f $EXTRA_DEPS ]
 then
-    EXTRA_DEPS=$EXTRA_DEPS_YAML
-else
     EXTRA_DEPS=/dev/null
 fi
 

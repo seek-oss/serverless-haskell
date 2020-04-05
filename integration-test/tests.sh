@@ -30,11 +30,8 @@ assert_success() {
     fi
 }
 
-# Directory of the integration test
-HERE=$(dirname $0)
-
 # Directory with the expected outputs
-EXPECTED=$(cd $HERE/expected; echo $PWD)
+EXPECTED=$(cd $(dirname $0)/expected; echo $PWD)
 
 # Test that the file generated is the same as expected
 assert_file_same() {
