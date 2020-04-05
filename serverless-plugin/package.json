@@ -4,7 +4,7 @@
   "description": "Deploy Haskell binaries onto AWS Lambda",
   "main": "dist/index.js",
   "scripts": {
-    "test": "tslint *.ts",
+    "test": "eslint . --ext .js,.ts",
     "prepare": "tsc",
     "update-aws-environment": "ts-node update_aws_environment.ts"
   },
@@ -22,8 +22,10 @@
     "@types/fs-extra": "^8.1.0",
     "@types/node": "^13.9.0",
     "@types/serverless": "^1.18.6",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
+    "eslint": "^6.8.0",
     "ts-node": "^8.6.2",
-    "tslint": "^6.0.0",
     "typescript": "^3.8.3"
   }
 }

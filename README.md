@@ -143,7 +143,7 @@ not blocking it.
 ### Testing
 
 * Haskell code is tested with Stack: `stack test`.
-* TypeScript code is linted with `tslint`.
+* TypeScript code is linted with `eslint`.
 
 ### Integration tests
 
