@@ -2,8 +2,8 @@ import { spawn } from 'child_process';
 import * as net from 'net';
 
 type Options = {
-    executable: string,
-    arguments: string[],
+    executable: string;
+    arguments: string[];
 };
 
 function wrapper(options: Options) {

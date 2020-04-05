@@ -4,7 +4,7 @@ import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
 import { copySync, readFileSync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
 
-import * as aws_environment from './aws_environment';
+import * as AWSEnvironment from './AWSEnvironment';
 import * as config from './config';
 import * as ld from './ld';
 import * as version from './version';
@@ -20,7 +20,7 @@ const ADDITIONAL_EXCLUDE = [
 const IGNORE_LIBRARIES = [
     'linux-vdso.so.1',
     '/lib64/ld-linux-x86-64.so.2',
-].concat(aws_environment.libraries);
+].concat(AWSEnvironment.libraries);
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
@@ -29,10 +29,10 @@ const SERVERLESS_DIRECTORY = '.serverless';
 const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
 
 type Custom = {
-    stackBuildArgs: string[],
-    arguments: { [executable: string]: string[] },
-    docker: boolean,
-    buildAll: boolean,
+    stackBuildArgs: string[];
+    arguments: { [executable: string]: string[] };
+    docker: boolean;
+    buildAll: boolean;
 };
 
 type HandlerOptions = {
@@ -40,44 +40,44 @@ type HandlerOptions = {
         [ packageName: string ]: [
             string,
             {
-                executable: string,
-                arguments: string[],
+                executable: string;
+                arguments: string[];
             }
-        ][]
-    }
+        ][];
+    };
 };
 
 type Serverless = {
     cli: {
-        log: (message: string) => void,
-    },
+        log: (message: string) => void;
+    };
     config: {
-        servicePath?: string,
-    },
+        servicePath?: string;
+    };
     service: {
         custom?: {
-            haskell?: Custom,
-        },
-        functions: Record<string, ServerlessFunction>,
+            haskell?: Custom;
+        };
+        functions: Record<string, ServerlessFunction>;
         package: {
-            exclude: string[],
-            excludeDevDependencies?: boolean,
-        },
+            exclude: string[];
+            excludeDevDependencies?: boolean;
+        };
         provider: {
-            runtime: config.Runtime,
-        },
-        getFunction: (name: string) => ServerlessFunction,
-        getAllFunctions: () => string[],
-    },
+            runtime: config.Runtime;
+        };
+        getFunction: (name: string) => ServerlessFunction;
+        getAllFunctions: () => string[];
+    };
 };
 
 type ServerlessFunction = {
-    handler: string,
-    runtime: config.Runtime,
+    handler: string;
+    runtime: config.Runtime;
 };
 
 type Options = {
-    function?: string,
+    function?: string;
 };
 
 class ProcessError extends Error {
@@ -95,8 +95,8 @@ class ServerlessPlugin {
     hooks: { [hook: string]: (options: {}) => void };
     servicePath: string;
     docker: {
-        skip: boolean,
-        haveImage: boolean,
+        skip: boolean;
+        haveImage: boolean;
     };
     additionalFiles: string[];
 
@@ -278,9 +278,9 @@ class ServerlessPlugin {
         const handlerTemplate = readFileSync(TEMPLATE).toString('utf8');
 
         for (const directory in handlerOptions) {
-            if (handlerOptions.hasOwnProperty(directory)) {
+            if (Object.prototype.hasOwnProperty.call(handlerOptions, directory)) {
                 for (const packageName in handlerOptions[directory]) {
-                    if (handlerOptions[directory].hasOwnProperty(packageName)) {
+                    if (Object.prototype.hasOwnProperty.call(handlerOptions[directory], packageName)) {
                         const handler = handlerTemplate + handlerOptions[directory][packageName].map(
                             ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
                         ).join("\n") + "\n";
@@ -361,7 +361,7 @@ class ServerlessPlugin {
             haskellFunctionsFound = true;
             service.functions[funcName].runtime = config.BASE_RUNTIME;
 
-            const handlerPattern = /(.*\/)?([^\./]*)\.(.*)/;
+            const handlerPattern = /(.*\/)?([^./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
 
             if (!matches) {
@@ -399,10 +399,10 @@ class ServerlessPlugin {
             if (!options.localRun) {
                 // Check glibc version
                 const glibcVersion = this.glibcVersion(directory, executablePath);
-                if (glibcVersion && version.greater(glibcVersion, aws_environment.glibcVersion)) {
+                if (glibcVersion && version.greater(glibcVersion, AWSEnvironment.glibcVersion)) {
                     this.serverless.cli.log(
                         "Warning: glibc version required by the executable (" + version.format(glibcVersion) + ") is " +
-                            "higher than the one in AWS environment (" + version.format(aws_environment.glibcVersion) + ").");
+                            "higher than the one in AWS environment (" + version.format(AWSEnvironment.glibcVersion) + ").");
                     throw new Error("glibc version mismatch.");
                 }
 

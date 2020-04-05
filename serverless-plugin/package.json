@@ -6,7 +6,7 @@
   "scripts": {
     "test": "eslint . --ext .js,.ts",
     "prepare": "tsc",
-    "update-aws-environment": "ts-node update_aws_environment.ts"
+    "updateAWSEnvironment": "ts-node updateAWSEnvironment.ts"
   },
   "repository": {
     "type": "git",
