@@ -10,7 +10,7 @@ export function parseLdOutput(output: string): Paths {
 
     const result: Paths = {};
     libraryList.forEach(s => {
-        const [name, _, libPath] = s.trim().split(' ');
+        const [name, , libPath] = s.trim().split(' ');
         result[name] = libPath;
     });
 

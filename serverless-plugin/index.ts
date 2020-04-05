@@ -24,8 +24,6 @@ const IGNORE_LIBRARIES = [
 
 const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
 
-const SERVERLESS_DIRECTORY = '.serverless';
-
 const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
 
 type Custom = {
@@ -190,12 +188,12 @@ class ServerlessPlugin {
         return result;
     }
 
-    runStackOutput(directory: string, args: string[]) {
+    runStackOutput(directory: string, args: string[]): string {
         const result = this.runStack(directory, args, {captureOutput: true});
         return result.stdout.toString().trim();
     }
 
-    dependentLibraries(directory: string, executablePath: string) {
+    dependentLibraries(directory: string, executablePath: string): ld.Paths {
         try {
             const lddOutput = this.runStackOutput(
                 directory,
@@ -237,7 +235,7 @@ class ServerlessPlugin {
         return ld.parseObjdumpOutput(objdumpOutput);
     }
 
-    assertServerlessPackageVersionsMatch(directory: string, packageName: string) {
+    assertServerlessPackageVersionsMatch(directory: string): void {
         // Check that the Haskell package version corresponds to our own
         const stackDependencies = this.runStackOutput(
             directory,
@@ -274,7 +272,7 @@ class ServerlessPlugin {
         return path.resolve(this.servicePath, directory, fileName);
     }
 
-    writeHandlers(handlerOptions: HandlerOptions) {
+    writeHandlers(handlerOptions: HandlerOptions): void {
         const handlerTemplate = readFileSync(TEMPLATE).toString('utf8');
 
         for (const directory in handlerOptions) {
@@ -294,7 +292,7 @@ class ServerlessPlugin {
         }
     }
 
-    addToHandlerOptions(handlerOptions: HandlerOptions, funcName: string, directory: string, packageName: string, executableName: string) {
+    addToHandlerOptions(handlerOptions: HandlerOptions, funcName: string, directory: string, packageName: string, executableName: string): void {
         // Remember the executable that needs to be handled by this package's shim
         handlerOptions[directory] = handlerOptions[directory] || {};
         handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
@@ -368,10 +366,10 @@ class ServerlessPlugin {
                 throw new Error(`handler ${func.handler} was not of the form 'packageName.executableName' or 'dir1/dir2/packageName.executableName'.`);
             }
 
-            const [_, directory, packageName, executableName] = matches;
+            const [, directory, packageName, executableName] = matches;
 
             // Ensure package versions match
-            this.assertServerlessPackageVersionsMatch(directory, packageName);
+            this.assertServerlessPackageVersionsMatch(directory);
 
             // Ensure the executable is built
             this.serverless.cli.log(`Building handler ${funcName} with Stack...`);
@@ -379,7 +377,7 @@ class ServerlessPlugin {
                 ['build'] :
                 ['build', `${packageName}:exe:${executableName}`];
 
-            const res = this.runStack(directory, buildCommand);
+            this.runStack(directory, buildCommand);
 
             // Copy the executable to the destination directory
             const stackInstallRoot = this.runStackOutput(
@@ -444,7 +442,7 @@ class ServerlessPlugin {
         }
     }
 
-    cleanupHandlers(options: {}) {
+    cleanupHandlers(): void {
         this.additionalFiles.forEach(fileName => removeSync(fileName));
     }
 }

@@ -4,7 +4,7 @@
   "description": "Deploy Haskell binaries onto AWS Lambda",
   "main": "dist/index.js",
   "scripts": {
-    "test": "eslint . --ext .js,.ts",
+    "test": "eslint . --ext .js,.ts --max-warnings 0",
     "prepare": "tsc",
     "updateAWSEnvironment": "ts-node updateAWSEnvironment.ts"
   },

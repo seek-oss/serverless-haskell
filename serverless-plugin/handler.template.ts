@@ -6,10 +6,10 @@ type Options = {
     arguments: string[];
 };
 
-function wrapper(options: Options) {
+function wrapper(options: Options): (event: unknown) => Promise<void> {
     const executable = options.executable;
     const execArguments = options.arguments;
-    return async (event: any, context: {}) => {
+    return async (event: unknown): Promise<void> => {
         process.env.PATH = `${process.env.PATH}:${process.env.LAMBDA_TASK_ROOT}`;
 
         const server = net.createServer();
@@ -43,7 +43,7 @@ function wrapper(options: Options) {
         // Wait for the process to exit or close the socket, whichever happens
         // first
         return await new Promise((resolve, reject) => {
-            function resolveWithOutput() {
+            function resolveWithOutput(): void {
                 try {
                     const result = JSON.parse(output);
                     resolve(result);
@@ -70,6 +70,8 @@ function wrapper(options: Options) {
         });
     };
 }
+
+exports['__wrapper'] = wrapper;
 
 // exports such as below will be added here by the plugin
 // exports['EXECUTABLENAME'] = wrapper({
