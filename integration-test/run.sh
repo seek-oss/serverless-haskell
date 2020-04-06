@@ -55,17 +55,17 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 
 SLS_OFFLINE_PID=
 function cleanup () {
-  if [ -z "$REUSE_DIR" ]
+  if [ -n "$SLS_OFFLINE_PID" ]
   then
-    rm -rf $DIR
+    kill $SLS_OFFLINE_PID || true
   fi
   if [ -z "$DRY_RUN" ]
   then
     sls --no-color remove || true
   fi
-  if [ -n "$SLS_OFFLINE_PID" ]
+  if [ -z "$REUSE_DIR" ]
   then
-    kill $SLS_OFFLINE_PID || true
+    rm -rf $DIR
   fi
 }
 trap cleanup exit
