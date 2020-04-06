@@ -2,9 +2,12 @@
 # Test packaging a function, deploying it to AWS and running it. With --dry-run,
 # only packaging is tested. With --no-docker, Docker isn't used for packaging.
 
-set -e
+set -euo pipefail
 
 DOCKER=true
+DRY_RUN=
+REUSE_DIR=
+FAILFAST=
 while [ $# -gt 0 ]
 do
     case "$1" in
@@ -37,7 +40,7 @@ do
 done
 
 # Directory of the integration test
-HERE=$(dirname $0)
+HERE=$(cd $(dirname $0); echo $PWD)
 
 . $HERE/tests.sh
 
@@ -50,32 +53,19 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 # Stackage resolver series to use
 : "${RESOLVER_SERIES:=$(cat stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
 
-# Find the latest resolver in the series to use.
-RESOLVER=$(curl -s https://www.stackage.org/download/snapshots.json | \
-               jq -r '."'$RESOLVER_SERIES'"')
-echo "Using resolver: $RESOLVER"
-
-# Extra dependencies to use for the resolver
-EXTRA_DEPS_YAML=$(cd $HERE; echo $PWD)/extra-deps.$RESOLVER_SERIES
-if [ -f $EXTRA_DEPS_YAML ]
-then
-    EXTRA_DEPS=$EXTRA_DEPS_YAML
-else
-    EXTRA_DEPS=/dev/null
-fi
-
+SLS_OFFLINE_PID=
 function cleanup () {
-  if [ -z "$REUSE_DIR" ]
-  then
-    rm -rf $DIR
-  fi
-  if ! $DRY_RUN
-  then
-    sls --no-color remove || true
-  fi
   if [ -n "$SLS_OFFLINE_PID" ]
   then
     kill $SLS_OFFLINE_PID || true
+  fi
+  if [ -z "$DRY_RUN" ]
+  then
+    sls --no-color remove || true
+  fi
+  if [ -z "$REUSE_DIR" ]
+  then
+    rm -rf $DIR
   fi
 }
 trap cleanup exit
@@ -96,6 +86,19 @@ else
 fi
 cd $DIR
 
+# Find the latest resolver in the series to use.
+curl -o snapshots.json --retry 5 https://www.stackage.org/download/snapshots.json
+RESOLVER=$(cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"')
+echo "Using resolver: $RESOLVER"
+
+# Extra dependencies to use for the resolver
+EXTRA_DEPS=$HERE/extra-deps.$RESOLVER_SERIES
+echo $EXTRA_DEPS
+if ! [ -f $EXTRA_DEPS ]
+then
+    EXTRA_DEPS=/dev/null
+fi
+
 # Copy the test files over, replacing the values
 skeleton() {
     mkdir -p $(dirname $1)
@@ -115,10 +118,16 @@ done
 
 export PATH=$(npm bin):$PATH
 
-# Install Serverless
+# Install Serverless and serverless-offline
 npm install serverless
-npm install $DIST/serverless-plugin
 npm install serverless-offline
+
+# Compile and install the plugin
+pushd $DIST/serverless-plugin >/dev/null
+npm install
+npm run prepare
+popd >/dev/null
+npm install $DIST/serverless-plugin
 
 # Just package the service first
 assert_success "sls package" sls package
@@ -154,7 +163,7 @@ kill $SLS_OFFLINE_PID
 
 assert_file_same "sls offline" offline_output.txt
 
-if [ "$DRY_RUN" = "true" ]
+if [ -n "$DRY_RUN" ]
 then
     # All done (locally)
     :

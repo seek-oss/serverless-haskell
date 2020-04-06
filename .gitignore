@@ -4,3 +4,4 @@ node_modules
 *.cabal
 /example-project/package-lock.json
 /integration-test/run
+/serverless-plugin/dist

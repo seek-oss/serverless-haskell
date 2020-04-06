@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+
+    "declaration": true,
+    "outDir": "dist",
+
+    "strict": true,
+    "alwaysStrict": true,
+
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "**/*"
+  ]
+}
