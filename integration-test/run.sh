@@ -93,7 +93,6 @@ echo "Using resolver: $RESOLVER"
 
 # Extra dependencies to use for the resolver
 EXTRA_DEPS=$HERE/extra-deps.$RESOLVER_SERIES
-echo $EXTRA_DEPS
 if ! [ -f $EXTRA_DEPS ]
 then
     EXTRA_DEPS=/dev/null
