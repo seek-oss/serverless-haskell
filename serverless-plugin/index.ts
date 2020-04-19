@@ -22,27 +22,14 @@ const IGNORE_LIBRARIES = [
     '/lib64/ld-linux-x86-64.so.2',
 ].concat(AWSEnvironment.libraries);
 
-const TEMPLATE = path.resolve(__dirname, 'handler.template.js');
+const BOOTSTRAP = path.resolve(__dirname, 'bootstrap.sh');
 
 const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
 
 type Custom = {
     stackBuildArgs: string[];
-    arguments: { [executable: string]: string[] };
     docker: boolean;
     buildAll: boolean;
-};
-
-type HandlerOptions = {
-    [ directory: string ]: {
-        [ packageName: string ]: [
-            string,
-            {
-                executable: string;
-                arguments: string[];
-            }
-        ][];
-    };
 };
 
 type Serverless = {
@@ -140,7 +127,6 @@ class ServerlessPlugin {
         return Object.assign(
             {
                 stackBuildArgs: [],
-                arguments: {},
                 docker: true,
                 buildAll: true,
             },
@@ -272,34 +258,10 @@ class ServerlessPlugin {
         return path.resolve(this.servicePath, directory, fileName);
     }
 
-    writeHandlers(handlerOptions: HandlerOptions): void {
-        const handlerTemplate = readFileSync(TEMPLATE).toString('utf8');
-
-        for (const directory in handlerOptions) {
-            if (Object.prototype.hasOwnProperty.call(handlerOptions, directory)) {
-                for (const packageName in handlerOptions[directory]) {
-                    if (Object.prototype.hasOwnProperty.call(handlerOptions[directory], packageName)) {
-                        const handler = handlerTemplate + handlerOptions[directory][packageName].map(
-                            ([executableName, options]) => `exports['${executableName}'] = wrapper(${JSON.stringify(options)});`
-                        ).join("\n") + "\n";
-                        const handlerFileName = this.buildHandlerFileName(directory, packageName);
-
-                        writeFileSync(handlerFileName, handler);
-                        this.additionalFiles.push(handlerFileName);
-                    }
-                }
-            }
-        }
-    }
-
-    addToHandlerOptions(handlerOptions: HandlerOptions, funcName: string, directory: string, packageName: string, executableName: string): void {
-        // Remember the executable that needs to be handled by this package's shim
-        handlerOptions[directory] = handlerOptions[directory] || {};
-        handlerOptions[directory][packageName] = handlerOptions[directory][packageName] || [];
-        handlerOptions[directory][packageName].push([executableName, {
-            executable: path.join(directory, executableName),
-            arguments: this.custom().arguments[funcName] || [],
-        }]);
+    writeBootstrap(): void {
+        const bootstrapPath = path.resolve(this.servicePath, 'bootstrap');
+        copySync(BOOTSTRAP, bootstrapPath);
+        this.additionalFiles.push(bootstrapPath);
     }
 
     buildHandlersLocal(options: {}): void {
@@ -338,10 +300,6 @@ class ServerlessPlugin {
             ...service.package.exclude,
             ...ADDITIONAL_EXCLUDE,
         ];
-
-        // Each package will have its own wrapper; remember its options to add
-        // to the handler template
-        const handlerOptions: HandlerOptions = {};
 
         // Keep track of which extra libraries were copied
         const libraries: { [name: string]: boolean } = {};
@@ -387,12 +345,12 @@ class ServerlessPlugin {
                     '--local-install-root',
                 ]
             );
-            const targetDirectory = directory ? directory : ".";
+            const targetDirectory = directory ? directory : "./";
             const executablePath = path.resolve(stackInstallRoot, 'bin', executableName);
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
             copySync(executablePath, targetPath);
             this.additionalFiles.push(targetPath);
-            this.addToHandlerOptions(handlerOptions, funcName, targetDirectory, packageName, executableName);
+            service.functions[funcName].runtime = targetDirectory + executableName;
 
             if (!options.localRun) {
                 // Check glibc version
@@ -434,7 +392,7 @@ class ServerlessPlugin {
             );
         }
 
-        this.writeHandlers(handlerOptions);
+        this.writeBootstrap();
 
         // Ensure the runtime is set to a sane value for other plugins
         if (service.provider.runtime === config.HASKELL_RUNTIME) {

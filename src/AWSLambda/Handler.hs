@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {-|
 Module      : AWSLambda.Handler
 Stability   : experimental
@@ -10,12 +12,12 @@ module AWSLambda.Handler
   ) where
 
 import Control.Exception (finally)
-import Control.Monad (void)
+import Control.Monad (forever)
 
 import qualified Data.Aeson as Aeson
 
-import Data.ByteString (ByteString)
 import qualified Data.ByteString as ByteString
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Lazy as LBS
 
 import qualified Data.Text.Encoding as Text
@@ -23,9 +25,8 @@ import qualified Data.Text.IO as Text
 
 import GHC.IO.Handle (BufferMode(..), hSetBuffering)
 
-import Network.Simple.TCP (connect)
-import Network.Socket (close, withSocketsDo)
-import Network.Socket.ByteString (send)
+import Network.HTTP.Client (Request, RequestBody(..), Response, defaultManagerSettings, httpLbs, httpNoBody, method, newManager, parseRequest_, requestBody, responseBody, responseHeaders)
+import Network.HTTP.Types (HeaderName)
 
 import System.Environment (lookupEnv)
 import System.IO (stdout)
@@ -84,31 +85,48 @@ lambdaMain ::
   => (event -> IO res) -- ^ Function to process the event
   -> IO ()
 lambdaMain act =
-  withSendResult $ \sendResult -> do
-    input <- ByteString.getLine
-    case Aeson.eitherDecodeStrict input of
+  runMain $ \input -> do
+    case Aeson.eitherDecode input of
       Left err -> error err
       Right event -> do
         result <- act event
-        sendResult $ LBS.toStrict $ Aeson.encode result
-        pure ()
+        pure $ Aeson.encode result
 
--- | Invoke an action with the method to output the result. If called by the
--- JavaScript wrapper, use the server started by it, otherwise use standard
--- output. Also set line buffering on standard output for AWS Lambda so the logs
+-- Blah. Also set line buffering on standard output for AWS Lambda so the logs
 -- are output in a timely manner.
-withSendResult :: ((ByteString -> IO ()) -> IO r) -> IO r
-withSendResult act = do
-  communicationPortString <- lookupEnv communicationPortEnv
-  case communicationPortString of
-    Just communicationPort -> do
+runMain :: (LBS.ByteString -> IO LBS.ByteString) -> IO ()
+runMain act = do
+  lambdaApiAddress <- lookupEnv lambdaApiAddressEnv
+  case lambdaApiAddress of
+    Just address -> do
       hSetBuffering stdout LineBuffering
-      withSocketsDo $
-        connect "127.0.0.1" communicationPort $ \(socket, _) ->
-          act (void . send socket) `finally` close socket
-    Nothing -> act $ Text.putStrLn . Text.decodeUtf8
+      manager <- newManager defaultManagerSettings
+      forever $ do
+        invocation <- httpLbs (invocationRequest address) manager
+        let input = responseBody invocation
+        let requestId = responseRequestId invocation
+        result <- act input
+        _ <- httpNoBody (resultRequest address requestId result) manager
+        pure ()
+    Nothing -> do
+      input <- LBS.fromStrict <$> ByteString.getLine
+      result <- act input
+      Text.putStrLn $ Text.decodeUtf8 $ LBS.toStrict result
 
--- | Environment variable signalling the port the JavaScript wrapper is
--- listening on
-communicationPortEnv :: String
-communicationPortEnv = "SERVERLESS_HASKELL_COMMUNICATION_PORT"
+lambdaApiAddressEnv :: String
+lambdaApiAddressEnv = "AWS_LAMBDA_RUNTIME_API"
+
+lambdaRequest :: String -> String -> Request
+lambdaRequest apiAddress path = parseRequest_ $ "http://" ++ apiAddress ++ "/2018-06-01" ++ path
+
+invocationRequest :: String -> Request
+invocationRequest apiAddress = lambdaRequest apiAddress "/runtime/invocation/next"
+
+resultRequest :: String -> String -> LBS.ByteString -> Request
+resultRequest apiAddress requestId result = (lambdaRequest apiAddress $ "/runtime/invocation/" ++ requestId ++ "/response") { method = "POST", requestBody = RequestBodyLBS result }
+
+requestIdHeader :: HeaderName
+requestIdHeader = "Lambda-Runtime-Aws-Request-Id"
+
+responseRequestId :: Response a -> String
+responseRequestId = Char8.unpack . snd . head . filter (uncurry $ \h _ -> h == requestIdHeader) . responseHeaders
