@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Fix tests of serverless-offline functionality (#128).
+* Use TypeScript for the wrapper (#126).
+
 ## 0.10.2
 
 * Speed up checking required glibc version, avoiding potentially very long
