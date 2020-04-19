@@ -38,6 +38,11 @@ do
     which $DEPENDENCY >/dev/null || \
         (echo "$DEPENDENCY is required for the test." >&2; exit 1)
 done
+for DEPENDENCY in libpcre
+do
+    pkgconf --libs $DEPENDENCY >/dev/null || \
+        (echo "$DEPENDENCY is required for the test." >&2; exit 1)
+done
 
 # Directory of the integration test
 HERE=$(cd $(dirname $0); echo $PWD)
