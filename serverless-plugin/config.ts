@@ -6,7 +6,7 @@ export type Runtime = string;
 export const HASKELL_RUNTIME: Runtime = 'haskell';
 
 // Runtime used by the wrapper
-export const BASE_RUNTIME: Runtime = 'nodejs12.x';
+export const BASE_RUNTIME: Runtime = 'provided';
 
 // Docker image used as reference
 export const DOCKER_IMAGE = 'lambci/lambda:' + BASE_RUNTIME;

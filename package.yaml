@@ -18,11 +18,10 @@ dependencies:
   - amazonka-s3
   - bytestring
   - case-insensitive
+  - http-client
   - http-types
   - iproute
   - lens
-  - network
-  - network-simple
   - text
   - time
   - unix
