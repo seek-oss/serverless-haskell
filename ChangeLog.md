@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.10.3
+
 * Fix tests of serverless-offline functionality (#128).
 * Use TypeScript for the wrapper (#126).
 
