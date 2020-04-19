@@ -1,7 +1,7 @@
 'use strict';
 
 import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
-import { copySync, readFileSync, removeSync, writeFileSync } from 'fs-extra';
+import { chmodSync, copySync, readFileSync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
 
 import * as AWSEnvironment from './AWSEnvironment';
@@ -22,7 +22,7 @@ const IGNORE_LIBRARIES = [
     '/lib64/ld-linux-x86-64.so.2',
 ].concat(AWSEnvironment.libraries);
 
-const BOOTSTRAP = path.resolve(__dirname, 'bootstrap.sh');
+const BOOTSTRAP = '#!/bin/sh\nexec ${_HANDLER}';
 
 const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
 
@@ -260,7 +260,8 @@ class ServerlessPlugin {
 
     writeBootstrap(): void {
         const bootstrapPath = path.resolve(this.servicePath, 'bootstrap');
-        copySync(BOOTSTRAP, bootstrapPath);
+        writeFileSync(bootstrapPath, BOOTSTRAP);
+        chmodSync(bootstrapPath, 0o755);
         this.additionalFiles.push(bootstrapPath);
     }
 
@@ -350,7 +351,7 @@ class ServerlessPlugin {
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
             copySync(executablePath, targetPath);
             this.additionalFiles.push(targetPath);
-            service.functions[funcName].runtime = targetDirectory + executableName;
+            service.functions[funcName].handler = targetDirectory + executableName;
 
             if (!options.localRun) {
                 // Check glibc version
