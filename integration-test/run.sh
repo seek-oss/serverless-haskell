@@ -10,38 +10,48 @@ REUSE_DIR=
 FAILFAST=
 while [ $# -gt 0 ]
 do
-    case "$1" in
-        --dry-run)
-            DRY_RUN=true
-            shift
-            ;;
-        --no-docker)
-            DOCKER=false
-            shift
-            ;;
-        --no-clean-dir)
-            REUSE_DIR=true
-            shift
-            ;;
-        --failfast)
-            FAILFAST=true
-            shift
-            ;;
-        *)
-            shift
-            ;;
-    esac
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --no-docker)
+      DOCKER=false
+      shift
+      ;;
+    --no-clean-dir)
+      REUSE_DIR=true
+      shift
+      ;;
+    --failfast)
+      FAILFAST=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
 done
 
 for DEPENDENCY in curl jq npm pwgen stack
 do
-    which $DEPENDENCY >/dev/null || \
-        (echo "$DEPENDENCY is required for the test." >&2; exit 1)
+  command -v $DEPENDENCY >/dev/null || \
+    (echo "$DEPENDENCY is required for the test." >&2; exit 1)
 done
+if command -v pkgconf >/dev/null
+then
+  PKGCONF=pkgconf
+elif command -v pkg-config >/dev/null
+then
+  PKGCONF=pkg-config
+else
+  echo "pkg-config is required for the test." >&2
+  exit 1
+fi
 for DEPENDENCY in libpcre
 do
-    pkgconf --libs $DEPENDENCY >/dev/null || \
-        (echo "$DEPENDENCY is required for the test." >&2; exit 1)
+  $PKGCONF --libs $DEPENDENCY >/dev/null || \
+    (echo "$DEPENDENCY is required for the test." >&2; exit 1)
 done
 
 # Directory of the integration test
