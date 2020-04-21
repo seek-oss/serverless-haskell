@@ -125,9 +125,10 @@ npm install serverless-offline
 # Compile and install the plugin
 pushd $DIST/serverless-plugin >/dev/null
 npm install
-npm run prepare
+find . -maxdepth 1 -type f -name "serverless-haskell-*.tgz" -delete
+npm pack
 popd >/dev/null
-npm install $DIST/serverless-plugin
+npm install $DIST/serverless-plugin/serverless-haskell-*.tgz
 
 # Just package the service first
 assert_success "sls package" sls package

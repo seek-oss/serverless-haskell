@@ -5,3 +5,4 @@ node_modules
 /example-project/package-lock.json
 /integration-test/run
 /serverless-plugin/dist
+/serverless-plugin/*.tgz
