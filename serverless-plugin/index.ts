@@ -289,9 +289,7 @@ class ServerlessPlugin {
         const service = this.serverless.service;
 
         options = options || {};
-        if (options.localRun) {
-            this.docker.skip = true;
-        } else if (!this.custom().docker) {
+        if (!this.custom().docker) {
             // Warn when Docker is disabled
             this.serverless.cli.log(
                 "Warning: not using Docker to build. " +
