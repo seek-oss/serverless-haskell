@@ -156,7 +156,7 @@ assert_success "custom variable disables Docker" \
 
 # Test local invocation
 sls invoke local --function main --data '[4, 5, 6]' | \
-    grep -v 'Serverless: ' > local_output.txt
+    grep -v 'Serverless: ' | grep -v RequestId > local_output.txt
 
 assert_file_same "sls invoke local" local_output.txt
 
