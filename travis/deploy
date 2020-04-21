@@ -35,6 +35,7 @@ unless File.exists?(npmrc)
   FileUtils.chmod 0600, npmrc
 end
 
+system('npm', 'install')
 npm_uploaded = system('npm', 'publish', 'serverless-plugin')
 if not npm_uploaded
   print "Failed to upload to NPM.\n"
