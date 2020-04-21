@@ -363,25 +363,25 @@ class ServerlessPlugin {
                             "higher than the one in AWS environment (" + version.format(AWSEnvironment.glibcVersion) + ").");
                     throw new Error("glibc version mismatch.");
                 }
+            }
 
-                // Copy libraries not present on AWS Lambda environment
-                const executableLibraries = this.dependentLibraries(directory, executablePath);
+            // Copy libraries not present on AWS Lambda environment
+            const executableLibraries = this.dependentLibraries(directory, executablePath);
 
-                for (const name in executableLibraries) {
-                    if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
-                        const libPath = executableLibraries[name];
-                        const libTargetPath = path.resolve(this.servicePath, name);
-                        this.runStack(
-                            directory,
-                            [
-                                'exec',
-                                'cp',
-                                libPath,
-                                libTargetPath,
-                            ]);
-                        this.additionalFiles.push(libTargetPath);
-                        libraries[name] = true;
-                    }
+            for (const name in executableLibraries) {
+                if (!libraries[name] && !IGNORE_LIBRARIES.includes(name)) {
+                    const libPath = executableLibraries[name];
+                    const libTargetPath = path.resolve(this.servicePath, name);
+                    this.runStack(
+                        directory,
+                        [
+                            'exec',
+                            'cp',
+                            libPath,
+                            libTargetPath,
+                        ]);
+                    this.additionalFiles.push(libTargetPath);
+                    libraries[name] = true;
                 }
             }
         });
