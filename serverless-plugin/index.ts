@@ -1,7 +1,7 @@
 'use strict';
 
 import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
-import { chmodSync, copySync, readFileSync, removeSync, writeFileSync } from 'fs-extra';
+import { chmodSync, copySync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
 
 import * as AWSEnvironment from './AWSEnvironment';
