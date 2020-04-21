@@ -71,17 +71,6 @@ section of @serverless.yml@.
     >       - --pedantic
     >       - --allow-different-user
 
-* To start the executable with extra arguments, add them to @arguments@ under
-the function name:
-
-    > custom:
-    >   haskell:
-    >     arguments:
-    >       myfunc:
-    >         - --arg1
-    >         - --arg2
-    >         - arg3
-
 * Dependent system libraries not present in the AWS Lambda environment will be
 automatically uploaded along with the executable. Note that while statically
 linking the executable via Cabal options is possible, it might still require
