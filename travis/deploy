@@ -32,6 +32,33 @@ if not hackage_uploaded
   exit(1)
 end
 
+# Publish Haddock
+# Adapted from https://github.com/phaazon/stack-haddock-upload
+
+package = 'serverless-haskell'
+version = `stack ls dependencies | grep '#{package} '`.split()[1]
+
+root_path = Dir.pwd
+
+system('stack', 'haddock')
+
+dist = `stack path --dist-dir`.strip()
+docdir = dist + '/doc/html'
+Dir.chdir(docdir)
+doc = "#{package}-#{version}-docs"
+system('cp', '-r', package, doc)
+system('tar', '-c', '-v', '-z', '--format=ustar', '-f', "#{doc}.tar.gz", doc)
+print("Generated documentation in #{docdir}/#{doc}.tar.gz\n\n")
+unless dry_run
+  system('curl', '-X', 'PUT',
+         '-H', 'Content-Type: application/x-tar',
+         '-H', 'Content-Encoding: gzip',
+         '--data-binary', "@#{doc}.tar.gz",
+         "https://#{ENV['HACKAGE_USERNAME']}:#{ENV['HACKAGE_PASSWORD']}@hackage.haskell.org/package/#{package}-#{version}/docs")
+end
+
+Dir.chdir(root_path)
+
 # Release to NPM
 
 npmrc = File.expand_path('~/.npmrc')
