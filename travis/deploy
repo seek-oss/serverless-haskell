@@ -42,7 +42,6 @@ unless File.exists?(npmrc)
   FileUtils.chmod 0600, npmrc
 end
 
-Dir.chdir('serverless-plugin')
 system('npm', 'install')
 dry_run_arg = if dry_run then ['--dry-run'] else [] end
 npm_uploaded = system('npm', 'publish', *dry_run_arg)
