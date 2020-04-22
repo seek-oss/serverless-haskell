@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 # Script for deploying the package via Travis CI
+# Use --dry-run for testing without uploading anything
 
 require 'fileutils'
 require 'json'
 
-# Release to Hackage via Stack
+dry_run = ARGV[0] == '--dry-run'
 
 stack_credentials = File.expand_path('~/.stack/upload/credentials.json')
 unless File.exists?(stack_credentials)
@@ -19,7 +20,13 @@ unless File.exists?(stack_credentials)
   }
 end
 
-hackage_uploaded = system('stack', 'upload', '.')
+# Release to Hackage via Stack
+
+if dry_run
+  hackage_uploaded = system('stack', 'sdist')
+else
+  hackage_uploaded = system('stack', 'upload', '.')
+end
 if not hackage_uploaded
   print "Failed to upload to Hackage.\n"
   exit(1)
@@ -37,7 +44,8 @@ end
 
 Dir.chdir('serverless-plugin')
 system('npm', 'install')
-npm_uploaded = system('npm', 'publish')
+dry_run_arg = if dry_run then ['--dry-run'] else [] end
+npm_uploaded = system('npm', 'publish', *dry_run_arg)
 if not npm_uploaded
   print "Failed to upload to NPM.\n"
   exit(1)
