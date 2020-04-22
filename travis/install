@@ -9,9 +9,7 @@ integration)
 npm)
     node --version
     npm --version
-    cd serverless-plugin
     npm install
-    cd -
     ;;
 esac
 
