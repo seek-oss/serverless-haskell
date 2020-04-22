@@ -167,7 +167,7 @@ sls invoke local --function jsfunc --data '{}' | \
 assert_file_same "sls invoke local (JavaScript)" local_output_js.txt
 
 # Test serverless-offline
-sls offline start &
+sls offline start --useDocker &
 SLS_OFFLINE_PID=$!
 until curl http://localhost:3002/ >/dev/null 2>&1
 do

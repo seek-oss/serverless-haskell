@@ -55,7 +55,8 @@ normally in @serverless.yml@ and use 'AWSLambda.Events.APIGateway' in the
 handler to process them.
 
 <https://github.com/dherault/serverless-offline Serverless Offline> can be used
-for local testing of API Gateway requests.
+for local testing of API Gateway requests. You must use @--useDocker@ flag so
+that the native Haskell runtime works correctly.
 
 = Additional features
 

@@ -121,7 +121,8 @@ normally in `serverless.yml` and use
 [AWSLambda.Events.APIGateway](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda-Events-APIGateway.html)
 in the handler to process them.
 
-[Serverless Offline] can be used for local testing of API Gateway requests.
+[Serverless Offline] can be used for local testing of API Gateway requests. You
+must use `--useDocker` flag so that the native Haskell runtime works correctly.
 
 ### Notes
 
