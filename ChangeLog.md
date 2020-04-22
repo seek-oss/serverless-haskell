@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Fix uploading the package to NPM (#132).
+
 ## 0.10.4
 
 * Fix uploading the package to NPM (#131).
