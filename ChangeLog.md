@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Fix uploading the package to NPM (#131).
+
 ## 0.10.3
 
 * Fix tests of serverless-offline functionality (#128).

@@ -3,6 +3,9 @@
   "version": "0.10.3",
   "description": "Deploy Haskell binaries onto AWS Lambda",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "eslint . --ext .js,.ts --max-warnings 0",
     "prepare": "tsc",
