@@ -1,2 +1,4 @@
-node_modules
 dist
+integration-test/run
+integration-test/skeleton/jsfunc
+node_modules
