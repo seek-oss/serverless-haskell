@@ -4,7 +4,6 @@
 
 set -euo pipefail
 
-DOCKER=true
 DRY_RUN=
 REUSE_DIR=
 FAILFAST=
@@ -13,10 +12,6 @@ do
   case "$1" in
     --dry-run)
       DRY_RUN=true
-      shift
-      ;;
-    --no-docker)
-      DOCKER=false
       shift
       ;;
     --no-clean-dir)
@@ -119,7 +114,6 @@ skeleton() {
     sed "s!NAME!$NAME!g
 s!DIST!$DIST!g
 s!RESOLVER!$RESOLVER!g
-s!DOCKER_DEFAULT!$DOCKER!g
 /EXTRA_DEPS/{
 r$EXTRA_DEPS
 d
