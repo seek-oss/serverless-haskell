@@ -6,8 +6,8 @@ case "$BUILD" in
         npm test
         ;;
     integration)
-        stack --no-terminal $ARGS test --bench --no-run-benchmarks --haddock --no-haddock-deps
-        ./integration-test/run.sh --dry-run --no-docker
+        stack --no-terminal $ARGS --docker test --bench --no-run-benchmarks --haddock --no-haddock-deps
+        ./integration-test/run.sh --dry-run
         ;;
 esac
 

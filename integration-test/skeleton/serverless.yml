@@ -28,4 +28,4 @@ plugins:
 
 custom:
   haskell:
-    docker: ${strToBool(${env:FORCE_DOCKER, "DOCKER_DEFAULT"})}
+    docker: ${strToBool(${env:FORCE_DOCKER, "true"})}
