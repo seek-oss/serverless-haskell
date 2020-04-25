@@ -99,11 +99,11 @@ class ServerlessPlugin {
             'after:deploy:function:packageFunction': this.cleanupHandlers.bind(this),
 
             // invoke local
-            'before:invoke:local:invoke': this.buildHandlersLocal.bind(this),
+            'before:invoke:local:invoke': this.buildHandlers.bind(this),
             'after:invoke:local:invoke': this.cleanupHandlers.bind(this),
 
             // serverless-offline
-            'before:offline:start:init': this.buildHandlersLocal.bind(this),
+            'before:offline:start:init': this.buildHandlers.bind(this),
             'after:offline:start:end': this.cleanupHandlers.bind(this),
         };
 
@@ -268,13 +268,6 @@ class ServerlessPlugin {
         this.additionalFiles.push(bootstrapPath);
     }
 
-    buildHandlersLocal(options: {}): void {
-        options = options || {};
-        this.buildHandlers(Object.assign(options, {
-            localRun: true
-        }));
-    }
-
     // Which functions are being deployed now - all (default) or only one of
     // them ('deploy function')
     deployedFunctions(): string[] {
@@ -285,7 +278,7 @@ class ServerlessPlugin {
         }
     }
 
-    buildHandlers(options: {localRun?: boolean}): void {
+    buildHandlers(options: {}): void {
         const service = this.serverless.service;
 
         options = options || {};
@@ -354,15 +347,13 @@ class ServerlessPlugin {
             this.additionalFiles.push(targetPath);
             service.functions[funcName].handler = targetDirectory + executableName;
 
-            if (!options.localRun) {
-                // Check glibc version
-                const glibcVersion = this.glibcVersion(directory, executablePath);
-                if (glibcVersion && version.greater(glibcVersion, AWSEnvironment.glibcVersion)) {
-                    this.serverless.cli.log(
-                        "Warning: glibc version required by the executable (" + version.format(glibcVersion) + ") is " +
-                            "higher than the one in AWS environment (" + version.format(AWSEnvironment.glibcVersion) + ").");
-                    throw new Error("glibc version mismatch.");
-                }
+            // Check glibc version
+            const glibcVersion = this.glibcVersion(directory, executablePath);
+            if (glibcVersion && version.greater(glibcVersion, AWSEnvironment.glibcVersion)) {
+                this.serverless.cli.log(
+                    "Warning: glibc version required by the executable (" + version.format(glibcVersion) + ") is " +
+                        "higher than the one in AWS environment (" + version.format(AWSEnvironment.glibcVersion) + ").");
+                throw new Error("glibc version mismatch.");
             }
 
             // Copy libraries not present on AWS Lambda environment
