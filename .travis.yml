@@ -15,43 +15,16 @@ cache:
 
 jobs:
   include:
-  - env: BUILD=integration ARGS=""
-    name: "Default"
+  - name: "npm"
+    env: BUILD=npm
+    script: npm install && npm test
 
-  - env: BUILD=integration RESOLVER_SERIES=lts-15 ARGS="--resolver lts-15"
-    name: "LTS 15"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-14 ARGS="--resolver lts-14 --stack-yaml stack-14.yaml"
-    name: "LTS 14"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-13 ARGS="--resolver lts-13"
-    name: "LTS 13"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-12 ARGS="--resolver lts-12"
-    name: "LTS 12"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-11 ARGS="--resolver lts-11"
-    name: "LTS 11"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-10 ARGS="--resolver lts-10"
-    name: "LTS 10"
-
-  - env: BUILD=integration RESOLVER_SERIES=lts-9 ARGS="--resolver lts-9"
-    name: "LTS 9"
-
-  - env: BUILD=npm
-    name: "npm"
-
-  - env: BUILD=deploy
+  - name: "deploy dry run"
+    env: BUILD=deploy
     script: ./travis/deploy --dry-run
-    name: "deploy dry run"
 
   - stage: deploy
     script: ./travis/deploy
     if: tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
 
-before_install: source ./travis/before_install
-
 install: source ./travis/install
-
-script: source ./travis/build
