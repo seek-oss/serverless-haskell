@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: "0 0 * * 5"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        resolver:
+          - lts-15
+          - lts-14
+          - lts-13
+          - lts-12
+          - lts-11
+          - lts-10
+          - lts-9
+        include:
+          - resolver: lts-14
+            extra-args: "--stack-yaml stack-14.yaml"
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mstksg/setup-stack@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - uses: actions/cache@v1
+        key: ${{ matrix.resolver }}
+        path: ~/.stack
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y jq pwgen
+          stack --no-terminal --install-ghc --resolver ${{ matrix.resolver }} ${{ matrix.extra-args }} --docker test --bench --only-dependencies
+      - name: Test
+        run: |
+          stack --no-terminal --resolver ${{ matrix.resolver }} ${{ matrix.extra-args }} --docker test --bench --no-run-benchmarks --haddock --no-haddock-deps
+      - name: Integration test
+        run: |
+          RESOLVER_SERIES=${{ matrix.resolver }} ./integration-test/run.sh --dry-run
