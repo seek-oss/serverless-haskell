@@ -34,8 +34,9 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/cache@v1
-        key: ${{ matrix.resolver }}
-        path: ~/.stack
+        with:
+          key: ${{ matrix.resolver }}
+          path: ~/.stack
       - name: Install dependencies
         run: |
           sudo apt-get install -y jq pwgen
