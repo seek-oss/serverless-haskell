@@ -96,9 +96,7 @@ else
 fi
 cd $DIR
 
-# Find the latest resolver in the series to use.
-curl -o snapshots.json --retry 5 https://www.stackage.org/download/snapshots.json
-RESOLVER=$(cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"')
+RESOLVER=$($DIST/latest-lts $RESOLVER_SERIES)
 echo "Using resolver: $RESOLVER"
 
 # Extra dependencies to use for the resolver
