@@ -1,0 +1,7 @@
+#!/bin/bash
+# Find the latest resolver in the given LTS series
+
+RESOLVER_SERIES=$1
+
+curl -o snapshots.json --retry 5 https://www.stackage.org/download/snapshots.json
+cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"'
