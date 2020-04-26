@@ -80,7 +80,6 @@ class ServerlessPlugin {
     hooks: { [hook: string]: (options: {}) => void };
     servicePath: string;
     docker: {
-        skip: boolean;
         haveImage: boolean;
     };
     additionalFiles: string[];
@@ -109,7 +108,6 @@ class ServerlessPlugin {
         this.servicePath = this.serverless.config.servicePath || '';
 
         this.docker = {
-            skip: false,
             haveImage: false,
         };
 
@@ -139,7 +137,7 @@ class ServerlessPlugin {
     runStack(directory: string, args: string[], options: {captureOutput?: boolean} = {}): SpawnSyncReturns<Buffer> {
         options = options || {};
         const envArgs = [];
-        if (this.custom().docker && !this.docker.skip) {
+        if (this.custom().docker) {
             envArgs.push('--docker');
             envArgs.push('--docker-image', config.BUILD_DOCKER_IMAGE);
             if (!this.docker.haveImage) {
