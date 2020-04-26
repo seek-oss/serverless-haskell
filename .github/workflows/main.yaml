@@ -36,6 +36,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
       - name: Set up cache
         uses: actions/cache@v1
         with:
