@@ -22,7 +22,7 @@ const IGNORE_LIBRARIES = [
     '/lib64/ld-linux-x86-64.so.2',
 ].concat(AWSEnvironment.libraries);
 
-const BOOTSTRAP = '#!/bin/sh\nexec ${_HANDLER}';
+const BOOTSTRAP = '#!/bin/sh\nexec ./${_HANDLER}';
 
 const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
 
