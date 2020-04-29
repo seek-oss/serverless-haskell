@@ -61,7 +61,7 @@ DIST=$(cd $HERE/..; echo $PWD)
 SKELETON=$(cd $HERE/skeleton; echo $PWD)
 
 # Stackage resolver series to use
-: "${RESOLVER_SERIES:=$(cat stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
+: "${RESOLVER_SERIES:=$(cat $DIST/stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
 
 SLS_OFFLINE_PID=
 function cleanup () {
