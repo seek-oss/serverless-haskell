@@ -139,13 +139,6 @@ npm install $DIST/serverless-haskell-*.tgz
 # Just package the service first
 assert_success "sls package" sls package
 
-# Test packaging without Docker
-# This might fail due to glibc check, ignore the failure (but still compare
-# the output)
-(FORCE_DOCKER=false sls package || true) > no_docker_sls_package.txt
-assert_success "custom variable disables Docker" \
-                grep -q "Serverless: Warning: not using Docker to build" no_docker_sls_package.txt
-
 # Test local invocation
 sls invoke local --function main --data '[4, 5, 6]' | \
     grep -v 'Serverless: ' | grep -v RequestId > local_output.txt
