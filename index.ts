@@ -250,12 +250,6 @@ class ServerlessPlugin {
         }
     }
 
-    buildHandlerFileName(directory: string, packageName: string): string {
-        const fileName = `${packageName}.js`;
-
-        return path.resolve(this.servicePath, directory, fileName);
-    }
-
     writeBootstrap(): void {
         const bootstrapPath = path.resolve(this.servicePath, 'bootstrap');
         writeFileSync(bootstrapPath, BOOTSTRAP);
