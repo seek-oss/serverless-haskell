@@ -124,6 +124,10 @@ in the handler to process them.
 [Serverless Offline] can be used for local testing of API Gateway requests. You
 must use `--useDocker` flag so that the native Haskell runtime works correctly.
 
+When using [Serverless Offline], make sure that the project directory is
+world-readable, otherwise the started Docker container will be unable to access
+the handlers and all invocations will return HTTP status 502.
+
 ### Notes
 
 * Only AWS Lambda is supported at the moment. Other cloud providers would
