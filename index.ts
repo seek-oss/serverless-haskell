@@ -267,10 +267,9 @@ class ServerlessPlugin {
         }
     }
 
-    buildHandlers(options: {}): void {
+    buildHandlers(): void {
         const service = this.serverless.service;
 
-        options = options || {};
         if (!this.custom().docker) {
             // Warn when Docker is disabled
             this.serverless.cli.log(
