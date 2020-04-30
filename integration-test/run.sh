@@ -144,16 +144,12 @@ npm install $DIST/serverless-haskell-*.tgz
 assert_success "sls package" sls package
 
 # Test local invocation
-sls invoke local --function main --data '[4, 5, 6]' | \
-    grep -v 'Serverless: ' | grep -v RequestId > local_output.txt
-
-assert_file_same "sls invoke local" local_output.txt
+assert_expected_output "sls invoke local" local_output.txt \
+    sls invoke local --function main --data '[4, 5, 6]'
 
 # Test local invocation of a JavaScript function
-sls invoke local --function jsfunc --data '{}' | \
-    grep -v 'Serverless: ' > local_output_js.txt
-
-assert_file_same "sls invoke local (JavaScript)" local_output_js.txt
+assert_expected_output "sls invoke local (JavaScript)" local_output_js.txt \
+    sls invoke local --function jsfunc --data '{}'
 
 # Test serverless-offline
 sls offline start --useDocker &
@@ -162,10 +158,8 @@ until curl http://localhost:3002/ >/dev/null 2>&1
 do
     sleep 1
 done
-curl -s http://localhost:3000/dev/hello/integration > offline_output.txt
-kill $SLS_OFFLINE_PID
-
-assert_file_same "sls offline" offline_output.txt
+assert_expected_output "sls offline" offline_output.txt \
+    curl -s http://localhost:3000/dev/hello/integration
 
 if [ -n "$DRY_RUN" ]
 then
@@ -176,35 +170,30 @@ else
     sls deploy
 
     # Run the function and verify the results
-    sls invoke --function main --data '[4, 5, 6]' > output.json
-
-    assert_file_same "sls invoke" output.json
+    assert_expected_output "sls invoke" output.json \
+        sls invoke --function main --data '[4, 5, 6]'
 
     # Wait for the logs to be propagated and verify them, ignoring volatile request
     # IDs and extra blank lines
     sleep 20
-    sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
-
-    assert_file_same "sls logs" logs.txt
+    assert_expected_output "sls logs" logs.txt \
+        sls logs --function main
 
     # Run the function from the subdirectory and verify the result
-    sls invoke --function subdir --data '{}' > subdir_output.json
-
-    assert_file_same "sls invoke (subdirectory)" subdir_output.json
+    assert_expected_output "sls invoke (subdirectory)" subdir_output.json \
+        sls invoke --function subdir --data '{}'
 
     # Run the JavaScript function and verify the results
-    sls invoke --function jsfunc --data '[4, 5, 6]' > output_js.json
-
-    assert_file_same "sls invoke (JavaScript)" output_js.json
+    assert_expected_output "sls invoke (JavaScript)" output_js.json \
+        sls invoke --function jsfunc --data '[4, 5, 6]'
 
     # Update a function
     sed 's/33/44/g' Main.hs > Main_modified.hs && mv Main_modified.hs Main.hs
     sls deploy function --function main
 
     # Verify the updated result
-    sls invoke --function main --data '[4, 5, 6]' > output_modified.json
-
-    assert_file_same "sls invoke (after sls deploy function)" output_modified.json
+    assert_expected_output "sls invoke (after sls deploy function)" output_modified.json \
+        sls invoke --function main --data '[4, 5, 6]'
 fi
 
 end_tests
