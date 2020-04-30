@@ -96,6 +96,10 @@ else
 fi
 cd $DIR
 
+# Make sure test directory is accessible by Docker containers
+chmod +rx $DIR
+umask u=rwx,g=rx,o=rx
+
 RESOLVER=$($DIST/latest-lts $RESOLVER_SERIES)
 echo "Using resolver: $RESOLVER"
 
