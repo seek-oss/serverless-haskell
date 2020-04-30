@@ -1,24 +1,10 @@
-# Adapted from
-# https://docs.haskellstack.org/en/stable/travis_ci/
-
 sudo: required
 dist: trusty
 
 language: minimal
 
-cache:
-  directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
-  timeout: 600
-
 jobs:
   include:
-  - name: "npm"
-    env: BUILD=npm
-    script: npm install && npm test
-
   - name: "deploy dry run"
     env: BUILD=deploy
     script: ./travis/deploy --dry-run
@@ -26,5 +12,3 @@ jobs:
   - stage: deploy
     script: ./travis/deploy
     if: tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
-
-install: source ./travis/install

@@ -61,3 +61,24 @@ jobs:
       - name: Integration test
         run: |
           RESOLVER_SERIES=${{ matrix.resolver }} ./integration-test/run.sh --dry-run
+
+  node-build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          key: npm
+          path: ~/.npm
+      - name: Install dependencies
+        run: npm install
+      - name: Test
+        run: npm test
