@@ -16,7 +16,6 @@ jobs:
     strategy:
       matrix:
         resolver:
-          - lts-15
           - lts-14
           - lts-13
           - lts-12
