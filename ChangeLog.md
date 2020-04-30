@@ -4,6 +4,16 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Change to a native Haskell runtime (#130). The Haskell process is now
+  receiving the events from AWS and sending the results back without the
+  JavaScript wrapper.
+* Several Lambda invocations can reuse the same Haskell process instead of
+  a new one being created each time.
+* Passing arguments to the executable is not supported anymore.
+* Local invocation (`sls invoke local` and `sls offline`) use the Docker build
+  by default.
+* `--useDocker` flag is required when using Serverless Offline.
+
 ## 0.10.5
 
 * Fix uploading the package to NPM (#132).
