@@ -1,0 +1,54 @@
+#!/bin/bash
+# Script for deploying the package via Travis CI
+# Use --dry-run for testing without uploading anything
+
+set -euo pipefail
+
+DRY_RUN=
+while [ $# -gt 0 ]
+do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+function report_fail() {
+    echo $1 >&2
+    exit 1
+}
+
+# Release to Hackage via Stack
+
+if [ -n "$DRY_RUN" ]
+then
+  stack sdist || report_fail "Failed to package for Hackage."
+else
+  STACK_CREDENTIALS=$HOME/.stack/upload/credentials.json
+  if [ ! -f "$STACK_CREDENTIALS" ]
+  then
+    echo '{"username":"'"$HACKAGE_USERNAME"'","password":"'"$HACKAGE_PASSWORD"'"}' > "$STACK_CREDENTIALS"
+  fi
+  stack upload . || report_fail "Failed to upload to Hackage."
+fi
+
+# Release to NPM
+
+npm install
+if [ -n "$DRY_RUN" ]
+then
+  npm publish --dry-run || report_fail "Failed to package for NPM."
+else
+  NPMRC=$HOME/.npmrc
+  if [ ! -f "$NPMRC" ]
+  then
+    echo '//registry.npmjs.org/:_authToken='"$NPM_TOKEN" > "$NPMRC"
+    chmod go-rwx "$NPMRC"
+  fi
+  npm publish || report_fail "Failed to upload to NPM."
+fi
