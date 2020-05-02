@@ -91,8 +91,8 @@ lambdaMain act =
         result <- act event
         pure $ Aeson.encode result
 
--- Blah. Also set line buffering on standard output for AWS Lambda so the logs
--- are output in a timely manner.
+-- Process the incoming requests (using the AWS Lambda runtime interface or from the standard input).
+-- Also set line buffering on standard output for AWS Lambda so the logs are output in a timely manner.
 runMain :: (LBS.ByteString -> IO LBS.ByteString) -> IO ()
 runMain act = do
   lambdaApiAddress <- lookupEnv lambdaApiAddressEnv
