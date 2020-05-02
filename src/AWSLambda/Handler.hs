@@ -11,7 +11,7 @@ module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Exception.Safe (SomeException, displayException, tryAny)
+import Control.Exception.Safe (SomeException(..), displayException, tryAny)
 import Control.Monad (forever, void)
 
 import Data.Aeson ((.=))
@@ -132,7 +132,10 @@ resultRequest apiAddress requestId result = (lambdaRequest apiAddress $ "/runtim
 errorRequest :: String -> String -> SomeException -> Request
 errorRequest apiAddress requestId exception = (lambdaRequest apiAddress $ "/runtime/invocation/" ++ requestId ++ "/error") { method = "POST", requestBody = RequestBodyLBS body }
   where
-    body = Aeson.encode $ Aeson.object [ "errorMessage" .= displayException exception, "errorType" .= show (typeOf exception)]
+    body = Aeson.encode $ Aeson.object [ "errorMessage" .= displayException exception, "errorType" .= exceptionType exception]
+
+exceptionType :: SomeException -> String
+exceptionType (SomeException e) = show (typeOf e)
 
 requestIdHeader :: HeaderName
 requestIdHeader = "Lambda-Runtime-Aws-Request-Id"
