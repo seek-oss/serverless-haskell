@@ -11,9 +11,13 @@ module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Monad (forever)
+import Control.Exception.Safe (SomeException, displayException, tryAny)
+import Control.Monad (forever, void)
 
+import Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
+
+import Data.Typeable (typeOf)
 
 import qualified Data.ByteString as ByteString
 import qualified Data.ByteString.Char8 as Char8
@@ -104,9 +108,10 @@ runMain act = do
         invocation <- httpLbs (invocationRequest address) manager
         let input = responseBody invocation
         let requestId = responseRequestId invocation
-        result <- act input
-        _ <- httpNoBody (resultRequest address requestId result) manager
-        pure ()
+        resultOrError <- tryAny $ act input
+        case resultOrError of
+          Right result -> void $ httpNoBody (resultRequest address requestId result) manager
+          Left exception -> void $ httpNoBody (errorRequest address requestId exception) manager
     Nothing -> do
       input <- LBS.fromStrict <$> ByteString.getLine
       result <- act input
@@ -123,6 +128,11 @@ invocationRequest apiAddress = (lambdaRequest apiAddress "/runtime/invocation/ne
 
 resultRequest :: String -> String -> LBS.ByteString -> Request
 resultRequest apiAddress requestId result = (lambdaRequest apiAddress $ "/runtime/invocation/" ++ requestId ++ "/response") { method = "POST", requestBody = RequestBodyLBS result }
+
+errorRequest :: String -> String -> SomeException -> Request
+errorRequest apiAddress requestId exception = (lambdaRequest apiAddress $ "/runtime/invocation/" ++ requestId ++ "/error") { method = "POST", requestBody = RequestBodyLBS body }
+  where
+    body = Aeson.encode $ Aeson.object [ "errorMessage" .= displayException exception, "errorType" .= show (typeOf exception)]
 
 requestIdHeader :: HeaderName
 requestIdHeader = "Lambda-Runtime-Aws-Request-Id"

@@ -1,0 +1,6 @@
+This should go to logs
+Just ["abc"]
+Object (fromList [("error",Number 1.0)])
+{"errorType":"SomeException","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}
+  Error --------------------------------------------------
+<Serverless error omitted>
