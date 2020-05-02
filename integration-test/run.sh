@@ -64,11 +64,15 @@ SKELETON=$(cd $HERE/skeleton; echo $PWD)
 : "${RESOLVER_SERIES:=$(cat $DIST/stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
 
 SLS_OFFLINE_PID=
-function cleanup () {
-  if [ -n "$SLS_OFFLINE_PID" ]
+function kill_sls_offline () {
+  if [ -n "$SLS_OFFLINE_PID" ] && kill -0 $SLS_OFFLINE_PID
   then
     kill $SLS_OFFLINE_PID || true
+    SLS_OFFLINE_PID=
   fi
+}
+function cleanup () {
+  kill_sls_offline
   if [ -z "$DRY_RUN" ]
   then
     sls --no-color remove || true
@@ -161,7 +165,7 @@ done
 assert_expected_output "sls offline" offline_output.txt \
     curl -s http://localhost:3000/dev/hello/integration
 
-kill $SLS_OFFLINE_PID || true
+kill_sls_offline
 
 if [ -n "$DRY_RUN" ]
 then
