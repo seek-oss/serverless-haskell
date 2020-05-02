@@ -161,6 +161,8 @@ done
 assert_expected_output "sls offline" offline_output.txt \
     curl -s http://localhost:3000/dev/hello/integration
 
+kill $SLS_OFFLINE_PID || true
+
 if [ -n "$DRY_RUN" ]
 then
     # All done (locally)
