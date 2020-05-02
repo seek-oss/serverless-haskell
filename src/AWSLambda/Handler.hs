@@ -24,7 +24,7 @@ import qualified Data.Text.IO as Text
 
 import GHC.IO.Handle (BufferMode(..), hSetBuffering)
 
-import Network.HTTP.Client (Request, RequestBody(..), Response, defaultManagerSettings, httpLbs, httpNoBody, method, newManager, parseRequest_, requestBody, responseBody, responseHeaders)
+import Network.HTTP.Client
 import Network.HTTP.Types (HeaderName)
 
 import System.Environment (lookupEnv)
@@ -116,10 +116,10 @@ lambdaApiAddressEnv :: String
 lambdaApiAddressEnv = "AWS_LAMBDA_RUNTIME_API"
 
 lambdaRequest :: String -> String -> Request
-lambdaRequest apiAddress path = parseRequest_ $ "http://" ++ apiAddress ++ "/2018-06-01" ++ path
+lambdaRequest apiAddress rqPath = parseRequest_ $ "http://" ++ apiAddress ++ "/2018-06-01" ++ rqPath
 
 invocationRequest :: String -> Request
-invocationRequest apiAddress = lambdaRequest apiAddress "/runtime/invocation/next"
+invocationRequest apiAddress = (lambdaRequest apiAddress "/runtime/invocation/next") { responseTimeout = responseTimeoutNone }
 
 resultRequest :: String -> String -> LBS.ByteString -> Request
 resultRequest apiAddress requestId result = (lambdaRequest apiAddress $ "/runtime/invocation/" ++ requestId ++ "/response") { method = "POST", requestBody = RequestBodyLBS result }
