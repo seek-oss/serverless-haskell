@@ -152,7 +152,7 @@ assert_expected_output "sls invoke local" local_output.txt \
     sls invoke local --function main --data '[4, 5, 6]'
 
 # Test local invocation that errors
-assert_expected_output "sls invoke local" local_error_output.txt \
+assert_expected_output "sls invoke local (error)" local_error_output.txt \
     sh -c 'sls invoke local --function main --data '"'"'{"error":1}'"'"' || true'
 
 # Test local invocation of a JavaScript function
