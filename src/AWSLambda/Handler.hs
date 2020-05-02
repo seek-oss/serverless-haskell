@@ -11,7 +11,6 @@ module AWSLambda.Handler
   ( lambdaMain
   ) where
 
-import Control.Exception (finally)
 import Control.Monad (forever)
 
 import qualified Data.Aeson as Aeson
