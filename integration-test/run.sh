@@ -188,6 +188,10 @@ else
     assert_expected_output "sls logs" logs.txt \
         sls logs --function main
 
+    # Test an invocation that errors
+    assert_expected_output "sls invoke" error_output.txt \
+        sh -c 'sls invoke --function main --data '"'"'{"error":1}'"'"' || true'
+
     # Run the function a few times in repetition
     assert_expected_output "sls invoke (multiple)" multi_output.txt \
         bash -c "for i in {1..10}; do sls invoke --function main --data []; done"
