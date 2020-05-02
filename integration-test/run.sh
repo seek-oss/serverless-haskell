@@ -180,6 +180,10 @@ else
     assert_expected_output "sls logs" logs.txt \
         sls logs --function main
 
+    # Run the function a few times in repetition
+    assert_expected_output "sls invoke (multiple)" multi_output.txt \
+        bash -c "for i in {1..10}; do sls invoke --function main --data []; done"
+
     # Run the function from the subdirectory and verify the result
     assert_expected_output "sls invoke (subdirectory)" subdir_output.json \
         sls invoke --function subdir --data '{}'
