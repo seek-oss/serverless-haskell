@@ -49,7 +49,7 @@ assert_expected_output() {
         echo -e "${RED}Unexpected output from '$*':${NC}"
         cat $FILE
         echo -e "${RED}Difference:${NC}"
-        diff $EXPECTED/$FILE stable-$FILE
+        diff $EXPECTED/$FILE stable-$FILE || true
         assert_success "$MESSAGE" false
     fi
 }
