@@ -175,8 +175,7 @@ else
     assert_expected_output "sls invoke" output.json \
         sls invoke --function main --data '[4, 5, 6]'
 
-    # Wait for the logs to be propagated and verify them, ignoring volatile request
-    # IDs and extra blank lines
+    # Wait for the logs to be propagated and verify them
     sleep 20
     assert_expected_output "sls logs" logs.txt \
         sls logs --function main
