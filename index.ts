@@ -79,9 +79,6 @@ class ServerlessPlugin {
     options: Options;
     hooks: { [hook: string]: (options: {}) => void };
     servicePath: string;
-    docker: {
-        haveImage: boolean;
-    };
     additionalFiles: string[];
 
     constructor(serverless: Serverless, options: Options) {
@@ -106,10 +103,6 @@ class ServerlessPlugin {
         };
 
         this.servicePath = this.serverless.config.servicePath || '';
-
-        this.docker = {
-            haveImage: false,
-        };
 
         // By default, Serverless examines node_modules to figure out which
         // packages there are from dependencies versus devDependencies of a
@@ -140,10 +133,6 @@ class ServerlessPlugin {
         if (this.custom().docker) {
             envArgs.push('--docker');
             envArgs.push('--docker-image', config.BUILD_DOCKER_IMAGE);
-            if (!this.docker.haveImage) {
-                spawnSync('stack', [...envArgs, 'docker', 'pull'], NO_OUTPUT_CAPTURE);
-                this.docker.haveImage = true;
-            }
             envArgs.push('--no-nix');
         }
 
