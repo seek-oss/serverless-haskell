@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Fix deployment (#136).
+
 ## 0.11.0
 
 * Change to a native Haskell runtime (#130). The Haskell process is now
