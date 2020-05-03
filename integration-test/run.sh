@@ -4,39 +4,49 @@
 
 set -euo pipefail
 
-DOCKER=true
 DRY_RUN=
 REUSE_DIR=
 FAILFAST=
 while [ $# -gt 0 ]
 do
-    case "$1" in
-        --dry-run)
-            DRY_RUN=true
-            shift
-            ;;
-        --no-docker)
-            DOCKER=false
-            shift
-            ;;
-        --no-clean-dir)
-            REUSE_DIR=true
-            shift
-            ;;
-        --failfast)
-            FAILFAST=true
-            shift
-            ;;
-        *)
-            shift
-            ;;
-    esac
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --no-clean-dir)
+      REUSE_DIR=true
+      shift
+      ;;
+    --failfast)
+      FAILFAST=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
 done
 
 for DEPENDENCY in curl jq npm pwgen stack
 do
-    which $DEPENDENCY >/dev/null || \
-        (echo "$DEPENDENCY is required for the test." >&2; exit 1)
+  command -v $DEPENDENCY >/dev/null || \
+    (echo "$DEPENDENCY is required for the test." >&2; exit 1)
+done
+if command -v pkgconf >/dev/null
+then
+  PKGCONF=pkgconf
+elif command -v pkg-config >/dev/null
+then
+  PKGCONF=pkg-config
+else
+  echo "pkg-config is required for the test." >&2
+  exit 1
+fi
+for DEPENDENCY in libpcre
+do
+  $PKGCONF --libs $DEPENDENCY >/dev/null || \
+    (echo "$DEPENDENCY is required for the test." >&2; exit 1)
 done
 
 # Directory of the integration test
@@ -51,14 +61,18 @@ DIST=$(cd $HERE/..; echo $PWD)
 SKELETON=$(cd $HERE/skeleton; echo $PWD)
 
 # Stackage resolver series to use
-: "${RESOLVER_SERIES:=$(cat stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
+: "${RESOLVER_SERIES:=$(cat $DIST/stack.yaml | grep resolver | sed -E 's/resolver: (lts-[0-9]+)\..+/\1/')}"
 
 SLS_OFFLINE_PID=
-function cleanup () {
-  if [ -n "$SLS_OFFLINE_PID" ]
+function kill_sls_offline () {
+  if [ -n "$SLS_OFFLINE_PID" ] && kill -0 $SLS_OFFLINE_PID
   then
     kill $SLS_OFFLINE_PID || true
+    SLS_OFFLINE_PID=
   fi
+}
+function cleanup () {
+  kill_sls_offline
   if [ -z "$DRY_RUN" ]
   then
     sls --no-color remove || true
@@ -86,14 +100,15 @@ else
 fi
 cd $DIR
 
-# Find the latest resolver in the series to use.
-curl -o snapshots.json --retry 5 https://www.stackage.org/download/snapshots.json
-RESOLVER=$(cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"')
+# Make sure test directory is accessible by Docker containers
+chmod +rx $DIR
+umask u=rwx,g=rx,o=rx
+
+RESOLVER=$($DIST/latest-lts $RESOLVER_SERIES)
 echo "Using resolver: $RESOLVER"
 
 # Extra dependencies to use for the resolver
 EXTRA_DEPS=$HERE/extra-deps.$RESOLVER_SERIES
-echo $EXTRA_DEPS
 if ! [ -f $EXTRA_DEPS ]
 then
     EXTRA_DEPS=/dev/null
@@ -105,7 +120,6 @@ skeleton() {
     sed "s!NAME!$NAME!g
 s!DIST!$DIST!g
 s!RESOLVER!$RESOLVER!g
-s!DOCKER_DEFAULT!$DOCKER!g
 /EXTRA_DEPS/{
 r$EXTRA_DEPS
 d
@@ -123,46 +137,39 @@ npm install serverless
 npm install serverless-offline
 
 # Compile and install the plugin
-pushd $DIST/serverless-plugin >/dev/null
+pushd $DIST >/dev/null
 npm install
 find . -maxdepth 1 -type f -name "serverless-haskell-*.tgz" -delete
 npm pack
 popd >/dev/null
-npm install $DIST/serverless-plugin/serverless-haskell-*.tgz
+npm install $DIST/serverless-haskell-*.tgz
 
 # Just package the service first
 assert_success "sls package" sls package
 
-# Test packaging without Docker
-# This might fail due to glibc check, ignore the failure (but still compare
-# the output)
-(FORCE_DOCKER=false sls package || true) > no_docker_sls_package.txt
-assert_success "custom variable disables Docker" \
-                grep -q "Serverless: Warning: not using Docker to build" no_docker_sls_package.txt
-
 # Test local invocation
-sls invoke local --function main --data '[4, 5, 6]' | \
-    grep -v 'Serverless: ' > local_output.txt
+assert_expected_output "sls invoke local" local_output.txt \
+    sls invoke local --function main --data '[4, 5, 6]'
 
-assert_file_same "sls invoke local" local_output.txt
+# Test local invocation that errors
+assert_expected_output "sls invoke local (error)" local_error_output.txt \
+    sh -c 'sls invoke local --function main --data '"'"'{"error":1}'"'"' || true'
 
 # Test local invocation of a JavaScript function
-sls invoke local --function jsfunc --data '{}' | \
-    grep -v 'Serverless: ' > local_output_js.txt
-
-assert_file_same "sls invoke local (JavaScript)" local_output_js.txt
+assert_expected_output "sls invoke local (JavaScript)" local_output_js.txt \
+    sls invoke local --function jsfunc --data '{}'
 
 # Test serverless-offline
-sls offline start &
+sls offline start --useDocker &
 SLS_OFFLINE_PID=$!
 until curl http://localhost:3002/ >/dev/null 2>&1
 do
     sleep 1
 done
-curl -s http://localhost:3000/dev/hello/integration > offline_output.txt
-kill $SLS_OFFLINE_PID
+assert_expected_output "sls offline" offline_output.txt \
+    curl -s http://localhost:3000/dev/hello/integration
 
-assert_file_same "sls offline" offline_output.txt
+kill_sls_offline
 
 if [ -n "$DRY_RUN" ]
 then
@@ -173,35 +180,37 @@ else
     sls deploy
 
     # Run the function and verify the results
-    sls invoke --function main --data '[4, 5, 6]' > output.json
+    assert_expected_output "sls invoke" output.json \
+        sls invoke --function main --data '[4, 5, 6]'
 
-    assert_file_same "sls invoke" output.json
-
-    # Wait for the logs to be propagated and verify them, ignoring volatile request
-    # IDs and extra blank lines
+    # Wait for the logs to be propagated and verify them
     sleep 20
-    sls logs --function main | grep -v RequestId | grep -v '^\W*$' > logs.txt
+    assert_expected_output "sls logs" logs.txt \
+        sls logs --function main
 
-    assert_file_same "sls logs" logs.txt
+    # Test an invocation that errors
+    assert_expected_output "sls invoke" error_output.txt \
+        sh -c 'sls invoke --function main --data '"'"'{"error":1}'"'"' || true'
+
+    # Run the function a few times in repetition
+    assert_expected_output "sls invoke (multiple)" multi_output.txt \
+        bash -c "for i in {1..10}; do sls invoke --function main --data []; done"
 
     # Run the function from the subdirectory and verify the result
-    sls invoke --function subdir --data '{}' > subdir_output.json
-
-    assert_file_same "sls invoke (subdirectory)" subdir_output.json
+    assert_expected_output "sls invoke (subdirectory)" subdir_output.json \
+        sls invoke --function subdir --data '{}'
 
     # Run the JavaScript function and verify the results
-    sls invoke --function jsfunc --data '[4, 5, 6]' > output_js.json
-
-    assert_file_same "sls invoke (JavaScript)" output_js.json
+    assert_expected_output "sls invoke (JavaScript)" output_js.json \
+        sls invoke --function jsfunc --data '[4, 5, 6]'
 
     # Update a function
     sed 's/33/44/g' Main.hs > Main_modified.hs && mv Main_modified.hs Main.hs
     sls deploy function --function main
 
     # Verify the updated result
-    sls invoke --function main --data '[4, 5, 6]' > output_modified.json
-
-    assert_file_same "sls invoke (after sls deploy function)" output_modified.json
+    assert_expected_output "sls invoke (after sls deploy function)" output_modified.json \
+        sls invoke --function main --data '[4, 5, 6]'
 fi
 
 end_tests

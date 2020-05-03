@@ -33,13 +33,36 @@ assert_success() {
 # Directory with the expected outputs
 EXPECTED=$(cd $(dirname $0)/expected; echo $PWD)
 
-# Test that the file generated is the same as expected
-assert_file_same() {
+# Remove volatile bits from the output
+sanitise() {
+  grep -v 'Serverless: ' | \
+  grep -v RequestId | \
+  grep -v '^[[:space:]]*$' | \
+  sed '/Error ----/{a\
+<Serverless error omitted>
+q
+}'
+}
+
+# Test that output of the command, save for volatile bits, is as expected
+assert_expected_output() {
     MESSAGE="$1"
     shift
     FILE="$1"
     shift
-    assert_success "$MESSAGE" diff $EXPECTED/$FILE $FILE
+    "$@" > $FILE
+    # Trim volatile content
+    cat $FILE | sanitise > stable-$FILE
+    if diff -q $EXPECTED/$FILE stable-$FILE
+    then
+        assert_success "$MESSAGE" true
+    else
+        echo -e "${RED}Unexpected output from '$*':${NC}"
+        cat $FILE
+        echo -e "${RED}Difference:${NC}"
+        diff $EXPECTED/$FILE stable-$FILE || true
+        assert_success "$MESSAGE" false
+    fi
 }
 
 # End testing and indicate the error code

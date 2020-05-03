@@ -98,8 +98,8 @@ sedi -E '/^## Unreleased changes/{G;a\
 
 # bump version
 sedi -E 's/(version: +)"'$OLD_VERSION'"/\1"'$NEW_VERSION'"/g' package.yaml
-sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package.json
-sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' serverless-plugin/package-lock.json
+sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' package.json
+sedi -E 's/^  "version": "'$OLD_VERSION'"/  "version": "'$NEW_VERSION'"/g' package-lock.json
 sedi -E 's/^    "serverless-haskell": "^'$OLD_VERSION'"/    "serverless-haskell": "^'$NEW_VERSION'"/g' serverless-haskell.hsfiles
 sedi -E 's/^- serverless-haskell-'$OLD_VERSION'/- serverless-haskell-'$NEW_VERSION'/g' serverless-haskell.hsfiles
 
