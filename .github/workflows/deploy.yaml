@@ -24,7 +24,7 @@ jobs:
         with:
           key: deploy
           path: ~/.npm
-      - name: Deploy (dry run)
+      - name: Deploy
         run: ./deploy
         env:
           HACKAGE_USERNAME: ${{ secrets.HACKAGE_USERNAME }}
