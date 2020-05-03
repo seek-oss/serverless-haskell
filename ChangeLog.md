@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Fix deployment yet again.
+
 ## 0.11.2
 
 * Fix deployment (#137).
