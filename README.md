@@ -121,7 +121,12 @@ normally in `serverless.yml` and use
 [AWSLambda.Events.APIGateway](https://hackage.haskell.org/package/serverless-haskell/docs/AWSLambda-Events-APIGateway.html)
 in the handler to process them.
 
-[Serverless Offline] can be used for local testing of API Gateway requests.
+[Serverless Offline] can be used for local testing of API Gateway requests. You
+must use `--useDocker` flag so that the native Haskell runtime works correctly.
+
+When using [Serverless Offline], make sure that the project directory is
+world-readable, otherwise the started Docker container will be unable to access
+the handlers and all invocations will return HTTP status 502.
 
 ### Notes
 
@@ -153,8 +158,14 @@ function to AWS, and it runs with expected functionality.
 Integration test is only automatically run up to deployment due to the need for
 an AWS account. To run manually:
 
-* Ensure you have the required dependencies: `curl`, [jq], [NPM], `pwgen` and
-  [Stack].
+* Ensure you have the required dependencies:
+  - `curl`
+  - [jq]
+  - `libpcre` headers (`-devel` package or similar)
+  - [NPM]
+  - [`pkg-config`](pkg-config)
+  - `pwgen`
+  - [Stack]
 * Get an AWS account and add the access credentials into your shell environment.
 * Run `./integration-test/run.sh`. The exit code indicates success.
 * To verify just the packaging, without deployment, run
@@ -180,6 +191,7 @@ an AWS account. To run manually:
 [Docker]: https://www.docker.com/
 [jq]: https://stedolan.github.io/jq/
 [NPM]: https://www.npmjs.com/
+[pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
 [Serverless]: https://serverless.com/framework/
 [Serverless Offline]: https://github.com/dherault/serverless-offline
 [Stack]: https://haskellstack.org

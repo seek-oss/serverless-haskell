@@ -55,7 +55,8 @@ normally in @serverless.yml@ and use 'AWSLambda.Events.APIGateway' in the
 handler to process them.
 
 <https://github.com/dherault/serverless-offline Serverless Offline> can be used
-for local testing of API Gateway requests.
+for local testing of API Gateway requests. You must use @--useDocker@ flag so
+that the native Haskell runtime works correctly.
 
 = Additional features
 
@@ -70,17 +71,6 @@ section of @serverless.yml@.
     >     stackBuildArgs:
     >       - --pedantic
     >       - --allow-different-user
-
-* To start the executable with extra arguments, add them to @arguments@ under
-the function name:
-
-    > custom:
-    >   haskell:
-    >     arguments:
-    >       myfunc:
-    >         - --arg1
-    >         - --arg2
-    >         - arg3
 
 * Dependent system libraries not present in the AWS Lambda environment will be
 automatically uploaded along with the executable. Note that while statically

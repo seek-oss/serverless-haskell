@@ -37,7 +37,6 @@ import qualified Data.CaseInsensitive    as CI
 import           Data.HashMap.Strict     (HashMap)
 import qualified Data.HashMap.Strict     as HashMap
 import           Data.IP
-import           Data.Text               (Text)
 import qualified Data.Text               as Text
 import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 import           GHC.Generics            (Generic)

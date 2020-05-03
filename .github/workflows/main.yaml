@@ -1,0 +1,104 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: "0 0 * * 5"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        resolver:
+          - lts-14
+          - lts-13
+          - lts-12
+          - lts-11
+          - lts-10
+          - lts-9
+        include:
+          - resolver: lts-14
+            extra-args: "--stack-yaml stack-14.yaml"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Stack
+        uses: mstksg/setup-stack@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          key: ${{ matrix.resolver }}
+          path: ~/.stack
+      - name: Find latest LTS release
+        id: resolver
+        run: echo "::set-output name=resolver::$(./latest-lts ${{ matrix.resolver }})"
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y jq pwgen
+          stack --no-terminal --install-ghc --resolver ${{ steps.resolver.outputs.resolver }} ${{ matrix.extra-args }} --docker --docker-image fpco/stack-build:lts-13.30 test --bench --only-dependencies
+      - name: Test
+        run: |
+          stack --no-terminal --resolver ${{ steps.resolver.outputs.resolver }} ${{ matrix.extra-args }} --docker --docker-image fpco/stack-build:lts-13.30 test --bench --no-run-benchmarks --haddock --no-haddock-deps
+      - name: Integration test
+        run: |
+          RESOLVER_SERIES=${{ matrix.resolver }} ./integration-test/run.sh --dry-run
+
+  node-build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          key: node-build
+          path: ~/.npm
+      - name: Install dependencies
+        run: npm install
+      - name: Test
+        run: npm test
+
+  deploy-dry-run:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Stack
+        uses: mstksg/setup-stack@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          key: deploy-dry-run
+          path: ~/.npm
+      - name: Deploy (dry run)
+        run: ./deploy --dry-run
