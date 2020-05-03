@@ -153,10 +153,19 @@ class ServerlessPlugin {
             options.captureOutput ? OUTPUT_CAPTURE : NO_OUTPUT_CAPTURE
         );
 
-        if (result.error || result.status && result.status > 0) {
-            const message = `Error when running Stack: ${result.stderr}\n` +
-                  `result.error = ${result.error}\n` +
-                  `result.status = ${result.status}\n` +
+        if (result.error || result.status) {
+            const reasons = [];
+            if (result.error) {
+                reasons.push(result.error);
+            }
+            if (result.status) {
+                reasons.push(`exit code: ${result.status}`);
+            }
+            const stderr = result.stderr?.toString().trim();
+            if (stderr) {
+                reasons.push(stderr);
+            }
+            const message = `Error when running Stack: ${reasons.join('; ')}\n` +
                   `Stack command: stack ${stackArgs.join(" ")}`;
             throw new ProcessError(message, result);
         }
