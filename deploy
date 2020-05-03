@@ -23,27 +23,19 @@ function report_fail() {
     exit 1
 }
 
-# Release to Hackage via Stack
-
-if [ -n "$DRY_RUN" ]
-then
-  stack sdist || report_fail "Failed to package for Hackage."
-else
-  STACK_CREDENTIALS=$HOME/.stack/upload/credentials.json
-  if [ ! -f "$STACK_CREDENTIALS" ]
-  then
-    echo '{"username":"'"$HACKAGE_USERNAME"'","password":"'"$HACKAGE_PASSWORD"'"}' > "$STACK_CREDENTIALS"
-  fi
-  stack upload . || report_fail "Failed to upload to Hackage."
-fi
-
-# Release to NPM
-
+# Test releasing
+stack sdist || report_fail "Failed to package for Hackage."
 npm install
-if [ -n "$DRY_RUN" ]
+npm publish --dry-run || report_fail "Failed to package for NPM."
+
+if [ -z "$DRY_RUN" ]
 then
-  npm publish --dry-run || report_fail "Failed to package for NPM."
-else
+  # Release to Hackage via Stack
+
+  stack upload . || report_fail "Failed to upload to Hackage."
+
+  # Release to NPM
+
   NPMRC=$HOME/.npmrc
   if [ ! -f "$NPMRC" ]
   then
