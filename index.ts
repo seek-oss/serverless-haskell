@@ -25,6 +25,7 @@ const IGNORE_LIBRARIES = [
 const BOOTSTRAP = '#!/bin/sh\nexec ${_HANDLER}';
 
 const NO_OUTPUT_CAPTURE: SpawnSyncOptions = {stdio: ['ignore', process.stdout, process.stderr]};
+const OUTPUT_CAPTURE: SpawnSyncOptions = {maxBuffer: 1024 * 1024 * 100};
 
 type Custom = {
     stackBuildArgs: string[];
@@ -149,11 +150,22 @@ class ServerlessPlugin {
         const result = spawnSync(
             'stack',
             stackArgs,
-            options.captureOutput ? {} : NO_OUTPUT_CAPTURE
+            options.captureOutput ? OUTPUT_CAPTURE : NO_OUTPUT_CAPTURE
         );
 
-        if (result.error || result.status && result.status > 0) {
-            const message = `Error when running Stack: ${result.stderr}\n` +
+        if (result.error || result.status) {
+            const reasons = [];
+            if (result.error) {
+                reasons.push(result.error);
+            }
+            if (result.status) {
+                reasons.push(`exit code: ${result.status}`);
+            }
+            const stderr = result.stderr?.toString().trim();
+            if (stderr) {
+                reasons.push(stderr);
+            }
+            const message = `Error when running Stack: ${reasons.join('; ')}\n` +
                   `Stack command: stack ${stackArgs.join(" ")}`;
             throw new ProcessError(message, result);
         }
