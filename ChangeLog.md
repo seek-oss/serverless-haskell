@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.11.0
+
 * Change to a native Haskell runtime (#130). The Haskell process is now
   receiving the events from AWS and sending the results back without the
   JavaScript wrapper.
