@@ -1,6 +1,6 @@
 # Serverless Haskell
 
-[![Build status](https://img.shields.io/travis/seek-oss/serverless-haskell.svg)](https://travis-ci.org/seek-oss/serverless-haskell)
+![Build status](https://github.com/seek-oss/serverless-haskell/workflows/Build/badge.svg)
 [![Hackage](https://img.shields.io/hackage/v/serverless-haskell.svg)](https://hackage.haskell.org/package/serverless-haskell)
 [![Stackage LTS](https://www.stackage.org/package/serverless-haskell/badge/lts)](https://www.stackage.org/lts/package/serverless-haskell)
 [![Hackage dependencies](https://img.shields.io/hackage-deps/v/serverless-haskell.svg)](https://packdeps.haskellers.com/feed?needle=serverless-haskell)
