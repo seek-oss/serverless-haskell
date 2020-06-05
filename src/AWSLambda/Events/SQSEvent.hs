@@ -1,7 +1,7 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 {-|
 Module: AWSLambda.Events.SQSEvent
@@ -9,21 +9,24 @@ Description: Types for SQS Lambda events
 -}
 module AWSLambda.Events.SQSEvent where
 
+import           Control.Exception.Safe (MonadCatch)
 import           Control.Lens
-import           Data.Aeson               (FromJSON (..), genericParseJSON)
-import           Data.Aeson.Casing        (aesonPrefix, camelCase)
+import           Control.Monad.IO.Class
+import           Data.Aeson (FromJSON(..), genericParseJSON)
+import           Data.Aeson.Casing (aesonPrefix, camelCase)
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
-import           Data.ByteString          (ByteString)
-import           Data.HashMap.Strict      (HashMap)
-import           Data.Text                (Text)
-import           GHC.Generics             (Generic)
+import           Data.ByteString (ByteString)
+import           Data.HashMap.Strict (HashMap)
+import           Data.Text (Text)
+import           GHC.Generics (Generic)
 import           Network.AWS.Data.Base64
-import           Network.AWS.Data.Text    (FromText)
-import qualified Network.AWS.Types        as AWS
+import           Network.AWS.Data.Text (FromText)
+import qualified Network.AWS.Types as AWS
 
 import           AWSLambda.Events.MessageAttribute
 import           AWSLambda.Events.Records
+import           AWSLambda.Handler (lambdaMain)
 
 data SQSMessage body = SQSMessage
   { _sqsmMessageId         :: !Text
@@ -54,3 +57,10 @@ sqsEmbedded = sqsMessages . unEmbed
 
 sqsBinary :: Traversal' (SQSEvent Base64) ByteString
 sqsBinary = sqsMessages . _Base64
+
+traverseSqs :: (FromJSON a, Applicative m) => (a -> m ()) -> SQSEvent (Embedded a) -> m ()
+traverseSqs act = traverseRecords $ \record ->
+    act $ record ^. sqsmBody . unTextValue . unEmbed
+
+sqsMain :: (FromJSON a, MonadCatch m, MonadIO m) => (a -> m ()) -> m ()
+sqsMain = lambdaMain . traverseSqs
