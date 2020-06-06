@@ -58,9 +58,12 @@ sqsEmbedded = sqsMessages . unEmbed
 sqsBinary :: Traversal' (SQSEvent Base64) ByteString
 sqsBinary = sqsMessages . _Base64
 
+-- | Traverse all the messages in an SQS event
 traverseSqs :: (FromJSON a, Applicative m) => (a -> m ()) -> SQSEvent (Embedded a) -> m ()
 traverseSqs act = traverseRecords $ \record ->
     act $ record ^. sqsmBody . unTextValue . unEmbed
 
+-- | A specialised version of the 'lambdaMain' entry-point
+-- for handling individual SQS messages
 sqsMain :: (FromJSON a, MonadCatch m, MonadIO m) => (a -> m ()) -> m ()
 sqsMain = lambdaMain . traverseSqs

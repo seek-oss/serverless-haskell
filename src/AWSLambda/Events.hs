@@ -25,8 +25,13 @@ import           AWSLambda.Events.S3Event
 import           AWSLambda.Events.SNSEvent
 import           AWSLambda.Events.SQSEvent
 
+-- | A specialised version of the 'lambdaMain' entry-point
+-- for handling individual SNS messages embedded in SQS messages
 snsInSqsMain :: (FromJSON a, MonadCatch m, MonadIO m) => (a -> m ()) -> m ()
 snsInSqsMain = sqsMain . traverseSns
 
+-- | A specialised version of the 'lambdaMain' entry-point
+-- for handling individual S3 event notifications embedded in
+-- SNS messages embedded in SQS messages
 s3InSnsInSqsMain :: (MonadCatch m, MonadIO m) => (S3EventNotification -> m ()) -> m ()
 s3InSnsInSqsMain = snsInSqsMain . traverseRecords

@@ -20,8 +20,11 @@ instance FromJSON a => FromJSON (RecordsEvent a) where
 
 $(makeLenses ''RecordsEvent)
 
+-- | Traverse all the records in a Lambda event
 traverseRecords :: Applicative m => (a -> m ()) -> RecordsEvent a -> m ()
 traverseRecords = traverse_
 
+-- | A specialised version of the 'lambdaMain' entry-point
+-- for handling individual records in a Lambda event
 recordsMain :: (FromJSON a, MonadCatch m, MonadIO m) => (a -> m ()) -> m ()
 recordsMain = lambdaMain . traverseRecords
