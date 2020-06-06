@@ -9,15 +9,17 @@ Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 -}
 module AWSLambda.Handler
   ( lambdaMain
+  , lambdaMainRaw
   ) where
 
-import Control.Exception.Safe (SomeException(..), displayException, tryAny)
-import Control.Monad (forever, void)
+import           Control.Exception.Safe (MonadCatch, SomeException(..), displayException, tryAny)
+import           Control.Monad (forever, void)
+import           Control.Monad.IO.Class
 
-import Data.Aeson ((.=))
+import           Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
 
-import Data.Typeable (typeOf)
+import           Data.Typeable (typeOf)
 
 import qualified Data.ByteString as ByteString
 import qualified Data.ByteString.Char8 as Char8
@@ -26,13 +28,13 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text.Encoding as Text
 import qualified Data.Text.IO as Text
 
-import GHC.IO.Handle (BufferMode(..), hSetBuffering)
+import           GHC.IO.Handle (BufferMode(..), hSetBuffering)
 
-import Network.HTTP.Client
-import Network.HTTP.Types (HeaderName)
+import           Network.HTTP.Client
+import           Network.HTTP.Types (HeaderName)
 
-import System.Environment (lookupEnv)
-import System.IO (stdout)
+import           System.Environment (lookupEnv)
+import           System.IO (stdout)
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -84,38 +86,40 @@ import System.IO (stdout)
 -- the command line, and the result of the execution is printed, also as JSON,
 -- to the standard output.
 lambdaMain ::
-     (Aeson.FromJSON event, Aeson.ToJSON res)
-  => (event -> IO res) -- ^ Function to process the event
-  -> IO ()
+     (Aeson.FromJSON event, Aeson.ToJSON res, MonadCatch m, MonadIO m)
+  => (event -> m res) -- ^ Function to process the event
+  -> m ()
 lambdaMain act =
-  runMain $ \input -> do
+  lambdaMainRaw $ \input -> do
     case Aeson.eitherDecode input of
       Left err -> error err
       Right event -> do
         result <- act event
         pure $ Aeson.encode result
 
--- Process the incoming requests (using the AWS Lambda runtime interface or from the standard input).
+-- | Process the incoming requests (using the AWS Lambda runtime interface or from the standard input).
 -- Also set line buffering on standard output for AWS Lambda so the logs are output in a timely manner.
-runMain :: (LBS.ByteString -> IO LBS.ByteString) -> IO ()
-runMain act = do
-  lambdaApiAddress <- lookupEnv lambdaApiAddressEnv
+-- This function provides a lower level interface than 'lambdaMain' for users who don't want to use
+-- Aeson for encoding and decoding JSON.
+lambdaMainRaw :: (MonadCatch m, MonadIO m) => (LBS.ByteString -> m LBS.ByteString) -> m ()
+lambdaMainRaw act = do
+  lambdaApiAddress <- liftIO $ lookupEnv lambdaApiAddressEnv
   case lambdaApiAddress of
     Just address -> do
-      hSetBuffering stdout LineBuffering
-      manager <- newManager defaultManagerSettings
+      liftIO $ hSetBuffering stdout LineBuffering
+      manager <- liftIO $ newManager defaultManagerSettings
       forever $ do
-        invocation <- httpLbs (invocationRequest address) manager
+        invocation <- liftIO $ httpLbs (invocationRequest address) manager
         let input = responseBody invocation
         let requestId = responseRequestId invocation
         resultOrError <- tryAny $ act input
         case resultOrError of
-          Right result -> void $ httpNoBody (resultRequest address requestId result) manager
-          Left exception -> void $ httpNoBody (errorRequest address requestId exception) manager
+          Right result   -> liftIO $ void $ httpNoBody (resultRequest address requestId result) manager
+          Left exception -> liftIO $ void $ httpNoBody (errorRequest address requestId exception) manager
     Nothing -> do
-      input <- LBS.fromStrict <$> ByteString.getLine
+      input <- liftIO $ LBS.fromStrict <$> ByteString.getLine
       result <- act input
-      Text.putStrLn $ Text.decodeUtf8 $ LBS.toStrict result
+      liftIO $ Text.putStrLn $ Text.decodeUtf8 $ LBS.toStrict result
 
 lambdaApiAddressEnv :: String
 lambdaApiAddressEnv = "AWS_LAMBDA_RUNTIME_API"

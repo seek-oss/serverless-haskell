@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE LambdaCase        #-}
 
 {-|
 Module: AWSLambda.Events.S3Event
@@ -17,7 +18,7 @@ import           Data.Aeson.Casing        (aesonDrop, camelCase)
 import           Data.Aeson.TH            (deriveFromJSON)
 import           Data.Text                (Text)
 import           Data.Time.Clock          (UTCTime)
-import qualified Network.AWS.S3           as S3
+import           Network.AWS.S3           (BucketName, ETag, Event(..), ObjectKey, ObjectVersionId)
 import qualified Network.AWS.Types        as AWS
 
 import           AWSLambda.Events.Records
@@ -32,7 +33,7 @@ $(makeLenses ''UserIdentityEntity)
 
 data S3BucketEntity = S3BucketEntity
   { _sbeArn           :: !Text
-  , _sbeName          :: !S3.BucketName
+  , _sbeName          :: !BucketName
   , _sbeOwnerIdentity :: !UserIdentityEntity
   } deriving (Eq, Show)
 
@@ -40,11 +41,11 @@ $(deriveFromJSON (aesonDrop 4 camelCase) ''S3BucketEntity)
 $(makeLenses ''S3BucketEntity)
 
 data S3ObjectEntity = S3ObjectEntity
-  { _soeETag      :: !(Maybe S3.ETag)
-  , _soeKey       :: !S3.ObjectKey
+  { _soeETag      :: !(Maybe ETag)
+  , _soeKey       :: !ObjectKey
   , _soeSize      :: !(Maybe Integer)
   , _soeSequencer :: !Text
-  , _soeVersionId :: !(Maybe S3.ObjectVersionId)
+  , _soeVersionId :: !(Maybe ObjectVersionId)
   } deriving (Eq, Show)
 
 $(deriveFromJSON (aesonDrop 4 camelCase) ''S3ObjectEntity)
@@ -81,7 +82,7 @@ $(makeLenses ''S3Entity)
 
 data S3EventNotification = S3EventNotification
   { _senAwsRegion         :: !AWS.Region
-  , _senEventName         :: !S3.Event
+  , _senEventName         :: !Event
   , _senEventSource       :: !Text
   , _senEventTime         :: !UTCTime
   , _senEventVersion      :: !Text
@@ -107,3 +108,29 @@ instance FromJSON S3EventNotification where
 $(makeLenses ''S3EventNotification)
 
 type S3Event = RecordsEvent S3EventNotification
+
+-- | Is the event an object creation event
+isCreateEvent :: S3EventNotification -> Bool
+isCreateEvent e = case _senEventName e of
+  S3ObjectCreated -> True
+  S3ObjectCreatedCompleteMultipartUpload -> True
+  S3ObjectCreatedCopy -> True
+  S3ObjectCreatedPost -> True
+  S3ObjectCreatedPut -> True
+  S3ObjectRemoved -> False
+  S3ObjectRemovedDelete -> False
+  S3ObjectRemovedDeleteMarkerCreated -> False
+  S3ReducedRedundancyLostObject -> False
+
+-- | Is the event an object removal event
+isRemoveEvent :: S3EventNotification -> Bool
+isRemoveEvent e = case _senEventName e of
+  S3ObjectCreated -> False
+  S3ObjectCreatedCompleteMultipartUpload -> False
+  S3ObjectCreatedCopy -> False
+  S3ObjectCreatedPost -> False
+  S3ObjectCreatedPut -> False
+  S3ObjectRemoved -> True
+  S3ObjectRemovedDelete -> True
+  S3ObjectRemovedDeleteMarkerCreated -> True
+  S3ReducedRedundancyLostObject -> False
