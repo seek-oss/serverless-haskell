@@ -9,7 +9,7 @@ Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 -}
 module AWSLambda.Handler
   ( lambdaMain
-  , runMain
+  , lambdaMainRaw
   ) where
 
 import           Control.Exception.Safe (MonadCatch, SomeException(..), displayException, tryAny)
@@ -90,17 +90,19 @@ lambdaMain ::
   => (event -> m res) -- ^ Function to process the event
   -> m ()
 lambdaMain act =
-  runMain $ \input -> do
+  lambdaMainRaw $ \input -> do
     case Aeson.eitherDecode input of
       Left err -> error err
       Right event -> do
         result <- act event
         pure $ Aeson.encode result
 
--- Process the incoming requests (using the AWS Lambda runtime interface or from the standard input).
+-- | Process the incoming requests (using the AWS Lambda runtime interface or from the standard input).
 -- Also set line buffering on standard output for AWS Lambda so the logs are output in a timely manner.
-runMain :: (MonadCatch m, MonadIO m) => (LBS.ByteString -> m LBS.ByteString) -> m ()
-runMain act = do
+-- This function provides a lower level interface than 'lambdaMain' for users who don't want to use
+-- Aeson for encoding and decoding JSON.
+lambdaMainRaw :: (MonadCatch m, MonadIO m) => (LBS.ByteString -> m LBS.ByteString) -> m ()
+lambdaMainRaw act = do
   lambdaApiAddress <- liftIO $ lookupEnv lambdaApiAddressEnv
   case lambdaApiAddress of
     Just address -> do

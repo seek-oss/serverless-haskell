@@ -109,8 +109,9 @@ $(makeLenses ''S3EventNotification)
 
 type S3Event = RecordsEvent S3EventNotification
 
-isCreateEvent :: Event -> Bool
-isCreateEvent = \case
+-- | Is the event an object creation event
+isCreateEvent :: S3EventNotification -> Bool
+isCreateEvent e = case _senEventName e of
   S3ObjectCreated -> True
   S3ObjectCreatedCompleteMultipartUpload -> True
   S3ObjectCreatedCopy -> True
@@ -121,8 +122,9 @@ isCreateEvent = \case
   S3ObjectRemovedDeleteMarkerCreated -> False
   S3ReducedRedundancyLostObject -> False
 
-isRemoveEvent :: Event -> Bool
-isRemoveEvent = \case
+-- | Is the event an object removal event
+isRemoveEvent :: S3EventNotification -> Bool
+isRemoveEvent e = case _senEventName e of
   S3ObjectCreated -> False
   S3ObjectCreatedCompleteMultipartUpload -> False
   S3ObjectCreatedCopy -> False
