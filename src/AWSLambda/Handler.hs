@@ -1,4 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 {-|
 Module      : AWSLambda.Handler
@@ -10,6 +19,8 @@ Entry point for AWS Lambda handlers deployed with @serverless-haskell@ plugin.
 module AWSLambda.Handler
   ( lambdaMain
   , lambdaMainRaw
+  , Context(..)
+  , HasHandler(..)
   ) where
 
 import           Control.Exception.Safe (MonadCatch, SomeException(..), displayException, tryAny)
@@ -35,6 +46,21 @@ import           Network.HTTP.Types (HeaderName)
 
 import           System.Environment (lookupEnv)
 import           System.IO (stdout)
+
+data Context = Context -- TODO
+
+type HandlerWithContext a m b = Context -> HandlerNoContext a m b
+
+type HandlerNoContext a m b = a -> m b
+
+class HasHandler h a m b | h -> a m b where
+  getHandler :: h -> HandlerWithContext a m b
+
+instance HasHandler (HandlerNoContext a m b) a m b where
+  getHandler = const
+
+instance HasHandler h a m b => HasHandler (Context -> h) a m b where
+  getHandler h' context = getHandler (h' context) context
 
 -- | Process incoming events from @serverless-haskell@ using a provided
 -- function.
@@ -86,22 +112,22 @@ import           System.IO (stdout)
 -- the command line, and the result of the execution is printed, also as JSON,
 -- to the standard output.
 lambdaMain ::
-     (Aeson.FromJSON event, Aeson.ToJSON res, MonadCatch m, MonadIO m)
-  => (event -> m res) -- ^ Function to process the event
+     (Aeson.FromJSON event, Aeson.ToJSON res, MonadCatch m, MonadIO m, HasHandler h event m res)
+  => h -- ^ Function to process the event
   -> m ()
 lambdaMain act =
-  lambdaMainRaw $ \input -> do
+  lambdaMainRaw $ \context input -> do
     case Aeson.eitherDecode input of
       Left err -> error err
       Right event -> do
-        result <- act event
+        result <- getHandler act context event
         pure $ Aeson.encode result
 
 -- | Process the incoming requests (using the AWS Lambda runtime interface or from the standard input).
 -- Also set line buffering on standard output for AWS Lambda so the logs are output in a timely manner.
 -- This function provides a lower level interface than 'lambdaMain' for users who don't want to use
 -- Aeson for encoding and decoding JSON.
-lambdaMainRaw :: (MonadCatch m, MonadIO m) => (LBS.ByteString -> m LBS.ByteString) -> m ()
+lambdaMainRaw :: (HasHandler h LBS.ByteString m LBS.ByteString, MonadCatch m, MonadIO m) => h -> m ()
 lambdaMainRaw act = do
   lambdaApiAddress <- liftIO $ lookupEnv lambdaApiAddressEnv
   case lambdaApiAddress of
@@ -112,13 +138,13 @@ lambdaMainRaw act = do
         invocation <- liftIO $ httpLbs (invocationRequest address) manager
         let input = responseBody invocation
         let requestId = responseRequestId invocation
-        resultOrError <- tryAny $ act input
+        resultOrError <- tryAny $ getHandler act Context input
         case resultOrError of
           Right result   -> liftIO $ void $ httpNoBody (resultRequest address requestId result) manager
           Left exception -> liftIO $ void $ httpNoBody (errorRequest address requestId exception) manager
     Nothing -> do
       input <- liftIO $ LBS.fromStrict <$> ByteString.getLine
-      result <- act input
+      result <- getHandler act Context input
       liftIO $ Text.putStrLn $ Text.decodeUtf8 $ LBS.toStrict result
 
 lambdaApiAddressEnv :: String
