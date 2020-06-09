@@ -1,7 +1,7 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 {-|
 Module: AWSLambda.Events.SNSEvent
@@ -11,23 +11,26 @@ Based on https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amaz
 -}
 module AWSLambda.Events.SNSEvent where
 
-import           Control.Applicative      ((<|>))
+import           Control.Applicative ((<|>))
+import           Control.Exception.Safe (MonadCatch)
 import           Control.Lens
-import           Data.Aeson               (FromJSON (..), genericParseJSON,
-                                           withObject, (.:), (.:?), (.!=))
-import           Data.Aeson.Casing        (aesonDrop, pascalCase)
+import           Control.Monad.IO.Class
+import           Data.Aeson
+                  (FromJSON(..), genericParseJSON, withObject, (.!=), (.:), (.:?))
+import           Data.Aeson.Casing (aesonDrop, pascalCase)
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
-import           Data.ByteString          (ByteString)
-import           Data.HashMap.Strict      (HashMap)
-import           Data.Text                (Text)
-import           Data.Time.Clock          (UTCTime)
-import           GHC.Generics             (Generic)
+import           Data.ByteString (ByteString)
+import           Data.HashMap.Strict (HashMap)
+import           Data.Text (Text)
+import           Data.Time.Clock (UTCTime)
+import           GHC.Generics (Generic)
 import           Network.AWS.Data.Base64
-import           Network.AWS.Data.Text    (FromText)
+import           Network.AWS.Data.Text (FromText)
 
 import           AWSLambda.Events.MessageAttribute
 import           AWSLambda.Events.Records
+import           AWSLambda.Handler (lambdaMain)
 
 data SNSMessage message = SNSMessage
   { _smMessage           :: !(TextValue message )
@@ -100,3 +103,13 @@ embedded = messages . unEmbed
 
 binary :: Traversal' (SNSEvent Base64) ByteString
 binary = messages . _Base64
+
+-- | Traverse all the messages in an SNS event
+traverseSns :: (FromJSON a, Applicative m) => (a -> m ()) -> SNSEvent (Embedded a) -> m ()
+traverseSns act = traverseRecords $ \record ->
+    act $ record ^. srSns . smMessage . unTextValue . unEmbed
+
+-- | A specialed version of the 'lambdaMain' entry-point
+-- for handling individual SNS messages
+snsMain :: (FromJSON a, MonadCatch m, MonadIO m) => (a -> m ()) -> m ()
+snsMain = lambdaMain . traverseSns
