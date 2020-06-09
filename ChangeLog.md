@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Fix for traversing SNS messages embedded in SQS events.
+
 ## 0.12.0
 
 * Remove `LambdaEvent` type and unimplemented event types.

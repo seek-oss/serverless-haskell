@@ -1,23 +1,20 @@
-{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
 
 module AWSLambda.Events.SQSEventSpec where
 
-import           AWSLambda.Events.MessageAttribute
-import           AWSLambda.Events.Records
-import           AWSLambda.Events.S3Event
-import           AWSLambda.Events.SNSEvent
-import           AWSLambda.Events.SQSEvent
+import           AWSLambda.Events
 
+import           Control.Monad.Trans.Writer
 import           Data.Aeson
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
-import           Data.ByteString.Lazy      (ByteString)
-import           Data.Text                 (Text)
+import           Data.ByteString.Lazy              (ByteString)
+import           Data.Text                         (Text)
 import           Data.Time.Calendar
 import           Data.Time.Clock
-import           Network.AWS.S3            as S3
+import           Network.AWS.S3                    as S3
 
 import           Text.RawString.QQ
 
@@ -29,6 +26,10 @@ spec = describe "Handler" $ do
     decode sampleSQSJSON `shouldBe` Just sampleSQSEvent
   it "parses sample embedded S3 -> SNS -> SQS event" $
     eitherDecode sampleS3SNSSQSJSON `shouldBe` Right sampleS3SNSSQSEvent
+  it "traverses sample embedded S3 -> SNS -> SQS event" $
+    (execWriter $
+      traverseS3InSnsInSqs (tell . (: []) . _sbeName . _seBucket . _senS3) sampleS3SNSSQSEvent)
+      `shouldBe` ["my-bucket"]
 
 sampleSQSJSON :: ByteString
 sampleSQSJSON = [r|
