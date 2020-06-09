@@ -104,6 +104,11 @@ embedded = messages . unEmbed
 binary :: Traversal' (SNSEvent Base64) ByteString
 binary = messages . _Base64
 
+-- | Traverse an SNS message
+traverseSnsMessage :: (FromJSON a, Applicative m) => (a -> m ()) -> SNSMessage (Embedded a) -> m ()
+traverseSnsMessage act message =
+    act $ message ^. smMessage . unTextValue . unEmbed
+
 -- | Traverse all the messages in an SNS event
 traverseSns :: (FromJSON a, Applicative m) => (a -> m ()) -> SNSEvent (Embedded a) -> m ()
 traverseSns act = traverseRecords $ \record ->

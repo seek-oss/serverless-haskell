@@ -42,3 +42,4 @@ tests:
       - hspec
       - hspec-discover
       - raw-strings-qq
+      - transformers
