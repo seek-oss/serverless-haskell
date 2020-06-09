@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.12.0
+
 * Remove `LambdaEvent` type and unimplemented event types.
 * Add functions `isCreatedEvent` and `isRemoveEvent` for S3 events.
 * Generalise the monad type for `lambdaMain`.
