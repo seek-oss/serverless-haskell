@@ -165,7 +165,7 @@ plugins:
   "license": "ISC",
   "dependencies": {
     "serverless": "^1.41.1",
-    "serverless-haskell": "^0.8.4"
+    "serverless-haskell": "^0.12.1"
   }
 }
 
