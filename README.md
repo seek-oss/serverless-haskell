@@ -57,7 +57,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
   ```shell
   cd mypackage
-  npm init .
+  npm init -y
   npm install --save serverless serverless-haskell@x.y.z
   ```
 
@@ -75,7 +75,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
   functions:
     myfunc:
-      handler: mypackage.myfunc
+      handler: mypackage.mypackage-exe
       # Here, mypackage is the Haskell package name and myfunc is the executable
       # name as defined in the Cabal file. The handler field may be prefixed
       # with a path of the form `dir1/.../dirn`, relative to `serverless.yml`,
@@ -103,6 +103,15 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
     pure [1, 2, 3]
   ```
 
+* Add `aeson` and `serverless-haskell` to package.yaml
+
+  ```yaml
+  dependencies:
+  - base >= 4.7 && < 5
+  - aeson
+  - serverless-haskell
+  ```
+
 * Use `sls deploy` to deploy the executable to AWS Lambda.
 
   The `serverless-haskell` plugin will build the package using Stack and upload
@@ -112,7 +121,14 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   You can test the function and see the invocation results with
   `sls invoke -f myfunc`.
 
-  To invoke the function locally, use `sls invoke local -f myfunc`.
+* To test locally, you can use `sls invoke local`
+
+  Note that this can take an hour to build, consider adding `export SLS_DEBUG=*` so you can see what serverless is doing.
+
+  ```
+  export SLS_DEBUG=*
+  sls invoke local -f myfunc
+  ```
 
 ### API Gateway
 
