@@ -103,7 +103,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
     pure [1, 2, 3]
   ```
 
-* Add `aeson` and `serverless-haskell` to package.yaml
+* Add `aeson` and `serverless-haskell` to `package.yaml`:
 
   ```yaml
   dependencies:
