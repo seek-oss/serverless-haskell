@@ -112,23 +112,31 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   - serverless-haskell
   ```
 
-* Use `sls deploy` to deploy the executable to AWS Lambda.
+* Build and test locally using `sls invoke local`
 
-  The `serverless-haskell` plugin will build the package using Stack and upload
-  it to AWS together with a JavaScript wrapper to pass the input and output
-  from/to AWS Lambda.
-
-  You can test the function and see the invocation results with
-  `sls invoke -f myfunc`.
-
-* To test locally, you can use `sls invoke local`
-
-  Note that this can take an hour to build, consider adding `export SLS_DEBUG=*` so you can see what serverless is doing.
+  The `serverless-haskell` plugin will build the package using Stack. Note that the first build can take around. Consider adding `export SLS_DEBUG=*` so you can see what is happening.
 
   ```
   export SLS_DEBUG=*
   sls invoke local -f myfunc
   ```
+
+* Use `sls deploy` to deploy the executable to AWS Lambda.
+
+  The `serverless-haskell` plugin will build the package using Stack, then upload
+  it to AWS together with a JavaScript wrapper to pass the input and output
+  from/to AWS Lambda.
+
+  ```
+  export SLS_DEBUG=*
+  sls deploy
+  ```
+  You can test the function and see the invocation results with:
+
+  ```
+  sls invoke -f myfunc`
+  ```
+
 
 ### API Gateway
 
