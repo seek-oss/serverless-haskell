@@ -30,18 +30,18 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   ```
 
 * Update the resolver in the `stack.yaml` file. This is hardcoded as the resolver number is not known at template interpolation time. You should pick either the latest resolver, or one you have used before and have thus prebuilt many of the core packages for.
-  
+
 * Install the dependencies and build the project:
- 
+
   ```shell
   cd mypackage
   npm install
   stack build
   sls invoke local -f mypackage-func
   ```
-  
+
   This should invoke serverless locally and display output once everything has built.
-  
+
 ### Manually
 
 * Create a [Stack] package for your code:
@@ -57,7 +57,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
   ```shell
   cd mypackage
-  npm init .
+  npm init -y
   npm install --save serverless serverless-haskell@x.y.z
   ```
 
@@ -75,13 +75,13 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
   functions:
     myfunc:
-      handler: mypackage.myfunc
-      # Here, mypackage is the Haskell package name and myfunc is the executable
-      # name as defined in the Cabal file. The handler field may be prefixed
-      # with a path of the form `dir1/.../dirn`, relative to `serverless.yml`,
-      # which points to the location where the Haskell package `mypackage` is
-      # defined. This prefix is not needed when the Stack project is defined at
-      # the same level as `serverless.yml`.
+      handler: mypackage.mypackage-exe
+      # Here, mypackage is the Haskell package name and mypackage-exe is the
+      # executable name as defined in the Cabal file. The handler field may be
+      # prefixed with a path of the form `dir1/.../dirn`, relative to
+      # `serverless.yml`, which points to the location where the Haskell
+      # package `mypackage` is defined. This prefix is not needed when the
+      # Stack project is defined at the same level as `serverless.yml`.
 
   plugins:
     - serverless-haskell
@@ -103,16 +103,42 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
     pure [1, 2, 3]
   ```
 
+* Add `aeson` and `serverless-haskell` to `package.yaml`:
+
+  ```yaml
+  dependencies:
+  - base >= 4.7 && < 5
+  - aeson
+  - serverless-haskell
+  ```
+
+* Build and test locally using `sls invoke local`:
+
+  The `serverless-haskell` plugin will build the package using Stack. Note that
+  the first build can take a long time. Consider adding `export SLS_DEBUG=*` so
+  you can see what is happening.
+
+  ```
+  export SLS_DEBUG=*
+  sls invoke local -f myfunc
+  ```
+
 * Use `sls deploy` to deploy the executable to AWS Lambda.
 
-  The `serverless-haskell` plugin will build the package using Stack and upload
+  The `serverless-haskell` plugin will build the package using Stack, then upload
   it to AWS together with a JavaScript wrapper to pass the input and output
   from/to AWS Lambda.
 
-  You can test the function and see the invocation results with
-  `sls invoke -f myfunc`.
+  ```
+  export SLS_DEBUG=*
+  sls deploy
+  ```
+  You can test the function and see the invocation results with:
 
-  To invoke the function locally, use `sls invoke local -f myfunc`.
+  ```
+  sls invoke -f myfunc`
+  ```
+
 
 ### API Gateway
 

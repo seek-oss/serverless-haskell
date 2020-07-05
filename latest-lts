@@ -1,7 +1,21 @@
 #!/bin/bash
 # Find the latest resolver in the given LTS series
 
+set -e
+
 RESOLVER_SERIES=$1
 
-curl -o snapshots.json --retry 5 https://www.stackage.org/download/snapshots.json
-cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"'
+SNAPSHOT_JSON=$(mktemp)
+trap 'rm -rf $SNAPSHOT_JSON' EXIT
+for URL in https://www.stackage.org/download/snapshots.json https://mirrors.tuna.tsinghua.edu.cn/stackage/snapshots.json
+do
+  if curl -o $SNAPSHOT_JSON --max-time 5 --retry 5 $URL
+  then
+    cat $SNAPSHOT_JSON | jq -r '."'$RESOLVER_SERIES'"'
+    exit 0
+  else
+    echo "Failed to download LTS information from $URL." >&2
+  fi
+done
+echo "No URL could be downloaded." >&2
+exit 1

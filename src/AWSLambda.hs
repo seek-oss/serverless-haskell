@@ -12,7 +12,7 @@ To deploy a Haskell function on AWS Lambda:
 * Initialise a Serverless project in the same directory as your Stack-enabled
 package and install the @serverless-haskell@ plugin:
 
-    > npm init .
+    > npm init -y
     > npm install --save serverless serverless-haskell@x.y.z
 
     The version of the NPM package to install must match the version of the
@@ -37,16 +37,33 @@ package and install the @serverless-haskell@ plugin:
 
 * Write your @main@ function using 'AWSLambda.lambdaMain'.
 
+* Add @aeson@ and @serverless-haskell@ to @package.yaml@:
+
+  > dependencies:
+  > - base >= 4.7 && < 5
+  > - aeson
+  > - serverless-haskell
+
+* Build and test locally using @sls invoke local@:
+
+  The @serverless-haskell@ plugin will build the package using Stack. Note that
+  the first build can take a long time. Consider adding @export SLS_DEBUG=*@ so
+  you can see what is happening.
+
+  > export SLS_DEBUG=*
+  > sls invoke local -f myfunc
+
 * Use @sls deploy@ to deploy the executable to AWS Lambda.
 
     The @serverless-haskell@ plugin will build the package using Stack and upload
     it to AWS together with a JavaScript wrapper to pass the input and output
     from/to AWS Lambda.
 
+    > export SLS_DEBUG=*
+    > sls deploy
+
     You can test the function and see the invocation results with @sls invoke
     -f myfunc@.
-
-    To invoke the function locally, use @sls invoke local -f myfunc@.
 
 = API Gateway
 
