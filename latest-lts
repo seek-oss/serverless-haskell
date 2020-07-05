@@ -1,7 +1,11 @@
 #!/bin/bash
 # Find the latest resolver in the given LTS series
 
+set -e
+
 RESOLVER_SERIES=$1
 
-curl -o snapshots.json --retry 5 https://www.stackage.org/download/snapshots.json
-cat snapshots.json | jq -r '."'$RESOLVER_SERIES'"'
+SNAPSHOT_JSON=$(mktemp)
+trap 'rm -rf $SNAPSHOT_JSON' EXIT
+curl -o $SNAPSHOT_JSON --max-time 5 --retry 5 https://www.stackage.org/download/snapshots.json
+cat $SNAPSHOT_JSON | jq -r '."'$RESOLVER_SERIES'"'
