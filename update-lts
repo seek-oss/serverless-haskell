@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Update stack.yaml and serverless-haskell.hsfiles to the latest lts
+
+set -ex
+
+sedi() {
+    if [ "$(uname)" = "Linux" ]
+    then
+        sed -i "$@"
+    else
+        sed -i '' "$@"
+    fi
+}
+
+latest_lts=$(./latest-lts lts)
+
+sedi -E 's/^resolver: lts-[0-9]+\.[0-9]+/resolver: '$latest_lts'/g' stack.yaml
+sedi -E 's/^resolver: lts-[0-9]+\.[0-9]+/resolver: '$latest_lts'/g' serverless-haskell.hsfiles
