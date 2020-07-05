@@ -65,6 +65,30 @@ assert_expected_output() {
     fi
 }
 
+# Test that output of the command contains expected text
+assert_contains_output() {
+    MESSAGE="$1"
+    shift
+    OUTPUT="$1"
+    shift
+    OUTFILE=$(mktemp)
+    "$@" > $OUTFILE
+    # Trim volatile content
+    cat $OUTFILE | sanitise > $OUTFILE-stable
+    if grep -q --fixed-strings "$OUTPUT" $OUTFILE-stable
+    then
+        rm $OUTFILE $OUTFILE-stable
+        assert_success "$MESSAGE" true
+    else
+        echo -e "${RED}Unexpected output from '$*':${NC}"
+        cat $OUTFILE
+        echo -e "${RED}Expected:${NC}"
+        echo $OUTPUT
+        rm $OUTFILE $OUTFILE-stable
+        assert_success "$MESSAGE" false
+    fi
+}
+
 # End testing and indicate the error code
 end_tests() {
     if ((FAILED > 0))

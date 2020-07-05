@@ -148,7 +148,13 @@ npm install $DIST/serverless-haskell-*.tgz
 assert_success "sls package" sls package
 
 # Test local invocation
-assert_expected_output "sls invoke local" local_output.txt \
+assert_contains_output "sls invoke local: logs" "This should go to logs" \
+    sls invoke local --function main --data '[4, 5, 6]'
+assert_contains_output "sls invoke local: regexp result" 'Just ["abc"]' \
+    sls invoke local --function main --data '[4, 5, 6]'
+assert_contains_output "sls invoke local: echo argument" 'Array [Number 4.0,Number 5.0,Number 6.0]' \
+    sls invoke local --function main --data '[4, 5, 6]'
+assert_contains_output "sls invoke local: result" "[11,22,33]" \
     sls invoke local --function main --data '[4, 5, 6]'
 
 # Test local invocation that errors
