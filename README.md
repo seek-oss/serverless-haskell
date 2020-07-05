@@ -76,12 +76,12 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   functions:
     myfunc:
       handler: mypackage.mypackage-exe
-      # Here, mypackage is the Haskell package name and myfunc is the executable
-      # name as defined in the Cabal file. The handler field may be prefixed
-      # with a path of the form `dir1/.../dirn`, relative to `serverless.yml`,
-      # which points to the location where the Haskell package `mypackage` is
-      # defined. This prefix is not needed when the Stack project is defined at
-      # the same level as `serverless.yml`.
+      # Here, mypackage is the Haskell package name and mypackage-exe is the
+      # executable name as defined in the Cabal file. The handler field may be
+      # prefixed with a path of the form `dir1/.../dirn`, relative to
+      # `serverless.yml`, which points to the location where the Haskell
+      # package `mypackage` is defined. This prefix is not needed when the
+      # Stack project is defined at the same level as `serverless.yml`.
 
   plugins:
     - serverless-haskell
