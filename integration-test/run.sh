@@ -158,7 +158,8 @@ assert_contains_output "sls invoke local: result" "[11,22,33]" \
     sls invoke local --function main --data '[4, 5, 6]'
 
 # Test local invocation that errors
-assert_expected_output "sls invoke local (error)" local_error_output.txt \
+assert_contains_output "sls invoke local (error)" \
+  '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
     sh -c 'sls invoke local --function main --data '"'"'{"error":1}'"'"' || true'
 
 # Test local invocation of a JavaScript function
