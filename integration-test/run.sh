@@ -148,15 +148,22 @@ npm install $DIST/serverless-haskell-*.tgz
 assert_success "sls package" sls package
 
 # Test local invocation
-assert_expected_output "sls invoke local" local_output.txt \
+assert_contains_output "sls invoke local: logs" "This should go to logs" \
+    sls invoke local --function main --data '[4, 5, 6]'
+assert_contains_output "sls invoke local: regexp result" 'Just ["abc"]' \
+    sls invoke local --function main --data '[4, 5, 6]'
+assert_contains_output "sls invoke local: echo argument" 'Array [Number 4.0,Number 5.0,Number 6.0]' \
+    sls invoke local --function main --data '[4, 5, 6]'
+assert_contains_output "sls invoke local: result" "[11,22,33]" \
     sls invoke local --function main --data '[4, 5, 6]'
 
 # Test local invocation that errors
-assert_expected_output "sls invoke local (error)" local_error_output.txt \
+assert_contains_output "sls invoke local (error)" \
+  '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
     sh -c 'sls invoke local --function main --data '"'"'{"error":1}'"'"' || true'
 
 # Test local invocation of a JavaScript function
-assert_expected_output "sls invoke local (JavaScript)" local_output_js.txt \
+assert_output "sls invoke local (JavaScript)" local_output_js.txt \
     sls invoke local --function jsfunc --data '{}'
 
 # Test serverless-offline
@@ -166,7 +173,7 @@ until curl http://localhost:3002/ >/dev/null 2>&1
 do
     sleep 1
 done
-assert_expected_output "sls offline" offline_output.txt \
+assert_output "sls offline" offline_output.txt \
     curl -s http://localhost:3000/dev/hello/integration
 
 kill_sls_offline
@@ -180,28 +187,28 @@ else
     sls deploy
 
     # Run the function and verify the results
-    assert_expected_output "sls invoke" output.json \
+    assert_output "sls invoke" output.json \
         sls invoke --function main --data '[4, 5, 6]'
 
     # Wait for the logs to be propagated and verify them
     sleep 20
-    assert_expected_output "sls logs" logs.txt \
+    assert_output "sls logs" logs.txt \
         sls logs --function main
 
     # Test an invocation that errors
-    assert_expected_output "sls invoke" error_output.txt \
+    assert_output "sls invoke" error_output.txt \
         sh -c 'sls invoke --function main --data '"'"'{"error":1}'"'"' || true'
 
     # Run the function a few times in repetition
-    assert_expected_output "sls invoke (multiple)" multi_output.txt \
+    assert_output "sls invoke (multiple)" multi_output.txt \
         bash -c "for i in {1..10}; do sls invoke --function main --data []; done"
 
     # Run the function from the subdirectory and verify the result
-    assert_expected_output "sls invoke (subdirectory)" subdir_output.json \
+    assert_output "sls invoke (subdirectory)" subdir_output.json \
         sls invoke --function subdir --data '{}'
 
     # Run the JavaScript function and verify the results
-    assert_expected_output "sls invoke (JavaScript)" output_js.json \
+    assert_output "sls invoke (JavaScript)" output_js.json \
         sls invoke --function jsfunc --data '[4, 5, 6]'
 
     # Update a function
@@ -209,7 +216,7 @@ else
     sls deploy function --function main
 
     # Verify the updated result
-    assert_expected_output "sls invoke (after sls deploy function)" output_modified.json \
+    assert_output "sls invoke (after sls deploy function)" output_modified.json \
         sls invoke --function main --data '[4, 5, 6]'
 fi
 
