@@ -50,7 +50,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   stack new mypackage
   ```
 
-  LTS 9-15 are supported, older versions are likely to work too but untested.
+  LTS 9-16 are supported, older versions are likely to work too but untested.
 
 * Initialise a Serverless project inside the Stack package directory and install
   the `serverless-haskell` plugin:
