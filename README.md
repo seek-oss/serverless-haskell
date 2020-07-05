@@ -30,18 +30,18 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   ```
 
 * Update the resolver in the `stack.yaml` file. This is hardcoded as the resolver number is not known at template interpolation time. You should pick either the latest resolver, or one you have used before and have thus prebuilt many of the core packages for.
-  
+
 * Install the dependencies and build the project:
- 
+
   ```shell
   cd mypackage
   npm install
   stack build
   sls invoke local -f mypackage-func
   ```
-  
+
   This should invoke serverless locally and display output once everything has built.
-  
+
 ### Manually
 
 * Create a [Stack] package for your code:
