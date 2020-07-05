@@ -114,7 +114,9 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
 
 * Build and test locally using `sls invoke local`
 
-  The `serverless-haskell` plugin will build the package using Stack. Note that the first build can take around. Consider adding `export SLS_DEBUG=*` so you can see what is happening.
+  The `serverless-haskell` plugin will build the package using Stack. Note that
+  the first build can take a long time. Consider adding `export SLS_DEBUG=*` so
+  you can see what is happening.
 
   ```
   export SLS_DEBUG=*
