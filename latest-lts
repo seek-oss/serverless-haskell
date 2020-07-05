@@ -7,5 +7,15 @@ RESOLVER_SERIES=$1
 
 SNAPSHOT_JSON=$(mktemp)
 trap 'rm -rf $SNAPSHOT_JSON' EXIT
-curl -o $SNAPSHOT_JSON --max-time 5 --retry 5 https://www.stackage.org/download/snapshots.json
-cat $SNAPSHOT_JSON | jq -r '."'$RESOLVER_SERIES'"'
+for URL in https://www.stackage.org/download/snapshots.json https://mirrors.tuna.tsinghua.edu.cn/stackage/snapshots.json
+do
+  if curl -o $SNAPSHOT_JSON --max-time 5 --retry 5 $URL
+  then
+    cat $SNAPSHOT_JSON | jq -r '."'$RESOLVER_SERIES'"'
+    exit 0
+  else
+    echo "Failed to download LTS information from $URL." >&2
+  fi
+done
+echo "No URL could be downloaded." >&2
+exit 1
