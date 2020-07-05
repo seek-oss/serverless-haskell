@@ -45,7 +45,7 @@ q
 }
 
 # Test that output of the command, save for volatile bits, is as expected
-assert_expected_output() {
+assert_output() {
     MESSAGE="$1"
     shift
     FILE="$1"
