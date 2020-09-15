@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Explicitly use Amazon Linux 2 runtime (#150).
+
 ## 0.12.1
 
 * Fix for traversing SNS messages embedded in SQS events.
