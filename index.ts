@@ -86,6 +86,9 @@ class ServerlessPlugin {
         this.serverless = serverless;
         this.options = options;
 
+        // Schema definitions
+        console.log(this.serverless.schema.properties.provider.properties.runtime);
+
         this.hooks = {
             'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
             'after:package:createDeploymentArtifacts': this.cleanupHandlers.bind(this),

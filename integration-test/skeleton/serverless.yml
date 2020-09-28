@@ -1,3 +1,5 @@
+configValidationMode: error
+
 service: NAME
 
 provider:
