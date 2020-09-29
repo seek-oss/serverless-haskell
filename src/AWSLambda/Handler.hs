@@ -115,11 +115,16 @@ lambdaMainRaw act = do
         resultOrError <- tryAny $ act input
         case resultOrError of
           Right result   -> liftIO $ void $ httpNoBody (resultRequest address requestId result) manager
-          Left exception -> liftIO $ void $ httpNoBody (errorRequest address requestId exception) manager
+          Left exception -> liftIO $ do
+            putStrLnLBS $ Aeson.encode $ exceptionJSON exception
+            liftIO $ void $ httpNoBody (errorRequest address requestId exception) manager
     Nothing -> do
       input <- liftIO $ LBS.fromStrict <$> ByteString.getLine
       result <- act input
-      liftIO $ Text.putStrLn $ Text.decodeUtf8 $ LBS.toStrict result
+      putStrLnLBS result
+
+putStrLnLBS :: MonadIO m => LBS.ByteString -> m ()
+putStrLnLBS = liftIO . Text.putStrLn . Text.decodeUtf8 . LBS.toStrict
 
 lambdaApiAddressEnv :: String
 lambdaApiAddressEnv = "AWS_LAMBDA_RUNTIME_API"
@@ -136,7 +141,10 @@ resultRequest apiAddress requestId result = (lambdaRequest apiAddress $ "/runtim
 errorRequest :: String -> String -> SomeException -> Request
 errorRequest apiAddress requestId exception = (lambdaRequest apiAddress $ "/runtime/invocation/" ++ requestId ++ "/error") { method = "POST", requestBody = RequestBodyLBS body }
   where
-    body = Aeson.encode $ Aeson.object [ "errorMessage" .= displayException exception, "errorType" .= exceptionType exception]
+    body = Aeson.encode $ exceptionJSON exception
+
+exceptionJSON :: SomeException -> Aeson.Value
+exceptionJSON exception = Aeson.object [ "errorMessage" .= displayException exception, "errorType" .= exceptionType exception]
 
 exceptionType :: SomeException -> String
 exceptionType (SomeException e) = show (typeOf e)
