@@ -115,7 +115,7 @@ lambdaMainRaw act = do
         resultOrError <- tryAny $ act input
         case resultOrError of
           Right result   -> liftIO $ void $ httpNoBody (resultRequest address requestId result) manager
-          Left exception -> liftIO $ do
+          Left exception -> do
             putStrLnLBS $ Aeson.encode $ exceptionJSON exception
             liftIO $ void $ httpNoBody (errorRequest address requestId exception) manager
     Nothing -> do
