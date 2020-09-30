@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.12.3
+
 * If an error occurs during a request, it is logged to standard output (and
   therefore CloudWatch) in addition to being returned to the client (#152).
 
