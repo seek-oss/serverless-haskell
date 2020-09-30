@@ -199,6 +199,12 @@ else
     assert_output "sls invoke" error_output.txt \
         sh -c 'sls invoke --function main --data '"'"'{"error":1}'"'"' || true'
 
+    # Test for error present in logs
+    sleep 20
+    assert_contains_output "sls logs (error)" \
+      '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
+        sls logs --function main
+
     # Run the function a few times in repetition
     assert_output "sls invoke (multiple)" multi_output.txt \
         bash -c "for i in {1..10}; do sls invoke --function main --data []; done"
