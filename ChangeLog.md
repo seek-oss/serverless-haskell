@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* If an error occurs during a request, it is logged to standard output (and
+  therefore CloudWatch) in addition to being returned to the client (#152).
+
 ## 0.12.2
 
 * Explicitly use Amazon Linux 2 runtime (#150).
