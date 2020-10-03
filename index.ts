@@ -79,6 +79,10 @@ class ServerlessPlugin {
         this.service = serverless.service as ServiceEx;
         this.options = options;
 
+        if (this.serverless.service.provider.name !== "aws") {
+            throw new Error("Only AWS provider is supported.");
+        }
+
         this.hooks = {
             'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
             'after:package:createDeploymentArtifacts': this.cleanupHandlers.bind(this),
