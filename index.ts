@@ -43,6 +43,16 @@ type ServiceEx = Service & {
     };
 }
 
+// FIXME: Schema is not implemented in @types/serverless
+type ConfigSchemaHandler = {
+    schema: any;
+    defineCustomProperties(properties: any): void;
+}
+
+type ServerlessEx = Serverless & {
+    configSchemaHandler: ConfigSchemaHandler;
+}
+
 type Options = {
     function?: string;
 };
@@ -57,14 +67,14 @@ class ProcessError extends Error {
 }
 
 class ServerlessPlugin {
-    serverless: Serverless;
+    serverless: ServerlessEx;
     service: ServiceEx;
     options: Options;
     hooks: { [hook: string]: (options: {}) => void };
     servicePath: string;
     additionalFiles: string[];
 
-    constructor(serverless: Serverless, options: Options) {
+    constructor(serverless: ServerlessEx, options: Options) {
         this.serverless = serverless;
         this.service = serverless.service as ServiceEx;
         this.options = options;
@@ -94,6 +104,12 @@ class ServerlessPlugin {
         // and this plugin being installed, it will be excluded anyway.
         // Therefore, the filtering can be disabled to speed up the process.
         this.service.package.excludeDevDependencies = false;
+
+        // Customize Serverless schema
+        const configSchemaHandler = this.serverless.configSchemaHandler;
+
+        // Add new possible runtime to the schema
+        configSchemaHandler.schema.definitions.awsLambdaRuntime.enum.push("haskell");
 
         this.additionalFiles = [];
     }
