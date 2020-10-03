@@ -3,6 +3,8 @@
 import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
 import { chmodSync, copySync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
+import Serverless from 'serverless';
+import Service from 'serverless/classes/Service';
 
 import * as AWSEnvironment from './AWSEnvironment';
 import * as config from './config';
@@ -33,34 +35,13 @@ type Custom = {
     buildAll: boolean;
 };
 
-type Serverless = {
-    cli: {
-        log: (message: string) => void;
+// FIXME: Service is missing 'package' property in @types/serverless
+type ServiceEx = Service & {
+    package: {
+        exclude: string[];
+        excludeDevDependencies?: boolean;
     };
-    config: {
-        servicePath?: string;
-    };
-    service: {
-        custom?: {
-            haskell?: Custom;
-        };
-        functions: Record<string, ServerlessFunction>;
-        package: {
-            exclude: string[];
-            excludeDevDependencies?: boolean;
-        };
-        provider: {
-            runtime: config.Runtime;
-        };
-        getFunction: (name: string) => ServerlessFunction;
-        getAllFunctions: () => string[];
-    };
-};
-
-type ServerlessFunction = {
-    handler: string;
-    runtime: config.Runtime;
-};
+}
 
 type Options = {
     function?: string;
@@ -77,6 +58,7 @@ class ProcessError extends Error {
 
 class ServerlessPlugin {
     serverless: Serverless;
+    service: ServiceEx;
     options: Options;
     hooks: { [hook: string]: (options: {}) => void };
     servicePath: string;
@@ -84,6 +66,7 @@ class ServerlessPlugin {
 
     constructor(serverless: Serverless, options: Options) {
         this.serverless = serverless;
+        this.service = serverless.service as ServiceEx;
         this.options = options;
 
         this.hooks = {
@@ -110,7 +93,7 @@ class ServerlessPlugin {
         // package. While there will always be a node_modules due to Serverless
         // and this plugin being installed, it will be excluded anyway.
         // Therefore, the filtering can be disabled to speed up the process.
-        this.serverless.service.package.excludeDevDependencies = false;
+        this.service.package.excludeDevDependencies = false;
 
         this.additionalFiles = [];
     }
@@ -269,7 +252,7 @@ class ServerlessPlugin {
     }
 
     buildHandlers(): void {
-        const service = this.serverless.service;
+        const service = this.service;
 
         if (!this.custom().docker) {
             // Warn when Docker is disabled
@@ -299,7 +282,7 @@ class ServerlessPlugin {
                 return;
             }
             haskellFunctionsFound = true;
-            service.functions[funcName].runtime = config.BASE_RUNTIME;
+            service.getFunction(funcName).runtime = config.BASE_RUNTIME;
 
             const handlerPattern = /(.*\/)?([^./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
@@ -334,7 +317,7 @@ class ServerlessPlugin {
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
             copySync(executablePath, targetPath);
             this.additionalFiles.push(targetPath);
-            service.functions[funcName].handler = targetDirectory + executableName;
+            service.getFunction(funcName).handler = targetDirectory + executableName;
 
             // Check glibc version
             const glibcVersion = this.glibcVersion(directory, executablePath);
