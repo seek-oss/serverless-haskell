@@ -35,6 +35,29 @@ type Custom = {
     buildAll: boolean;
 };
 
+const customSchema = {
+    type: 'object',
+    properties: {
+        haskell: {
+            type: 'object',
+            properties: {
+                stackBuildArgs: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                    },
+                },
+                docker: {
+                    type: 'boolean',
+                },
+                buildAll: {
+                    type: 'boolean',
+                },
+            },
+        },
+    },
+};
+
 // FIXME: Service is missing 'package' property in @types/serverless
 type ServiceEx = Service & {
     package: {
@@ -114,6 +137,9 @@ class ServerlessPlugin {
 
         // Add new possible runtime to the schema
         configSchemaHandler.schema.definitions.awsLambdaRuntime.enum.push("haskell");
+
+        // Add plugin options
+        configSchemaHandler.defineCustomProperties(customSchema);
 
         this.additionalFiles = [];
     }
