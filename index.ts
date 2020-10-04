@@ -35,7 +35,21 @@ type Custom = {
     buildAll: boolean;
 };
 
-const customSchema = {
+type Schema = {
+    type: 'object';
+    properties: {
+        [key: string]: Schema;
+    };
+} | {
+    type: 'array';
+    items: Schema;
+} | {
+    type: 'string';
+} | {
+    type: 'boolean';
+};
+
+const customSchema: Schema = {
     type: 'object',
     properties: {
         haskell: {
@@ -68,8 +82,14 @@ type ServiceEx = Service & {
 
 // FIXME: Schema is not implemented in @types/serverless
 type ConfigSchemaHandler = {
-    schema: any;
-    defineCustomProperties(properties: any): void;
+    schema: {
+        definitions: {
+            [key: string]: {
+                enum?: string[];
+            };
+        };
+    };
+    defineCustomProperties(properties: Schema): void;
 }
 
 type ServerlessEx = Serverless & {
@@ -136,7 +156,7 @@ class ServerlessPlugin {
         const configSchemaHandler = this.serverless.configSchemaHandler;
 
         // Add new possible runtime to the schema
-        configSchemaHandler.schema.definitions.awsLambdaRuntime.enum.push("haskell");
+        configSchemaHandler.schema.definitions.awsLambdaRuntime.enum?.push("haskell");
 
         // Add plugin options
         configSchemaHandler.defineCustomProperties(customSchema);
