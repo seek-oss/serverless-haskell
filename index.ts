@@ -3,6 +3,8 @@
 import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
 import { chmodSync, copySync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
+import Serverless from 'serverless';
+import Service from 'serverless/classes/Service';
 
 import * as AWSEnvironment from './AWSEnvironment';
 import * as config from './config';
@@ -33,34 +35,66 @@ type Custom = {
     buildAll: boolean;
 };
 
-type Serverless = {
-    cli: {
-        log: (message: string) => void;
+type Schema = {
+    type: 'object';
+    properties: {
+        [key: string]: Schema;
     };
-    config: {
-        servicePath?: string;
-    };
-    service: {
-        custom?: {
-            haskell?: Custom;
-        };
-        functions: Record<string, ServerlessFunction>;
-        package: {
-            exclude: string[];
-            excludeDevDependencies?: boolean;
-        };
-        provider: {
-            runtime: config.Runtime;
-        };
-        getFunction: (name: string) => ServerlessFunction;
-        getAllFunctions: () => string[];
-    };
+} | {
+    type: 'array';
+    items: Schema;
+} | {
+    type: 'string';
+} | {
+    type: 'boolean';
 };
 
-type ServerlessFunction = {
-    handler: string;
-    runtime: config.Runtime;
+const customSchema: Schema = {
+    type: 'object',
+    properties: {
+        haskell: {
+            type: 'object',
+            properties: {
+                stackBuildArgs: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                    },
+                },
+                docker: {
+                    type: 'boolean',
+                },
+                buildAll: {
+                    type: 'boolean',
+                },
+            },
+        },
+    },
 };
+
+// FIXME: Service is missing 'package' property in @types/serverless
+type ServiceEx = Service & {
+    package: {
+        exclude: string[];
+        excludeDevDependencies?: boolean;
+    };
+}
+
+// FIXME: Schema is not implemented in @types/serverless
+type ConfigSchemaHandler = {
+    schema: {
+        definitions: {
+            [key: string]: {
+                enum?: string[];
+            };
+        };
+    };
+    defineCustomProperties(properties: Schema): void;
+}
+
+type ServerlessEx = Serverless & {
+    configSchemaHandler: ConfigSchemaHandler;
+}
 
 type Options = {
     function?: string;
@@ -76,15 +110,21 @@ class ProcessError extends Error {
 }
 
 class ServerlessPlugin {
-    serverless: Serverless;
+    serverless: ServerlessEx;
+    service: ServiceEx;
     options: Options;
     hooks: { [hook: string]: (options: {}) => void };
     servicePath: string;
     additionalFiles: string[];
 
-    constructor(serverless: Serverless, options: Options) {
+    constructor(serverless: ServerlessEx, options: Options) {
         this.serverless = serverless;
+        this.service = serverless.service as ServiceEx;
         this.options = options;
+
+        if (this.serverless.service.provider.name !== "aws") {
+            throw new Error("Only AWS provider is supported.");
+        }
 
         this.hooks = {
             'before:package:createDeploymentArtifacts': this.buildHandlers.bind(this),
@@ -110,7 +150,16 @@ class ServerlessPlugin {
         // package. While there will always be a node_modules due to Serverless
         // and this plugin being installed, it will be excluded anyway.
         // Therefore, the filtering can be disabled to speed up the process.
-        this.serverless.service.package.excludeDevDependencies = false;
+        this.service.package.excludeDevDependencies = false;
+
+        // Customize Serverless schema
+        const configSchemaHandler = this.serverless.configSchemaHandler;
+
+        // Add new possible runtime to the schema
+        configSchemaHandler.schema.definitions.awsLambdaRuntime.enum?.push("haskell");
+
+        // Add plugin options
+        configSchemaHandler.defineCustomProperties(customSchema);
 
         this.additionalFiles = [];
     }
@@ -269,7 +318,7 @@ class ServerlessPlugin {
     }
 
     buildHandlers(): void {
-        const service = this.serverless.service;
+        const service = this.service;
 
         if (!this.custom().docker) {
             // Warn when Docker is disabled
@@ -299,7 +348,7 @@ class ServerlessPlugin {
                 return;
             }
             haskellFunctionsFound = true;
-            service.functions[funcName].runtime = config.BASE_RUNTIME;
+            service.getFunction(funcName).runtime = config.BASE_RUNTIME;
 
             const handlerPattern = /(.*\/)?([^./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
@@ -334,7 +383,7 @@ class ServerlessPlugin {
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
             copySync(executablePath, targetPath);
             this.additionalFiles.push(targetPath);
-            service.functions[funcName].handler = targetDirectory + executableName;
+            service.getFunction(funcName).handler = targetDirectory + executableName;
 
             // Check glibc version
             const glibcVersion = this.glibcVersion(directory, executablePath);

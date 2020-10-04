@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Add Serverless validation schema (http://slss.io/configuration-validation)
+  (#153)
+
 ## 0.12.3
 
 * If an error occurs during a request, it is logged to standard output (and
