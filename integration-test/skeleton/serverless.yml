@@ -1,5 +1,7 @@
 service: NAME
 
+configValidationMode: error
+
 provider:
   name: aws
   runtime: haskell
