@@ -165,7 +165,7 @@ plugins:
   "license": "ISC",
   "dependencies": {
     "serverless": "^1.41.1",
-    "serverless-haskell": "^0.12.3"
+    "serverless-haskell": "^0.12.4"
   }
 }
 
@@ -211,7 +211,7 @@ packages:
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- serverless-haskell-0.12.3
+- serverless-haskell-0.12.4
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
