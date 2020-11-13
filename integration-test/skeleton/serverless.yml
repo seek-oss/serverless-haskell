@@ -5,6 +5,8 @@ configValidationMode: error
 provider:
   name: aws
   runtime: haskell
+  apiGateway:
+    shouldStartNameWithService: true
 
 functions:
   main:
