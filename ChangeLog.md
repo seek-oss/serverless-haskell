@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.12.5
+
 * Use official AWS base image (#160)
 
 ## 0.12.4
