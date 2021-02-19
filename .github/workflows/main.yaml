@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         resolver:
+          - lts-17
           - lts-16
           - lts-15
           - lts-14
@@ -23,7 +24,6 @@ jobs:
           - lts-12
           - lts-11
           - lts-10
-          - lts-9
         include:
           - resolver: lts-14
             extra-args: "--stack-yaml stack-14.yaml"
