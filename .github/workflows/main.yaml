@@ -55,10 +55,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install -y jq pwgen
-          stack --no-terminal --install-ghc --resolver ${{ steps.resolver.outputs.resolver }} ${{ matrix.extra-args }} --docker --docker-image fpco/stack-build:lts-13.30 test --bench --only-dependencies
+          stack --no-terminal --install-ghc --resolver ${{ steps.resolver.outputs.resolver }} ${{ matrix.extra-args }} --docker --docker-image haskell:stretch test --bench --only-dependencies
       - name: Test
         run: |
-          stack --no-terminal --resolver ${{ steps.resolver.outputs.resolver }} ${{ matrix.extra-args }} --docker --docker-image fpco/stack-build:lts-13.30 test --bench --no-run-benchmarks --haddock --no-haddock-deps
+          stack --no-terminal --resolver ${{ steps.resolver.outputs.resolver }} ${{ matrix.extra-args }} --docker --docker-image haskell:stretch test --bench --no-run-benchmarks --haddock --no-haddock-deps
       - name: Integration test
         run: |
           RESOLVER_SERIES=${{ matrix.resolver }} ./integration-test/run.sh --dry-run
