@@ -1,4 +1,4 @@
-resolver: lts-17.4
+resolver: lts-17.7
 packages:
 - .
 - example-project
