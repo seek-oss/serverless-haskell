@@ -43,11 +43,6 @@ else
   echo "pkg-config is required for the test." >&2
   exit 1
 fi
-for DEPENDENCY in libpcre
-do
-  $PKGCONF --libs $DEPENDENCY >/dev/null || \
-    (echo "$DEPENDENCY is required for the test." >&2; exit 1)
-done
 
 # Directory of the integration test
 HERE=$(cd $(dirname $0); echo $PWD)

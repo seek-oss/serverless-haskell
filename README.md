@@ -187,7 +187,6 @@ an AWS account. To run manually:
 * Ensure you have the required dependencies:
   - `curl`
   - [jq]
-  - `libpcre` headers (`-devel` package or similar)
   - [NPM]
   - [`pkg-config`](pkg-config)
   - `pwgen`

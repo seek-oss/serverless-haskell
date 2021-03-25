@@ -12,8 +12,6 @@ import Control.Monad (when)
 
 import System.Environment
 
-import Text.Regex.PCRE.Light
-
 main :: IO ()
 main = lambdaMain handler
 
@@ -21,8 +19,6 @@ handler :: Aeson.Value -> IO [Int]
 handler evt = do
   -- Test logs going through
   putStrLn "This should go to logs"
-  -- Test working with an included extra library (libpcre)
-  print $ match (compile "[a-z]+" []) "012abc345" []
   -- Test passed event
   print evt
   -- Throw error on a magic input value
