@@ -154,7 +154,7 @@ assert_contains_output "sls invoke local: result" "[11,22,33]" \
 
 # Test local invocation that errors
 assert_contains_output "sls invoke local (error)" \
-  '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
+  '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:25:30 in main:Main"}' \
     sh -c 'sls invoke local --function main --data '"'"'{"error":1}'"'"' || true'
 
 # Test local invocation of a JavaScript function
@@ -197,7 +197,7 @@ else
     # Test for error present in logs
     sleep 20
     assert_contains_output "sls logs (error)" \
-      '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
+      '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:25:30 in main:Main"}' \
         sls logs --function main
 
     # Run the function a few times in repetition
