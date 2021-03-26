@@ -2,5 +2,4 @@
     "errorType": "ErrorCall",
     "errorMessage": "Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:25:30 in main:Main"
 }
-  Error --------------------------------------------------
 <Serverless error omitted>
