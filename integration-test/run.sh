@@ -70,7 +70,7 @@ function cleanup () {
   kill_sls_offline
   if [ -z "$DRY_RUN" ]
   then
-    sls --no-color remove || true
+    sls remove --no-color || true
   fi
   if [ -z "$REUSE_DIR" ]
   then
