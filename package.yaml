@@ -18,6 +18,7 @@ dependencies:
   - amazonka-s3
   - bytestring
   - case-insensitive
+  - containers
   - http-client
   - http-types
   - iproute

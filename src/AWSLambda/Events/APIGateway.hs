@@ -34,9 +34,11 @@ import           Data.Aeson.TextValue
 import           Data.Aeson.Types        (Parser)
 import           Data.ByteString         (ByteString)
 import qualified Data.CaseInsensitive    as CI
+import           Data.Function           (on)
 import           Data.HashMap.Strict     (HashMap)
 import qualified Data.HashMap.Strict     as HashMap
 import           Data.IP
+import qualified Data.Set                as Set
 import qualified Data.Text               as Text
 import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 import           GHC.Generics            (Generic)
@@ -132,7 +134,20 @@ data APIGatewayProxyRequest body = APIGatewayProxyRequest
   , _agprqStageVariables        :: !(HashMap StageVarName StageVarValue)
   , _agprqRequestContext        :: !ProxyRequestContext
   , _agprqBody                  :: !(Maybe (TextValue body))
-  } deriving (Eq, Show, Generic)
+  } deriving (Show, Generic)
+
+instance Eq body => Eq (APIGatewayProxyRequest body) where
+  (==) =
+    (==) `on` \rq ->
+      ( _agprqResource rq
+      , _agprqPath rq
+      , _agprqHttpMethod rq
+      , Set.fromList (_agprqHeaders rq)
+      , _agprqQueryStringParameters rq
+      , _agprqPathParameters rq
+      , _agprqStageVariables rq
+      , _agprqRequestContext rq
+      , _agprqBody rq)
 
 instance FromText body => FromJSON (APIGatewayProxyRequest body) where
   parseJSON = withObject "APIGatewayProxyRequest" $ \o ->
@@ -176,7 +191,10 @@ data APIGatewayProxyResponse body = APIGatewayProxyResponse
   { _agprsStatusCode :: !Int
   , _agprsHeaders    :: !HTTP.ResponseHeaders
   , _agprsBody       :: !(Maybe (TextValue body))
-  } deriving (Eq, Show, Generic)
+  } deriving (Show, Generic)
+
+instance (Eq body) => Eq (APIGatewayProxyResponse body) where
+  (==) = (==) `on` \r -> (_agprsStatusCode r, Set.fromList (_agprsHeaders r), _agprsBody r)
 
 instance ToText body => ToJSON (APIGatewayProxyResponse body) where
   toJSON APIGatewayProxyResponse {..} =
