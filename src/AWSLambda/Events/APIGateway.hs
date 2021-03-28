@@ -142,7 +142,7 @@ instance Eq body => Eq (APIGatewayProxyRequest body) where
       ( _agprqResource rq
       , _agprqPath rq
       , _agprqHttpMethod rq
-      , Set.fromList (_agprqHeaders rq)
+      , Set.fromList (_agprqHeaders rq) -- header order doesn't matter
       , _agprqQueryStringParameters rq
       , _agprqPathParameters rq
       , _agprqStageVariables rq
@@ -194,6 +194,7 @@ data APIGatewayProxyResponse body = APIGatewayProxyResponse
   } deriving (Show, Generic)
 
 instance (Eq body) => Eq (APIGatewayProxyResponse body) where
+  -- header order doesn't matter
   (==) = (==) `on` \r -> (_agprsStatusCode r, Set.fromList (_agprsHeaders r), _agprsBody r)
 
 instance ToText body => ToJSON (APIGatewayProxyResponse body) where
