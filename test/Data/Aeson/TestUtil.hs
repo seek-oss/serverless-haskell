@@ -10,4 +10,4 @@ testEncodeDecode description bytestring value = describe description $ do
         it "decodes" $
           decode bytestring `shouldBe` Just value
         it "encodes" $
-          encode value `shouldBe` bytestring
+          decode (encode value) `shouldBe` Just value
