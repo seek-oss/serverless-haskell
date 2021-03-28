@@ -43,11 +43,6 @@ else
   echo "pkg-config is required for the test." >&2
   exit 1
 fi
-for DEPENDENCY in libpcre
-do
-  $PKGCONF --libs $DEPENDENCY >/dev/null || \
-    (echo "$DEPENDENCY is required for the test." >&2; exit 1)
-done
 
 # Directory of the integration test
 HERE=$(cd $(dirname $0); echo $PWD)
@@ -75,7 +70,7 @@ function cleanup () {
   kill_sls_offline
   if [ -z "$DRY_RUN" ]
   then
-    sls --no-color remove || true
+    sls remove --no-color || true
   fi
   if [ -z "$REUSE_DIR" ]
   then
@@ -150,8 +145,6 @@ assert_success "sls package" sls package
 # Test local invocation
 assert_contains_output "sls invoke local: logs" "This should go to logs" \
     sls invoke local --function main --data '[4, 5, 6]'
-assert_contains_output "sls invoke local: regexp result" 'Just ["abc"]' \
-    sls invoke local --function main --data '[4, 5, 6]'
 assert_contains_output "sls invoke local: echo argument" 'Array [Number 4.0,Number 5.0,Number 6.0]' \
     sls invoke local --function main --data '[4, 5, 6]'
 assert_contains_output "sls invoke local: result" "[11,22,33]" \
@@ -159,7 +152,7 @@ assert_contains_output "sls invoke local: result" "[11,22,33]" \
 
 # Test local invocation that errors
 assert_contains_output "sls invoke local (error)" \
-  '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
+  '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:25:30 in main:Main"}' \
     sh -c 'sls invoke local --function main --data '"'"'{"error":1}'"'"' || true'
 
 # Test local invocation of a JavaScript function
@@ -202,7 +195,7 @@ else
     # Test for error present in logs
     sleep 20
     assert_contains_output "sls logs (error)" \
-      '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:29:30 in main:Main"}' \
+      '{"errorType":"ErrorCall","errorMessage":"Magic error\nCallStack (from HasCallStack):\n  error, called at Main.hs:25:30 in main:Main"}' \
         sls logs --function main
 
     # Run the function a few times in repetition

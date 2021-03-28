@@ -50,7 +50,7 @@ In either case, you will want to have [Serverless] installed, eg. `npm install -
   stack new mypackage
   ```
 
-  LTS 9-16 are supported, older versions are likely to work too but untested.
+  LTS 10-17 are supported, older versions are likely to work too but untested.
 
 * Initialise a Serverless project inside the Stack package directory and install
   the `serverless-haskell` plugin:
@@ -187,7 +187,6 @@ an AWS account. To run manually:
 * Ensure you have the required dependencies:
   - `curl`
   - [jq]
-  - `libpcre` headers (`-devel` package or similar)
   - [NPM]
   - [`pkg-config`](pkg-config)
   - `pwgen`

@@ -38,7 +38,7 @@ sanitise() {
   grep -v 'Serverless: ' | \
   grep -v RequestId | \
   grep -v '^[[:space:]]*$' | \
-  sed '/Error ----/{a\
+  sed '/Error ----/{c\
 <Serverless error omitted>
 q
 }'

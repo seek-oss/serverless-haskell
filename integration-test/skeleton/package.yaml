@@ -4,7 +4,6 @@ version: 0.0.0
 dependencies:
 - base >= 4.7 && < 5
 - aeson
-- pcre-light
 - serverless-haskell
 
 executables:

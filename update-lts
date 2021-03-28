@@ -2,7 +2,7 @@
 
 # Update stack.yaml and serverless-haskell.hsfiles to the latest lts
 
-set -ex
+set -e
 
 sedi() {
     if [ "$(uname)" = "Linux" ]

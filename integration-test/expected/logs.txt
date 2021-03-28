@@ -1,3 +1,2 @@
 This should go to logs
-Just ["abc"]
 Array [Number 4.0,Number 5.0,Number 6.0]

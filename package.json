@@ -19,7 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "fs-extra": "^5.0.0",
-    "serverless": "^2.4.0"
+    "serverless": "^2.25.2"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
