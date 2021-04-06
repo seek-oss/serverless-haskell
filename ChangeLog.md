@@ -4,6 +4,8 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+## 0.12.6
+
 * Don't rely on JSON key ordering in tests (#165) 
 * Support LTS 17 (#163)
 * Use `haskell` Docker image for building (#163)
