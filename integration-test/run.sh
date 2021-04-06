@@ -139,6 +139,9 @@ npm pack
 popd >/dev/null
 npm install $DIST/serverless-haskell-*.tgz
 
+# Disable deprecation messages so the output is stable
+export SLS_DEPRECATION_DISABLE='*'
+
 # Just package the service first
 assert_success "sls package" sls package
 
