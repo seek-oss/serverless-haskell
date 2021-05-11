@@ -4,6 +4,9 @@ For the changes in v0.6.x, see this file on the corresponding branch.
 
 ## Unreleased changes
 
+* Update dependencies (#167)
+* Do not crash on Docker image functions (#167)
+
 ## 0.12.6
 
 * Don't rely on JSON key ordering in tests (#165) 
