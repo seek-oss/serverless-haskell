@@ -97,7 +97,7 @@ type ServerlessEx = Serverless & {
 }
 
 function isHandler(func: FunctionDefinition): func is FunctionDefinitionHandler {
-    return !!(func as any).image;
+    return !!Object.prototype.hasOwnProperty.call(func, 'handler');
 }
 
 type Options = {
