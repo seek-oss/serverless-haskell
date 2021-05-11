@@ -3,7 +3,7 @@
 import { spawnSync, SpawnSyncOptions, SpawnSyncReturns } from 'child_process';
 import { chmodSync, copySync, removeSync, writeFileSync } from 'fs-extra';
 import * as path from 'path';
-import Serverless from 'serverless';
+import Serverless, { FunctionDefinition, FunctionDefinitionHandler } from 'serverless';
 import Service from 'serverless/classes/Service';
 
 import * as AWSEnvironment from './AWSEnvironment';
@@ -94,6 +94,10 @@ type ConfigSchemaHandler = {
 
 type ServerlessEx = Serverless & {
     configSchemaHandler: ConfigSchemaHandler;
+}
+
+function isHandler(func: FunctionDefinition): func is FunctionDefinitionHandler {
+    return !!(func as any).image;
 }
 
 type Options = {
@@ -343,12 +347,15 @@ class ServerlessPlugin {
             const func = service.getFunction(funcName);
 
             // Only process Haskell functions
+            if (!isHandler(func)) {
+                return;
+            }
             const runtime = func.runtime || service.provider.runtime;
             if (runtime !== config.HASKELL_RUNTIME) {
                 return;
             }
             haskellFunctionsFound = true;
-            service.getFunction(funcName).runtime = config.BASE_RUNTIME;
+            func.runtime = config.BASE_RUNTIME;
 
             const handlerPattern = /(.*\/)?([^./]*)\.(.*)/;
             const matches = handlerPattern.exec(func.handler);
@@ -383,7 +390,7 @@ class ServerlessPlugin {
             const targetPath = path.resolve(this.servicePath, targetDirectory, executableName);
             copySync(executablePath, targetPath);
             this.additionalFiles.push(targetPath);
-            service.getFunction(funcName).handler = targetDirectory + executableName;
+            func.handler = targetDirectory + executableName;
 
             // Check glibc version
             const glibcVersion = this.glibcVersion(directory, executablePath);
