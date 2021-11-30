@@ -20,9 +20,9 @@ import           Data.ByteString (ByteString)
 import           Data.HashMap.Strict (HashMap)
 import           Data.Text (Text)
 import           GHC.Generics (Generic)
-import           Network.AWS.Data.Base64
-import           Network.AWS.Data.Text (FromText)
-import qualified Network.AWS.Types as AWS
+import           Amazonka.Data.Base64
+import           Amazonka.Data.Text (FromText)
+import qualified Amazonka.Types as AWS
 
 import           AWSLambda.Events.MessageAttribute
 import           AWSLambda.Events.Records

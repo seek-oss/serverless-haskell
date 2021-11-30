@@ -28,7 +28,6 @@ import           Control.Lens            hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Casing       (aesonDrop, camelCase)
 import           Data.Aeson.TH           (deriveFromJSON)
--- import           Data.CaseInsensitive (CI (..))
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
 import           Data.Aeson.Types        (Parser)
@@ -42,8 +41,8 @@ import qualified Data.Set                as Set
 import qualified Data.Text               as Text
 import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 import           GHC.Generics            (Generic)
-import           Network.AWS.Data.Base64
-import           Network.AWS.Data.Text
+import           Amazonka.Data.Base64
+import           Amazonka.Data.Text
 import qualified Network.HTTP.Types      as HTTP
 import           Text.Read
 

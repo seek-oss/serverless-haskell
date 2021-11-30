@@ -13,9 +13,9 @@ dependencies:
   - base >= 4.7 && < 5
   - aeson
   - aeson-casing
-  - amazonka-core
-  - amazonka-kinesis
-  - amazonka-s3
+  - amazonka-core ^>= 2.0
+  - amazonka-kinesis ^>= 2.0
+  - amazonka-s3 ^>= 2.0
   - bytestring
   - case-insensitive
   - containers

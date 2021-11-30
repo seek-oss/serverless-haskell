@@ -1,10 +1,19 @@
-resolver: lts-17.7
+resolver: lts-18.8
 packages:
-- .
-- example-project
+  - .
+  - example-project
 nix:
   packages:
     - zlib.dev
     - zlib.out
 # Work around https://github.com/commercialhaskell/stack/issues/5290
 save-hackage-creds: false
+extra-deps:
+  - github: brendanhay/amazonka
+    commit: 19e6dca8485b7b8f74c564b7e38389b1d5b59e22
+    subdirs:
+      - lib/amazonka
+      - lib/amazonka-core
+      - lib/services/amazonka-sts # amazonka library depends on this
+      - lib/services/amazonka-kinesis
+      - lib/services/amazonka-s3

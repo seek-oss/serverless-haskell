@@ -17,7 +17,7 @@ module Data.Aeson.TextValue where
 import           Control.Lens.TH
 import           Data.Aeson
 import           Data.String
-import           Network.AWS.Data.Text (FromText (..), ToText (..), fromText)
+import           Amazonka.Data.Text (FromText (..), ToText (..), fromText)
 
 
 newtype TextValue a = TextValue { _unTextValue :: a } deriving (Eq, Show, IsString)

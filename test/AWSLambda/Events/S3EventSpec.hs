@@ -11,7 +11,7 @@ import           Data.ByteString.Lazy     (ByteString)
 import           Data.Time.Calendar
 import           Data.Time.Clock
 
-import           Network.AWS.S3
+import           Amazonka.S3
 
 import           Text.RawString.QQ
 
@@ -57,7 +57,7 @@ sampleS3PutJSON = [r|
         "x-amz-request-id": "EXAMPLE123456789"
       },
       "awsRegion": "us-east-1",
-      "eventName": "ObjectCreated:Put",
+      "eventName": "s3:ObjectCreated:Put",
       "userIdentity": {
         "principalId": "EXAMPLE"
       },
@@ -73,7 +73,7 @@ sampleS3PutEvent =
   { _reRecords =
     [ S3EventNotification
       { _senAwsRegion = NorthVirginia
-      , _senEventName = S3ObjectCreatedPut
+      , _senEventName = Event_S3_ObjectCreated_Put
       , _senEventSource = "aws:s3"
       , _senEventTime = UTCTime (fromGregorian 1970 1 1) (secondsToDiffTime 0)
       , _senEventVersion = "2.0"
@@ -147,7 +147,7 @@ sampleS3DeleteJSON = [r|
         "x-amz-request-id": "EXAMPLE123456789"
       },
       "awsRegion": "us-east-1",
-      "eventName": "ObjectRemoved:Delete",
+      "eventName": "s3:ObjectRemoved:Delete",
       "userIdentity": {
         "principalId": "EXAMPLE"
       },
@@ -163,7 +163,7 @@ sampleS3DeleteEvent =
   { _reRecords =
     [ S3EventNotification
       { _senAwsRegion = NorthVirginia
-      , _senEventName = S3ObjectRemovedDelete
+      , _senEventName = Event_S3_ObjectRemoved_Delete
       , _senEventSource = "aws:s3"
       , _senEventTime = UTCTime (fromGregorian 1970 1 1) (secondsToDiffTime 0)
       , _senEventVersion = "2.0"

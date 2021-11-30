@@ -18,8 +18,8 @@ import           Data.Aeson.Casing        (aesonDrop, camelCase)
 import           Data.Aeson.TH            (deriveFromJSON)
 import           Data.Text                (Text)
 import           Data.Time.Clock          (UTCTime)
-import           Network.AWS.S3           (BucketName, ETag, Event(..), ObjectKey, ObjectVersionId)
-import qualified Network.AWS.Types        as AWS
+import           Amazonka.S3              (BucketName, ETag, Event(..), ObjectKey, ObjectVersionId)
+import qualified Amazonka.Types           as AWS
 
 import           AWSLambda.Events.Records
 import           AWSLambda.Orphans        ()
@@ -112,25 +112,44 @@ type S3Event = RecordsEvent S3EventNotification
 -- | Is the event an object creation event
 isCreateEvent :: S3EventNotification -> Bool
 isCreateEvent e = case _senEventName e of
-  S3ObjectCreated -> True
-  S3ObjectCreatedCompleteMultipartUpload -> True
-  S3ObjectCreatedCopy -> True
-  S3ObjectCreatedPost -> True
-  S3ObjectCreatedPut -> True
-  S3ObjectRemoved -> False
-  S3ObjectRemovedDelete -> False
-  S3ObjectRemovedDeleteMarkerCreated -> False
-  S3ReducedRedundancyLostObject -> False
+  Event_S3_ObjectCreated_CompleteMultipartUpload -> True
+  Event_S3_ObjectCreated_Copy -> True
+  Event_S3_ObjectCreated_Post -> True
+  Event_S3_ObjectCreated_Put -> True
+  Event_S3_ObjectCreated__ -> True
+  Event_S3_ObjectRemoved_Delete -> False
+  Event_S3_ObjectRemoved_DeleteMarkerCreated -> False
+  Event_S3_ObjectRemoved__ -> False
+  Event_S3_ObjectRestore_Completed -> False
+  Event_S3_ObjectRestore_Post -> False
+  Event_S3_ObjectRestore__ -> False
+  Event_S3_ReducedRedundancyLostObject -> False
+  Event_S3_Replication_OperationFailedReplication -> False
+  Event_S3_Replication_OperationMissedThreshold -> False
+  Event_S3_Replication_OperationNotTracked -> False
+  Event_S3_Replication_OperationReplicatedAfterThreshold -> False
+  Event_S3_Replication__ -> False
+  Event' _ -> False
+
 
 -- | Is the event an object removal event
 isRemoveEvent :: S3EventNotification -> Bool
 isRemoveEvent e = case _senEventName e of
-  S3ObjectCreated -> False
-  S3ObjectCreatedCompleteMultipartUpload -> False
-  S3ObjectCreatedCopy -> False
-  S3ObjectCreatedPost -> False
-  S3ObjectCreatedPut -> False
-  S3ObjectRemoved -> True
-  S3ObjectRemovedDelete -> True
-  S3ObjectRemovedDeleteMarkerCreated -> True
-  S3ReducedRedundancyLostObject -> False
+  Event_S3_ObjectCreated_CompleteMultipartUpload -> False
+  Event_S3_ObjectCreated_Copy -> False
+  Event_S3_ObjectCreated_Post -> False
+  Event_S3_ObjectCreated_Put -> False
+  Event_S3_ObjectCreated__ -> False
+  Event_S3_ObjectRemoved_Delete -> True
+  Event_S3_ObjectRemoved_DeleteMarkerCreated -> True
+  Event_S3_ObjectRemoved__ -> True
+  Event_S3_ObjectRestore_Completed -> False
+  Event_S3_ObjectRestore_Post -> False
+  Event_S3_ObjectRestore__ -> False
+  Event_S3_ReducedRedundancyLostObject -> False
+  Event_S3_Replication_OperationFailedReplication -> False
+  Event_S3_Replication_OperationMissedThreshold -> False
+  Event_S3_Replication_OperationNotTracked -> False
+  Event_S3_Replication_OperationReplicatedAfterThreshold -> False
+  Event_S3_Replication__ -> False
+  Event' _ -> False
