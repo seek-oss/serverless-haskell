@@ -6,7 +6,7 @@
 [![Hackage dependencies](https://img.shields.io/hackage-deps/v/serverless-haskell.svg)](https://packdeps.haskellers.com/feed?needle=serverless-haskell)
 [![npm](https://img.shields.io/npm/v/serverless-haskell.svg)](https://www.npmjs.com/package/serverless-haskell)
 
-Deploying Haskell code onto [AWS Lambda] using [Serverless].
+Deploying Haskell code onto [AWS Lambda] as native runtime using [Serverless].
 
 ## Prerequisites
 
