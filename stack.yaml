@@ -10,7 +10,7 @@ nix:
 save-hackage-creds: false
 extra-deps:
   - github: brendanhay/amazonka
-    commit: e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c
+    commit: 098795f847df7239af64535c6b2b233f3fbd699c
     subdirs:
       - lib/amazonka
       - lib/amazonka-core
