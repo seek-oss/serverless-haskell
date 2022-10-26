@@ -31,6 +31,7 @@ import           Data.Aeson.TH           (deriveFromJSON)
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
 import           Data.Aeson.Types        (Parser)
+import qualified Data.Aeson.KeyMap       as KeyMap
 import           Data.ByteString         (ByteString)
 import qualified Data.CaseInsensitive    as CI
 import           Data.Function           (on)
@@ -104,7 +105,8 @@ instance FromJSON Authorizer where
     Authorizer
       <$> o .:? "principalId"
       <*> o .:? "claims" .!= mempty
-      <*> (pure $ HashMap.delete "principalId" $ HashMap.delete "claims" o)
+      <*> (pure $ KeyMap.delete "principalId" $ KeyMap.delete "claims" o)
+
 $(makeLenses ''Authorizer)
 
 data ProxyRequestContext = ProxyRequestContext

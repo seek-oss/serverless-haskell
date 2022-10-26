@@ -7,6 +7,7 @@ import           AWSLambda.Events.APIGateway
 
 import           Control.Lens
 import           Data.Aeson
+import qualified Data.Aeson.KeyMap           as KeyMap
 import           Data.ByteString.Lazy        (ByteString)
 import qualified Data.HashMap.Strict         as HashMap
 import           Data.IP
@@ -154,8 +155,8 @@ sampleGetRequest =
     , _prcAuthorizer =
       Just Authorizer
       { _aPrincipalId = Just "test-principalId"
-      , _aClaims = HashMap.fromList [("email", toJSON ("test@example.com" :: Text)), ("email_verified", toJSON True)]
-      , _aContext = HashMap.fromList [("custom_context", toJSON (10 :: Int))]
+      , _aClaims = KeyMap.fromList [("email", toJSON ("test@example.com" :: Text)), ("email_verified", toJSON True)]
+      , _aContext = KeyMap.fromList [("custom_context", toJSON (10 :: Int))]
       }
       
     }

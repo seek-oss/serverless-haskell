@@ -44,7 +44,7 @@ library
       src
   ghc-options: -Wall
   build-depends:
-      aeson
+      aeson >=2.0 && <2.2
     , aeson-casing
     , amazonka-core ==2.0.*
     , amazonka-kinesis ==2.0.*
@@ -81,7 +81,7 @@ test-suite tests
       test
   ghc-options: -Wall
   build-depends:
-      aeson
+      aeson >=2.0 && <2.2
     , aeson-casing
     , amazonka-core ==2.0.*
     , amazonka-kinesis ==2.0.*

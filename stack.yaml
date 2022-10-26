@@ -1,4 +1,4 @@
-resolver: lts-18.8
+resolver: nightly-2022-10-25
 packages:
   - .
   - example-project
