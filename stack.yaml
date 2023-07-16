@@ -1,4 +1,4 @@
-resolver: nightly-2022-10-25
+resolver: lts-20.26 # ghc 9.2.8
 packages:
   - .
   - example-project
@@ -9,8 +9,10 @@ nix:
 # Work around https://github.com/commercialhaskell/stack/issues/5290
 save-hackage-creds: false
 extra-deps:
+  - crypton-0.33@sha256:5e92f29b9b7104d91fcdda1dec9400c9ad1f1791c231cc41ceebd783fb517dee,18202
   - github: brendanhay/amazonka
-    commit: e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c
+    # Amazonka 2.0.0-rc2 TODO switch to hackage dependency once 2.0 is released
+    commit: 31f3d044d84912b99e396a97085a9678e699d91f
     subdirs:
       - lib/amazonka
       - lib/amazonka-core

@@ -5,73 +5,80 @@
 
 packages:
 - completed:
+    hackage: crypton-0.33@sha256:5e92f29b9b7104d91fcdda1dec9400c9ad1f1791c231cc41ceebd783fb517dee,18202
+    pantry-tree:
+      sha256: 38809499d7f9775ef45cd29ab5c3dc9b283a813f34c1cdc56681b24f8cf8bb4f
+      size: 23148
+  original:
+    hackage: crypton-0.33@sha256:5e92f29b9b7104d91fcdda1dec9400c9ad1f1791c231cc41ceebd783fb517dee,18202
+- completed:
     name: amazonka
     pantry-tree:
-      sha256: e331146cadd31d28d58d7adfd73aa32a665c39790abc57fd6253e17fa9a87542
-      size: 1318
-    sha256: 679fe14a2fac669eeeb56a5bcb688636cebde99b7974b12cad1832da0b3571ea
-    size: 27715944
+      sha256: 1616064a7646fe7e0d02a2e5601eede29061ecdd76337e6a963f643bee8c2fc2
+      size: 1527
+    sha256: 463a1e8761975ce706e4c10378191c3cbb51da570d165e737925dd6a067ef2e7
+    size: 34732514
     subdir: lib/amazonka
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
     version: '2.0'
   original:
     subdir: lib/amazonka
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
 - completed:
     name: amazonka-core
     pantry-tree:
-      sha256: 3110e114014c4e3f2610c65bd9d8c8440bd78e3d6f8d07df8c6279c24d2c94ed
-      size: 3117
-    sha256: 679fe14a2fac669eeeb56a5bcb688636cebde99b7974b12cad1832da0b3571ea
-    size: 27715944
+      sha256: b5839487ea79a417104fd976c288ae3fe40b35f4d9537083066c4516ba78f0bc
+      size: 3222
+    sha256: 463a1e8761975ce706e4c10378191c3cbb51da570d165e737925dd6a067ef2e7
+    size: 34732514
     subdir: lib/amazonka-core
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
     version: '2.0'
   original:
     subdir: lib/amazonka-core
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
 - completed:
     name: amazonka-sts
     pantry-tree:
-      sha256: b3356be0b7999b0d4f0300b5f9bb61bb77090067e50140335210e817d30f9309
-      size: 2932
-    sha256: 679fe14a2fac669eeeb56a5bcb688636cebde99b7974b12cad1832da0b3571ea
-    size: 27715944
+      sha256: 1417330ada967fb52e040fbf768d71ca61a011f9903068541694a3e10b63e390
+      size: 2880
+    sha256: 463a1e8761975ce706e4c10378191c3cbb51da570d165e737925dd6a067ef2e7
+    size: 34732514
     subdir: lib/services/amazonka-sts
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
     version: '2.0'
   original:
     subdir: lib/services/amazonka-sts
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
 - completed:
     name: amazonka-kinesis
     pantry-tree:
-      sha256: 562da1e73c6f965b47b4c9fe21337dba10fc96b85c05c1faaed36db08eb6cbf7
-      size: 9301
-    sha256: 679fe14a2fac669eeeb56a5bcb688636cebde99b7974b12cad1832da0b3571ea
-    size: 27715944
+      sha256: 75dc628a87aad181e1ce420d47dba3c3c02357fb04805e03e922a887a046c764
+      size: 9733
+    sha256: 463a1e8761975ce706e4c10378191c3cbb51da570d165e737925dd6a067ef2e7
+    size: 34732514
     subdir: lib/services/amazonka-kinesis
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
     version: '2.0'
   original:
     subdir: lib/services/amazonka-kinesis
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
 - completed:
     name: amazonka-s3
     pantry-tree:
-      sha256: dae7759fe4c713a7932dcee0a993902fd9910c4a51e1655245a86892608af43e
-      size: 37929
-    sha256: 679fe14a2fac669eeeb56a5bcb688636cebde99b7974b12cad1832da0b3571ea
-    size: 27715944
+      sha256: 2a8ae6c830a8bbbf76e79d5f85d4e315be16fc7507682f980e4db76de51a3757
+      size: 38690
+    sha256: 463a1e8761975ce706e4c10378191c3cbb51da570d165e737925dd6a067ef2e7
+    size: 34732514
     subdir: lib/services/amazonka-s3
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
     version: '2.0'
   original:
     subdir: lib/services/amazonka-s3
-    url: https://github.com/brendanhay/amazonka/archive/e4fdf4a33e357942a6bc5bb6bfc133f18b56fa0c.tar.gz
+    url: https://github.com/brendanhay/amazonka/archive/31f3d044d84912b99e396a97085a9678e699d91f.tar.gz
 snapshots:
 - completed:
-    sha256: deca5d235f498c2216605522633fbee795993dcca1d94c4c6db9023fe8a1775b
-    size: 644486
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/10/25.yaml
-  original: nightly-2022-10-25
+    sha256: 5a59b2a405b3aba3c00188453be172b85893cab8ebc352b1ef58b0eae5d248a2
+    size: 650475
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/26.yaml
+  original: lts-20.26
