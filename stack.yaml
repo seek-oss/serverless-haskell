@@ -10,12 +10,6 @@ nix:
 save-hackage-creds: false
 extra-deps:
   - crypton-0.33@sha256:5e92f29b9b7104d91fcdda1dec9400c9ad1f1791c231cc41ceebd783fb517dee,18202
-  - github: brendanhay/amazonka
-    # Amazonka 2.0.0-rc2 TODO switch to hackage dependency once 2.0 is released
-    commit: 31f3d044d84912b99e396a97085a9678e699d91f
-    subdirs:
-      - lib/amazonka
-      - lib/amazonka-core
-      - lib/services/amazonka-sts # amazonka library depends on this
-      - lib/services/amazonka-kinesis
-      - lib/services/amazonka-s3
+  - amazonka-core-2.0@sha256:d9f0533c272ac92bd7b18699077038b6b51b3552e91b65743af4ce646286b4f8,4383
+  - amazonka-kinesis-2.0@sha256:bd669fb35bc22da589a787a391e64a4b095f8725566e3b96ce38600adf76d933,5086
+  - amazonka-s3-2.0@sha256:e3143e11ab9e57ee0dfd9d1dd95a44c5b4a7d34af78c8f5b2e6c00afad118a02,13853
