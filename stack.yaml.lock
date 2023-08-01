@@ -3,10 +3,38 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: crypton-0.33@sha256:5e92f29b9b7104d91fcdda1dec9400c9ad1f1791c231cc41ceebd783fb517dee,18202
+    pantry-tree:
+      sha256: 38809499d7f9775ef45cd29ab5c3dc9b283a813f34c1cdc56681b24f8cf8bb4f
+      size: 23148
+  original:
+    hackage: crypton-0.33@sha256:5e92f29b9b7104d91fcdda1dec9400c9ad1f1791c231cc41ceebd783fb517dee,18202
+- completed:
+    hackage: amazonka-core-2.0@sha256:d9f0533c272ac92bd7b18699077038b6b51b3552e91b65743af4ce646286b4f8,4383
+    pantry-tree:
+      sha256: 46e7e4de910b08ee2df98db9cda2becf388ce49510024018289a46c43e175ee0
+      size: 3222
+  original:
+    hackage: amazonka-core-2.0@sha256:d9f0533c272ac92bd7b18699077038b6b51b3552e91b65743af4ce646286b4f8,4383
+- completed:
+    hackage: amazonka-kinesis-2.0@sha256:bd669fb35bc22da589a787a391e64a4b095f8725566e3b96ce38600adf76d933,5086
+    pantry-tree:
+      sha256: 89a2e5347a459a17189304fc1e38ad2d9453605989aa0e29cf3bf0c68ccfcf57
+      size: 9733
+  original:
+    hackage: amazonka-kinesis-2.0@sha256:bd669fb35bc22da589a787a391e64a4b095f8725566e3b96ce38600adf76d933,5086
+- completed:
+    hackage: amazonka-s3-2.0@sha256:e3143e11ab9e57ee0dfd9d1dd95a44c5b4a7d34af78c8f5b2e6c00afad118a02,13853
+    pantry-tree:
+      sha256: 49f801400582ef0ca290312243b55e6e3c540c0c94c1a3110735bc400386fefb
+      size: 38690
+  original:
+    hackage: amazonka-s3-2.0@sha256:e3143e11ab9e57ee0dfd9d1dd95a44c5b4a7d34af78c8f5b2e6c00afad118a02,13853
 snapshots:
 - completed:
-    size: 565715
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/7.yaml
-    sha256: 1b5e4124989399e60e7a7901f0cefd910beea546131fb07a13a7208c4cc8b7ee
-  original: lts-17.7
+    sha256: 5a59b2a405b3aba3c00188453be172b85893cab8ebc352b1ef58b0eae5d248a2
+    size: 650475
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/26.yaml
+  original: lts-20.26

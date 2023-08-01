@@ -28,10 +28,10 @@ import           Control.Lens            hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Casing       (aesonDrop, camelCase)
 import           Data.Aeson.TH           (deriveFromJSON)
--- import           Data.CaseInsensitive (CI (..))
 import           Data.Aeson.Embedded
 import           Data.Aeson.TextValue
 import           Data.Aeson.Types        (Parser)
+import qualified Data.Aeson.KeyMap       as KeyMap
 import           Data.ByteString         (ByteString)
 import qualified Data.CaseInsensitive    as CI
 import           Data.Function           (on)
@@ -42,8 +42,8 @@ import qualified Data.Set                as Set
 import qualified Data.Text               as Text
 import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 import           GHC.Generics            (Generic)
-import           Network.AWS.Data.Base64
-import           Network.AWS.Data.Text
+import           Amazonka.Data.Base64
+import           Amazonka.Data.Text
 import qualified Network.HTTP.Types      as HTTP
 import           Text.Read
 
@@ -105,7 +105,8 @@ instance FromJSON Authorizer where
     Authorizer
       <$> o .:? "principalId"
       <*> o .:? "claims" .!= mempty
-      <*> (pure $ HashMap.delete "principalId" $ HashMap.delete "claims" o)
+      <*> (pure $ KeyMap.delete "principalId" $ KeyMap.delete "claims" o)
+
 $(makeLenses ''Authorizer)
 
 data ProxyRequestContext = ProxyRequestContext

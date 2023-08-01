@@ -16,7 +16,7 @@ import qualified Data.HashMap.Strict       as HashMap
 import           Data.Text                 (Text)
 import           Data.Time.Calendar
 import           Data.Time.Clock
-import           Network.AWS.S3            as S3
+import           Amazonka.S3               as S3
 
 import           Text.RawString.QQ
 
@@ -113,7 +113,7 @@ sampleSNSS3JSON = [r|
         "MessageId":"89f6fe8b-a751-5dcd-8e0c-afbd75420455",
         "TopicArn":"arn:aws:sns:ap-southeast-2:012345678901:SomeSNSEvent",
         "Subject":"Amazon S3 Notification",
-        "Message": "{\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"ap-southeast-2\",\"eventTime\":\"2017-03-06T02:56:19.713Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:DFLKSDFLKJ987SDFLJJDJ:some-principal-id\"},\"requestParameters\":{\"sourceIPAddress\":\"192.168.0.1\"},\"responseElements\":{\"x-amz-request-id\":\"324098EDFLK0894F\",\"x-amz-id-2\":\"xsdSDF/pgAl401Fz3UIATJ5/didfljDSFDSFsdfkjsdfl8JdsfLSDF89ldsf7SDF898jsdfljiA=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"SomeS3Event:Created\",\"bucket\":{\"name\":\"some-bucket\",\"ownerIdentity\":{\"principalId\":\"A3O1SDFLKJIJXU\"},\"arn\":\"arn:aws:s3:::some-bucket\"},\"object\":{\"key\":\"path/to/some/object\",\"size\":53598442,\"eTag\":\"6b1f72b9e81e4d6fcd3e0c808e8477f8\",\"sequencer\":\"0058BCCFD25C798E7B\"}}}]}",
+        "Message": "{\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"ap-southeast-2\",\"eventTime\":\"2017-03-06T02:56:19.713Z\",\"eventName\":\"s3:ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:DFLKSDFLKJ987SDFLJJDJ:some-principal-id\"},\"requestParameters\":{\"sourceIPAddress\":\"192.168.0.1\"},\"responseElements\":{\"x-amz-request-id\":\"324098EDFLK0894F\",\"x-amz-id-2\":\"xsdSDF/pgAl401Fz3UIATJ5/didfljDSFDSFsdfkjsdfl8JdsfLSDF89ldsf7SDF898jsdfljiA=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"SomeS3Event:Created\",\"bucket\":{\"name\":\"some-bucket\",\"ownerIdentity\":{\"principalId\":\"A3O1SDFLKJIJXU\"},\"arn\":\"arn:aws:s3:::some-bucket\"},\"object\":{\"key\":\"path/to/some/object\",\"size\":53598442,\"eTag\":\"6b1f72b9e81e4d6fcd3e0c808e8477f8\",\"sequencer\":\"0058BCCFD25C798E7B\"}}}]}",
         "Timestamp":"2017-03-06T02:56:19.834Z",
         "SignatureVersion":"1",
         "Signature":"aybEgnTjKzSbC2puHxho7SUnYOje4SjBoCyt0Q13bMWyp7M64+EU6jzi7P01+gSIuBFyYPsHreSmyqGMRSxbFuzn7rG5JcVGN0901U3CRXdk42eh03je8evRvs/Oa7TJlhpCTEDDOScalCWbIH0RthYONQpPR01nEgaNKj3e8YVJqyRQV+4RbU3YWJOj+Spyi4u1hOC9PLUv4BH7U80nbhbOe9EwgX0zpeNU1WBRbEpqPoACm+7/uB0w79qFBKjB/Q7OWc1kASUZV9q8bz03yceoQeVvza0QGhPsnSXi49sn1mLWQOFS4KvgbJIC/Qk7H036ShrDioP6pP+UEg6kow==",
@@ -146,7 +146,7 @@ sampleSNSS3Event =
               { _reRecords =
                 [ S3EventNotification
                   { _senAwsRegion = Sydney
-                  , _senEventName = S3ObjectCreatedPut
+                  , _senEventName = Event_S3_ObjectCreated_Put
                   , _senEventSource = "aws:s3"
                   , _senEventTime =
                     UTCTime

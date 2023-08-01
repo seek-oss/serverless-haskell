@@ -12,17 +12,16 @@ module Data.Aeson.Embedded where
 import           Control.Lens.TH
 import           Data.Aeson
 import qualified Data.ByteString.Lazy as LBS
-import           Data.Text.Encoding    (decodeUtf8, encodeUtf8)
-import           Network.AWS.Data.Text (FromText (..), ToText (..), fromText,
-                                        takeText)
+import           Data.Text.Encoding   (decodeUtf8, encodeUtf8)
+import           Amazonka.Data.Text   (FromText (..), ToText (..), fromText)
 
 -- | Type for a JSON value embedded within a JSON string value
 newtype Embedded a = Embedded { _unEmbed :: a } deriving (Eq, Show)
 
 instance FromJSON a =>
          FromText (Embedded a) where
-  parser =
-    fmap Embedded . either fail pure . eitherDecodeStrict . encodeUtf8 =<< takeText
+  fromText txt =
+    fmap Embedded . eitherDecodeStrict $ encodeUtf8 txt
 
 instance FromJSON a =>
          FromJSON (Embedded a) where

@@ -9,8 +9,8 @@ import           AWSLambda.Events.Records
 import           Data.Aeson
 import           Data.ByteString.Lazy          (ByteString)
 
-import qualified Network.AWS.Kinesis.Types     as Kinesis
-import           Network.AWS.Types             (Region (..))
+import qualified Amazonka.Kinesis.Types        as Kinesis
+import           Amazonka.Types                (Region (..))
 
 import           Text.RawString.QQ
 
@@ -52,7 +52,7 @@ sampleKinesisEvent =
       { _kerKinesis =
         KinesisRecord
         { _krRecord =
-          Kinesis.record
+          Kinesis.newRecord
             "49545115243490985018280067714973144582180062593244200961"
             "Hello, this is a test 123."
             "partitionKey-3"

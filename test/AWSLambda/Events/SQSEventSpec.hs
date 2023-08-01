@@ -14,7 +14,7 @@ import           Data.ByteString.Lazy              (ByteString)
 import           Data.Text                         (Text)
 import           Data.Time.Calendar
 import           Data.Time.Clock
-import           Network.AWS.S3                    as S3
+import           Amazonka.S3                       as S3
 
 import           Text.RawString.QQ
 
@@ -103,7 +103,7 @@ sampleS3SNSSQSJSON = [r|
     {
       "messageId": "b792b6ba-b444-48c5-9cd8-29b8ad373eae",
       "receiptHandle": "ReceiptHandle",
-      "body": "{\n  \"Type\" : \"Notification\",\n  \"MessageId\" : \"MessageId\",\n  \"TopicArn\" : \"arn:aws:sns:ap-southeast-2:11111111111111:my-topic\",\n  \"Subject\" : \"Amazon S3 Notification\",\n  \"Message\" : \"{\\\"Records\\\":[{\\\"eventVersion\\\":\\\"2.1\\\",\\\"eventSource\\\":\\\"aws:s3\\\",\\\"awsRegion\\\":\\\"ap-southeast-2\\\",\\\"eventTime\\\":\\\"2019-11-01T00:00:00.00Z\\\",\\\"eventName\\\":\\\"ObjectCreated:Put\\\",\\\"userIdentity\\\":{\\\"principalId\\\":\\\"AWS:AHJD568HF4356HJJ:bob\\\"},\\\"requestParameters\\\":{\\\"sourceIPAddress\\\":\\\"787.39.11.220\\\"},\\\"responseElements\\\":{\\\"x-amz-request-id\\\":\\\"GDJS6765sJSHSS\\\",\\\"x-amz-id-2\\\":\\\"ID2\\\"},\\\"s3\\\":{\\\"s3SchemaVersion\\\":\\\"1.0\\\",\\\"configurationId\\\":\\\"ConfigurationId\\\",\\\"bucket\\\":{\\\"name\\\":\\\"my-bucket\\\",\\\"ownerIdentity\\\":{\\\"principalId\\\":\\\"ASKD794UDYDH\\\"},\\\"arn\\\":\\\"arn:aws:s3:::my-bucket\\\"},\\\"object\\\":{\\\"key\\\":\\\"my-key\\\",\\\"size\\\":13315,\\\"eTag\\\":\\\"1231234fabf233124124\\\",\\\"versionId\\\":\\\"735hjf893ufb8fhuf\\\",\\\"sequencer\\\":\\\"HUJKFDHJD8656567HGGSGJKD\\\"}}}]}\",\n  \"Timestamp\" : \"2019-11-01T00:00:00Z\",\n  \"SignatureVersion\" : \"1\",\n  \"Signature\" : \"Signature\",\n  \"SigningCertURL\" : \"https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-my-cert.pem\",\n  \"UnsubscribeURL\" : \"https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:11111111111111:my-topic:unsub\"\n}",
+      "body": "{\n  \"Type\" : \"Notification\",\n  \"MessageId\" : \"MessageId\",\n  \"TopicArn\" : \"arn:aws:sns:ap-southeast-2:11111111111111:my-topic\",\n  \"Subject\" : \"Amazon S3 Notification\",\n  \"Message\" : \"{\\\"Records\\\":[{\\\"eventVersion\\\":\\\"2.1\\\",\\\"eventSource\\\":\\\"aws:s3\\\",\\\"awsRegion\\\":\\\"ap-southeast-2\\\",\\\"eventTime\\\":\\\"2019-11-01T00:00:00.00Z\\\",\\\"eventName\\\":\\\"s3:ObjectCreated:Put\\\",\\\"userIdentity\\\":{\\\"principalId\\\":\\\"AWS:AHJD568HF4356HJJ:bob\\\"},\\\"requestParameters\\\":{\\\"sourceIPAddress\\\":\\\"787.39.11.220\\\"},\\\"responseElements\\\":{\\\"x-amz-request-id\\\":\\\"GDJS6765sJSHSS\\\",\\\"x-amz-id-2\\\":\\\"ID2\\\"},\\\"s3\\\":{\\\"s3SchemaVersion\\\":\\\"1.0\\\",\\\"configurationId\\\":\\\"ConfigurationId\\\",\\\"bucket\\\":{\\\"name\\\":\\\"my-bucket\\\",\\\"ownerIdentity\\\":{\\\"principalId\\\":\\\"ASKD794UDYDH\\\"},\\\"arn\\\":\\\"arn:aws:s3:::my-bucket\\\"},\\\"object\\\":{\\\"key\\\":\\\"my-key\\\",\\\"size\\\":13315,\\\"eTag\\\":\\\"1231234fabf233124124\\\",\\\"versionId\\\":\\\"735hjf893ufb8fhuf\\\",\\\"sequencer\\\":\\\"HUJKFDHJD8656567HGGSGJKD\\\"}}}]}\",\n  \"Timestamp\" : \"2019-11-01T00:00:00Z\",\n  \"SignatureVersion\" : \"1\",\n  \"Signature\" : \"Signature\",\n  \"SigningCertURL\" : \"https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-my-cert.pem\",\n  \"UnsubscribeURL\" : \"https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:11111111111111:my-topic:unsub\"\n}",
       "attributes": {
         "ApproximateReceiveCount": "1",
         "SentTimestamp": "1572575717896",
@@ -140,7 +140,7 @@ sampleS3SNSSQSEvent =
             { _smMessage                = TextValue $ Embedded $ RecordsEvent
               [ S3EventNotification
                 { _senAwsRegion         = Sydney
-                , _senEventName         = S3ObjectCreatedPut
+                , _senEventName         = Event_S3_ObjectCreated_Put
                 , _senEventSource       = "aws:s3"
                 , _senEventTime         = UTCTime (fromGregorian 2019 11 1) 0
                 , _senEventVersion      = "2.1"

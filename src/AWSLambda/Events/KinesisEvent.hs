@@ -15,9 +15,9 @@ import           Data.Aeson                (FromJSON (..), withObject, (.:))
 import           Data.Aeson.Casing         (aesonDrop, camelCase)
 import           Data.Aeson.TH             (deriveFromJSON)
 import           Data.Text                 (Text)
-import           Network.AWS.Data.Base64   (Base64 (..))
-import qualified Network.AWS.Kinesis.Types as Kinesis
-import qualified Network.AWS.Types         as AWS
+import           Amazonka.Data.Base64      (Base64 (..))
+import qualified Amazonka.Kinesis.Types    as Kinesis
+import qualified Amazonka.Types            as AWS
 
 import           AWSLambda.Events.Records
 
@@ -33,7 +33,7 @@ instance FromJSON KinesisRecord where
       _krKinesisSchemaVersion <- o .: "kinesisSchemaVersion"
       dataBase64 <- o .: "data"
       _krRecord <-
-        Kinesis.record <$> (o .: "sequenceNumber") <*> pure (unBase64 dataBase64) <*>
+        Kinesis.newRecord <$> (o .: "sequenceNumber") <*> pure (unBase64 dataBase64) <*>
         (o .: "partitionKey")
       return KinesisRecord {..}
 $(makeLenses ''KinesisRecord)

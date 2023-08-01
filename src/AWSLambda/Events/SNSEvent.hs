@@ -25,8 +25,8 @@ import           Data.HashMap.Strict (HashMap)
 import           Data.Text (Text)
 import           Data.Time.Clock (UTCTime)
 import           GHC.Generics (Generic)
-import           Network.AWS.Data.Base64
-import           Network.AWS.Data.Text (FromText)
+import           Amazonka.Data.Base64
+import           Amazonka.Data.Text (FromText)
 
 import           AWSLambda.Events.MessageAttribute
 import           AWSLambda.Events.Records
